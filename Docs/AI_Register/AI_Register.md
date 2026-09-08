@@ -1,3 +1,4 @@
 | Team member | AI Tool/ Use | Purpose | Output used? | How independently verified | What was changed/ rejected |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | Gerald | Gemini | To summerize my part into bullet points for milestone 1. | yes | Compared the list that was provided with what is expected in the provided project breakdowns. | The examples provided were irrelevant thus got rejected.
+| Mogau Malope | Perplexity | To read through the functional requirements and detect if there are any gaps or pontetial missing FR that could apply to my work. | no | Checked if each comment aligned with assignment criteria and required work with regard to the scenario | Minimal output provided and documentation was described as strong so no output was used.

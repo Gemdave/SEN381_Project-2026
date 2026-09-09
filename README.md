@@ -1,9 +1,9 @@
 # CivicConnect - Community Service Request Management Platform
 
-> **Module:** Software Engineering 381 (SEN381)
-> **NQF level: 8** | **Academic Year:** 2026
-> **Project Mode:** Integrated Team Software Engineering Project
-> **Institution:** Belgium Campus ITversity
+> **Module:** Software Engineering 381 (SEN381)  
+> **NQF level: 8** | **Academic Year:** 2026  
+> **Project Mode:** Integrated Team Software Engineering Project  
+> **Institution:** Belgium Campus ITversity  
 
 ---
 

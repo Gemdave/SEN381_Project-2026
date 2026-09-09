@@ -34,4 +34,4 @@ This repository serves as the single source of engineering truth for the product
 
 ## Engineering Governance & Quality Controls
 
-This repository strictly enforces mandatory software engineering controls as defined in the **SEN381 Master Project Brief**:
+This repository strictly enforces mandatory software engineering controls as defined in the **SEN381 Master Project Brief**.

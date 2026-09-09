@@ -1,9 +1,9 @@
 # CivicConnect - Community Service Request Management Platform
 
-> **Module:** Software Engineering 381 (SEN381)
-> **NQF level: 8** | **Academic Year:** 2026
-> **Project Mode:** Integrated Team Software Engineering Project
-> **Institution:** Belgium Campus ITversity
+> **Module:** Software Engineering 381 (SEN381)  
+> **NQF level: 8** | **Academic Year:** 2026  
+> **Project Mode:** Integrated Team Software Engineering Project  
+> **Institution:** Belgium Campus ITversity  
 
 ---
 
@@ -34,4 +34,4 @@ This repository serves as the single source of engineering truth for the product
 
 ## Engineering Governance & Quality Controls
 
-This repository strictly enforces mandatory software engineering controls as defined in the **SEN381 Master Project Brief**:
+This repository strictly enforces mandatory software engineering controls as defined in the **SEN381 Master Project Brief**.

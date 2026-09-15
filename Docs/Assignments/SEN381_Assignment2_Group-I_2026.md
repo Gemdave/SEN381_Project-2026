@@ -304,5 +304,5 @@ Devopedia (2020) *Richardson Maturity Model*. Available at: https://devopedia.or
 
 Fowler, M. (2006) *Continuous Integration*. Available at: https://martinfowler.com/articles/continuousIntegration.html (Accessed: 12 September 2026).
 
-RESTful API (n.d.) *Richardson Maturity Model*. Available at: https://restfulapi.net/richardson-maturity-model/ (Accessed: 12 September 2026).
+Gupta, L. (2023) Richardson Maturity Model. REST API Tutorial. Available at: https://restfulapi.net/richardson-maturity-model/ (Accessed: 12 September 2026).
 

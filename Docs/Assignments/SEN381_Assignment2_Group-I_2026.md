@@ -275,34 +275,25 @@ This provides a lightweight engineering process that combines protected main-bra
 ## Task 5
 | A2 finding | Evidence/alternative considered | Recommendation | Project decision it should inform | Expected PED/ADR/RTM/application evidence |
 | :--- | :--- | :--- | :--- | :--- |
-| Design problem 1 | 
-| Design problem 2 | 
+| Design problem 1 | Request lifecycle carries state-dependent behavior across statuses. Alternatives compared: Centralized conditional - enum plus status checks in one service vs State-oriented design - one class per lifecycle state, evaluated against coupling, cohesion, OCP, extensibility, testability and over-engineering risk. | Use the centralized conditional approach while the lifecycle stays small and stable, move to a state-oriented design only if state-dependent behavior grows substantially and is expected to keep evolving. Final choice confirmed at M2 against the team's actual lifecycle complexity. | M2 design decision on how request-lifecycle status behavior is structured. | ADR recording the chosen approach, the rejected alternative and the trigger for revising it, in the PED v2.0 design section. |
+| Design problem 2 | Category-specific request creation and validation needs different fields and rules per category. Alternatives compared: Factory-based creation vs Strategy-based category handlers, evaluated against OCP support, cohesion, testability, additional abstraction and over-engineering risk, with empirical caution that pattern use alone is not evidence of better maintainability. | Factory-based creation where categories mainly differ in construction, Strategy-based handlers where categories are found to have substantially different, independently evolving rules. Final choice confirmed at M2 once category rules are known. | M2 decision on how category-specific request creation and validation is structured. | ADR recording the chosen approach, the rejected alternative and the trigger for revising it, in the PED v2.0 design section. |
 | Persistence/Data | Assigning a request saves five things (owner, status, history, audit, requester message). A partial save or two staff assigning at once breaks NFR-005 and NFR-007. | Approaches compared: A (backend only), B (PostgreSQL stored procedure), C (layered). Concurrency options: conditional UPDATE, version number, SELECT … FOR UPDATE, Serializable. Caching versus stale data also considered. | Approach C: one PostgreSQL transaction run by the backend; conditional UPDATE to claim a request; version column for other edits; PostgreSQL constraints; insert-only history; no caching in M2. | D-003 (PostgreSQL); new persistence ADR; M2 data model; Risk Register | ADR and data model in PED v2.0; new risks (partial save, double ownership); RTM links for FR-011–FR-013, NFR-005, NFR-007; M3 rollback and concurrency tests
 | Integration/API | 
 | SCM/CI | 
 ---
 ## References
 Almadi, S.H., Hooshyar, D. and Ahmad, R.B., 2021. Bad smells of gang of four design patterns: a decade systematic literature review. Sustainability, 13(18), p.10256.
+Atlassian (n.d.) *Trunk-based Development*. Available at: https://www.atlassian.com/continuous-delivery/continuous-integration/trunk-based-development (Accessed: 12 September 2026).
+AWS (n.d.) *Advantages and disadvantages of the Trunk strategy*. Available at: https://docs.aws.amazon.com/prescriptive-guidance/latest/choosing-git-branch-approach/advantages-and-disadvantages-of-the-trunk-strategy.html (Accessed: 12 September 2026).
+Devopedia (2020) *Richardson Maturity Model*. Available at: https://devopedia.org/richardson-maturity-model (Accessed: 12 September 2026).
+Fowler, M. (2006) *Continuous Integration*. Available at: https://martinfowler.com/articles/continuousIntegration.html (Accessed: 12 September 2026).
+Microsoft (2025) Cache-Aside pattern — Azure Architecture Center. Available at: https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside (Accessed: 12 September 2026).
 Naghdipour, A., Hasheminejad, S.M.H. and Barmaki, R.L., 2023. Software design pattern selection approaches: a systematic literature review. Software: Practice and Experience, 53(4), pp.1091-1122.
 Nikitin, D., 2023. Specification formalization of state charts for complex system management. Bulletin of National Technical University" KhPI". Series: System analysis, control and information technologies, (1 (9)), pp.104-109.
 Plösch, R., Bräuer, J., Körner, C. and Saft, M., 2016. Measuring, assessing and improving software quality based on object-oriented design principles. Open Computer Science, 6(1), pp.187-207.
+PostgreSQL Global Development Group (2026a) PostgreSQL 18 documentation: Transaction isolation. Available at: https://www.postgresql.org/docs/current/transaction-iso.html (Accessed: 12 September 2026).
+RESTful API (n.d.) *Richardson Maturity Model*. Available at: https://restfulapi.net/richardson-maturity-model/ (Accessed: 12 September 2026).
 Silva, G., Andrade, V., Ré, R. and Meneses, R., 2021, September. A quasi-experiment to investigating the impact of the strategy design pattern on maintainability. In Proceedings of the XXXV Brazilian Symposium on Software Engineering (pp. 105-114).
 Stevenson, J. and Wood, M., 2018. Recognizing object-oriented software design quality: a practitioner-based questionnaire survey. Software Quality Journal, 26(2), pp.321-365.
 Tiwari, S. and Rathore, S.S., 2018, February. Coupling and cohesion metrics for object-oriented software: A systematic mapping study. In Proceedings of the 11th Innovations in Software Engineering Conference (pp. 1-11).
 Wedyan, F. and Abufakher, S., 2020. Impact of design patterns on software quality: a systematic literature review. IET Software, 14(1), pp.1-17.
-
-## References
-Microsoft (2025) Cache-Aside pattern — Azure Architecture Center. Available at: https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside (Accessed: 12 September 2026).
-
-PostgreSQL Global Development Group (2026a) PostgreSQL 18 documentation: Transaction isolation. Available at: https://www.postgresql.org/docs/current/transaction-iso.html (Accessed: 12 September 2026).
-
-Atlassian (n.d.) *Trunk-based Development*. Available at: https://www.atlassian.com/continuous-delivery/continuous-integration/trunk-based-development (Accessed: 12 September 2026).
-
-AWS (n.d.) *Advantages and disadvantages of the Trunk strategy*. Available at: https://docs.aws.amazon.com/prescriptive-guidance/latest/choosing-git-branch-approach/advantages-and-disadvantages-of-the-trunk-strategy.html (Accessed: 12 September 2026).
-
-Devopedia (2020) *Richardson Maturity Model*. Available at: https://devopedia.org/richardson-maturity-model (Accessed: 12 September 2026).
-
-Fowler, M. (2006) *Continuous Integration*. Available at: https://martinfowler.com/articles/continuousIntegration.html (Accessed: 12 September 2026).
-
-RESTful API (n.d.) *Richardson Maturity Model*. Available at: https://restfulapi.net/richardson-maturity-model/ (Accessed: 12 September 2026).
-

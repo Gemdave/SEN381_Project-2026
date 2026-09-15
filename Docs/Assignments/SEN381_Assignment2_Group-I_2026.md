@@ -64,6 +64,24 @@ Serializable | PostgreSQL cancels one clashing transaction | No manual check; ba
 
 Cache needed to determine an assignment should never be stored because it may speed up the staff queue (NFR-004) but may display outdated data (Microsoft, 2025). M2 doesn't require a cache; instead, indexes should be tried first, and caching should only be reviewed if NFR-004 is not satisfied. As long as the cache is emptied each time an administrator makes changes, the category list is the safest later option because it rarely changes.
 
+### 2.3 Alternative approaches compared
+
+**A:** the backend checks rules and saves each change separately. 
+
+**B:** a PostgreSQL stored procedure does everything. 
+
+**C:** layered: backend rules run in one transaction, with PostgreSQL constraints and a conditional UPDATE as safety nets.
+
+| Criterion | A | B | C |
+|---|---|---|---|
+| **All-or-nothing saves** | Weak | Strong | Strong |
+| **Two staff at once** | Weak | Strong | Strong |
+| **Protection from scripts** | Weak | Strong | Good |
+| **Easy to read and test** | Strong | Weak | Strong |
+| **Clear messages for users** | Medium | Weak | Strong |
+| **Effort for our team** | Low | High | Medium |
+
+A is the quickest to build but fails NFR-005 and NFR-007. B is strong, but it hides business rules in SQL that the team would find hard to review and test. C takes a little more effort, but each layer has a clear job, so **C is the best fit for CivicConnect.**
 
 ---
 ## Task 3

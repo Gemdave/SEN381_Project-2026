@@ -110,7 +110,7 @@ The team recommends the following (final decision in M2):
 | :--- | :--- | :--- | :--- | :--- |
 | Design problem 1 | 
 | Design problem 2 | 
-| Persistence/Data | 
+| Persistence/Data | Assigning a request saves five things (owner, status, history, audit, requester message). A partial save or two staff assigning at once breaks NFR-005 and NFR-007. | Approaches compared: A (backend only), B (PostgreSQL stored procedure), C (layered). Concurrency options: conditional UPDATE, version number, SELECT … FOR UPDATE, Serializable. Caching versus stale data also considered. | Approach C: one PostgreSQL transaction run by the backend; conditional UPDATE to claim a request; version column for other edits; PostgreSQL constraints; insert-only history; no caching in M2. | D-003 (PostgreSQL); new persistence ADR; M2 data model; Risk Register | ADR and data model in PED v2.0; new risks (partial save, double ownership); RTM links for FR-011–FR-013, NFR-005, NFR-007; M3 rollback and concurrency tests
 | Integration/API | 
 | SCM/CI | 
 ---

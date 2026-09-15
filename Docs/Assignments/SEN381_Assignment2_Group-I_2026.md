@@ -79,9 +79,22 @@ Cache needed to determine an assignment should never be stored because it may sp
 | **Protection from scripts** | Weak | Strong | Good |
 | **Easy to read and test** | Strong | Weak | Strong |
 | **Clear messages for users** | Medium | Weak | Strong |
-| **Effort for our team** | Low | High | Medium |
+| **Effort for the team** | Low | High | Medium |
 
 A is the quickest to build but fails NFR-005 and NFR-007. B is strong, but it hides business rules in SQL that the team would find hard to review and test. C takes a little more effort, but each layer has a clear job, so **C is the best fit for CivicConnect.**
+
+### 2.4 Recommendation for the project
+
+The team recommends the following (final decision in M2):
+
+| ID | Recommendation | Feeds into |
+|---|---|---|
+| **R2-1** | One PostgreSQL transaction for all five saves, run by the backend | New ADR; new risk: partial save; M3 rollback test |
+| **R2-2** | Conditional UPDATE to claim a request; version column for other edits | M2 data model; new risk: double ownership; M3 concurrency test |
+| **R2-3** | Backend owns role and status rules; PostgreSQL constraints; insert-only history | M2 data model; RTM links for FR-011–FR-013, NFR-005, NFR-007 |
+| **R2-4** | No caching in M2; indexes first | NFR-004 performance check |
+
+**Limitations:** this assumes only a few staff act on the same request at once; if clashes turn out to be common, row locking may be a better choice. The design also depends on the reassignment rules (AC-011.2), which are still an open M1 item and would change the UPDATE condition.
 
 ---
 ## Task 3
@@ -101,3 +114,8 @@ A is the quickest to build but fails NFR-005 and NFR-007. B is strong, but it hi
 | Integration/API | 
 | SCM/CI | 
 ---
+
+## References
+Microsoft (2025) Cache-Aside pattern — Azure Architecture Center. Available at: https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside (Accessed: 12 September 2026).
+
+PostgreSQL Global Development Group (2026a) PostgreSQL 18 documentation: Transaction isolation. Available at: https://www.postgresql.org/docs/current/transaction-iso.html (Accessed: 12 September 2026).

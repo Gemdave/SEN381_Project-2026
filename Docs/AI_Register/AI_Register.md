@@ -7,3 +7,4 @@
 | Gerald Enright | Claude | Asked to identify how much of the project is completed | yes | checked if the requirements mentioned exist in the provided documents | Rejected requirements that were not mentioned |
 | Gerald Enright | Gemini | Asked to convert the PED from a Word Document to a markdown file | yes | Confirmed that the content remained unchanged | No changes or rejections were necessary |
 | Gerald Enright | Claude | Asked to assist in finding good sources for the Assignment 3 | Yes | Confirmed that the sources exist on google scholar and are relevant | Rejected sources that did not exist or were not relevant |
+| Mogau Malope | Perplexity | Asked for help getting references for my assignment 3 section| yes | Reviewed the references given and checked if they exist and are relevent to my required worked | Only 3 references were used, the rest were rejected |

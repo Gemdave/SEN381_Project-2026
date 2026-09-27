@@ -7,27 +7,27 @@
 > * Mogau Malope 600192  
 ---
 ## Question 1
-## 1.1 QA, QC, Verification and Validation
+### 1.1 QA, QC, Verification and Validation
 
 Four separate tasks must be covered by a quality approach. **Quality control** is product-oriented and investigative, **quality assurance** is process-oriented and preventative, **verification** is concerned with whether the product was constructed correctly in accordance with its specifications, and **validation** is concerned with whether the correct product was constructed for its intended purpose. They are not interchangeable: validation by itself may fail to identify internal flaws, while verification by itself may faithfully implement an incorrect specification. Additionally, the labels are not as trustworthy as they often are; Trautsch, Herbold, and Grabowski (2020) discovered that the traditional definitions of test levels are out of step with current developments. Therefore, the strategic challenge is not which activity is relevant, but which combination produces sufficient evidence for a given
 risk.
 
-## 1.2 Risk-Based Verification: What Earns Depth
+### 1.2 Risk-Based Verification: What Earns Depth
 
 Suites outgrow the time and money available, therefore choosing which tests to run at all is an ongoing research problem because verifying everything is not an option. In their evaluation of machine-learning techniques for test case selection and prioritization, Pan et al. (2022) define it as integrating incomplete and flawed test case data into models that forecast which are most worthwhile to run.
 The same three factors influence the decision whether it is made by the team or by an automated system:
 
-- **Likelihood** — raised by complexity, concurrency, rate of change and defect history.
-- **Impact** — raised by data corruption, exposure of personal data, loss of an accountability record
+- **Likelihood**: raised by complexity, concurrency, rate of change and defect history.
+- **Impact**: raised by data corruption, exposure of personal data, loss of an accountability record
   or legal consequence.
-- **Business or technical criticality** — raised when the function sits on a core journey, other
+- **Business or technical criticality**; raised when the function sits on a core journey, other
   components depend on it, or no workaround exists.
 
 *Team interpretation*: Detectability should be taken into consideration as a fourth factor. Since a quiet failure, like a lost update or an authorization gap, can last indefinitely, it deserves more consideration than likelihood and impact alone would indicate.
 
 *Limitation*: According to Pan et al. (2022), any method must be justified locally rather than imported because findings from prioritization studies are difficult to compare and significantly dependent on context. Additionally, any rating inherits the team's blind spots and becomes stale as the system changes.
 
-## 1.3 Comparing Complementary Forms of Verification Evidence
+### 1.3 Comparing Complementary Forms of Verification Evidence
 
 | Form of evidence | Strong at exposing | What it cannot prove on its own |
 | --- | --- | --- |
@@ -39,11 +39,11 @@ The same three factors influence the decision whether it is made by the team or 
 There is a warning in the comparison. New definitions are required, according to Trautsch, Herbold, and Grabowski (2020), who discovered that neither unit nor integration tests were consistently better at identifying specific problem types in contemporary Java applications. Therefore, rather than making assumptions based on the test level name, evidence should be chosen based on the particular risk.
 
 
-## 1.4 Automation, Quality Gates and Their Limits
+### 1.4 Automation, Quality Gates and Their Limits
 
 Rather than insight, automation contributes repeatability: the same checks are performed on each modification, and the outcomes are preserved artifacts that may be linked to a progression choice. That evidence becomes consequential, a predetermined pass/fail condition in the pipeline, when a quality gate is used, and both its value and its risk come from the same source: Only what it encodes is asserted by a gate. The signal may not be audible. According to Parry et al. (2021), 59% of the developers they polled deal with flaky tests on a monthly, weekly, or daily basis, which directly reduces the degree to which a suite's conclusion can be accepted. Flaky tests are tests that fail inconsistently without any modification to the code under test. Conversely, coverage assesses execution as opposed to assertion. Once a threshold becomes a target, it is often met in the most economical manner possible. A gate is proof that certain requirements were met, never that they were sufficient.
 
-## 1.5 Critical Question
+### 1.5 Critical Question
 
 > **Why is "all automated tests passed" insufficient evidence, by itself, to conclude that a software product is high quality or ready for release?**
 
@@ -52,7 +52,7 @@ Rather than insight, automation contributes repeatability: the same checks are p
 3. **Verification is not validation,** and the test level is not guaranteed by the test level (Trautsch et al., 2020). Green can only attest to the incorrect product's proper construction.
 4. **The signal itself may be unreliable.** Most developers frequently encounter flaky tests (Parry et al., 2021), unrepresentative data and skipped or quarantined tests remain undetectable in a pass/fail light. The suite does not address usability or other quality issues.
 
-## 1.6 Risk-to-Verification Evidence Map
+### 1.6 Risk-to-Verification Evidence Map
 
 ---
 ## Question 2

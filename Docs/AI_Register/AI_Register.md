@@ -1,10 +1,16 @@
-| Team member | AI Tool/ Use | Purpose | Output used? | How independently verified | What was changed/ rejected |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| Gerald Enright | Gemini | To summarize my part into bullet points for milestone 1. | yes | Compared the list that was provided with what is expected in the provided project breakdowns. | The examples provided that were irrelevant got rejected. |
-| Mogau Malope | Perplexity | To read through the functional requirements and detect if there are any gaps or potential missing FR that could apply to my work. | no | Checked if each comment aligned with assignment criteria and required work with regard to the scenario | Minimal output provided and documentation was described as strong so no output was used. |
-| Gerald Enright | Gemini | Asked to identify initial risks for milestone 1 | yes | Read the risks that were identified and determined if they were logical and relevant | The irrelevant and illogical risks were rejected and the logical but irrelevant risks were made relevant. |
-| Mogau Malope | Perplexity | To analyze the RTM with respect to the document to find any possible gaps in the FR and NFR from the other tables compared to this one | yes | Look through the Ai suggestions and compare with the initial RTM and determine if the change would be relevant | Made the acceptance criteria for the NFR more specific and added measurable numbers in the NFR section of the matrix |
-| Gerald Enright | Claude | Asked to identify how much of the project is completed | yes | checked if the requirements mentioned exist in the provided documents | Rejected requirements that were not mentioned |
-| Gerald Enright | Gemini | Asked to convert the PED from a Word Document to a markdown file | yes | Confirmed that the content remained unchanged | No changes or rejections were necessary |
-| Gerald Enright | Claude | Asked to assist in finding good sources for the Assignment 3 | Yes | Confirmed that the sources exist on google scholar and are relevant | Rejected sources that did not exist or were not relevant |
-| Mogau Malope | Perplexity | Asked for help getting references for my assignment 3 section| yes | Reviewed the references given and checked if they exist and are relevent to my required worked | Only 3 references were used, the rest were rejected |
+
+
+|Team member|AI Tool/ Use|Purpose|Output used?|How independently verified|What was changed/ rejected|
+|-|-|-|-|-|-|
+|Gerald Enright|Gemini|To summarize my part into bullet points for milestone 1.|yes|Compared the list that was provided with what is expected in the provided project breakdowns.|The examples provided that were irrelevant got rejected.|
+|Mogau Malope|Perplexity|To read through the functional requirements and detect if there are any gaps or potential missing FR that could apply to my work.|no|Checked if each comment aligned with assignment criteria and required work with regard to the scenario|Minimal output provided and documentation was described as strong so no output was used.|
+|Gerald Enright|Gemini|Asked to identify initial risks for milestone 1|yes|Read the risks that were identified and determined if they were logical and relevant|The irrelevant and illogical risks were rejected and the logical but irrelevant risks were made relevant.|
+|Mogau Malope|Perplexity|To analyze the RTM with respect to the document to find any possible gaps in the FR and NFR from the other tables compared to this one|yes|Look through the Ai suggestions and compare with the initial RTM and determine if the change would be relevant|Made the acceptance criteria for the NFR more specific and added measurable numbers in the NFR section of the matrix|
+|Gerald Enright|Claude|Asked to identify how much of the project is completed|yes|checked if the requirements mentioned exist in the provided documents|Rejected requirements that were not mentioned|
+|Gerald Enright|Gemini|Asked to convert the PED from a Word Document to a markdown file|yes|Confirmed that the content remained unchanged|No changes or rejections were necessary|
+|Gerald Enright|Claude|Asked to assist in finding good sources for the Assignment 3|Yes|Confirmed that the sources exist on google scholar and are relevant|Rejected sources that did not exist or were not relevant|
+|Mogau Malope|Perplexity|Asked for help getting references for my assignment 3 section|yes|Reviewed the references given and checked if they exist and are relevent to my required worked|Only 3 references were used, the rest were rejected|
+|Keletso Marota|Claude |Asked for recommendations of relevant references for Assignment 3, particularly for CI/CD, deployment, observability and production readiness.|Yes|Reviewed the suggested references for relevance and checked the publication details using the available source pages.|Relevant references were kept and irrelevant or unsuitable suggestions were rejected.|
+
+
+

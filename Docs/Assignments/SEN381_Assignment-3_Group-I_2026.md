@@ -114,6 +114,65 @@ A clean scanner result only demonstrates the absence of the specific, cataloged 
 ---
 ## Question 3
 
+### 3.1 Environment Strategy
+
+CivicConnect's Assignment 2 research considered a UI, backend/API and PostgreSQL database as the proposed architecture, subject to the team's later confirmation of the relevant decisions. As the project moves toward production, the team should keep separate development, testing/staging and production environments, and keep them as similar as possible so that a change verified in one environment can be trusted in the next.
+
+Uncontrolled differences between environments, such as different dependency versions, different configuration values, or a staging database that is much smaller and cleaner than production, create deployment risk because a change can pass every check in development and still fail once it meets real production conditions. Configuration should be kept out of the source code and version-controlled separately for each environment rather than hard-coded, and staging should be built through the same automated process as production rather than configured by hand (Saleh, Madhavji and Steinbacher, 2025).
+
+### 3.2 Secrets and Production Configuration
+
+Database passwords, API keys and similar values should never be stored in source code, because anyone with repository access, including CI logs, could then reach production systems. The team's Assignment 2 research recommended using GitHub Actions' encrypted secrets rather than committed configuration files, subject to later confirmation of the relevant decisions.
+
+GitHub Actions itself still needs to be managed carefully. Research on real GitHub CI workflows found recurring problems such as excessive workflow permissions and secrets being exposed through logs or third-party actions (Koishybayev et al., 2022). Protecting secrets is therefore an ongoing process rather than a one-off setting: CivicConnect should combine least-privilege access, secret scanning of the repository and regular secret rotation instead of treating encryption alone as sufficient.
+
+### 3.3 Release and Deployment
+
+A successful build does not automatically mean the system is ready for users. Continuous delivery is about keeping software in a state that could be released at any time, while continuous deployment goes further and releases that build to users automatically. Both rely on a pipeline that can repeatedly build, test and package a change without manual intervention (Shahin, Babar and Zhu, 2017).
+
+Research on architecting for continuous delivery also shows that the ability to deploy, and to recover from a failed release, needs to be designed into the system and pipeline rather than added afterwards (Shahin et al., 2019).
+
+For CivicConnect, the deployment stage could build on the GitHub Actions build and test approach recommended in the team's Assignment 2 research, subject to later confirmation of the relevant decisions. It should be automated and repeatable, with a clear procedure for what happens if a deployment fails partway. Staged rollouts and feature flags could reduce release risk further, but whether either is proportionate for CivicConnect is a decision for M3, not something this research assignment can settle.
+
+### 3.4 Failure and Recovery
+
+Application code is usually easier to roll back than data. An empirical study of ten large open-source systems found that database schemas change frequently and that each schema change typically forces a matching change in the application code that reads and writes it (Qiu, Li and Su, 2013). A schema migration that is not backward-compatible can therefore leave the previous version of the application unable to run against the new database structure, which removes the option of a clean rollback exactly when it is needed most.
+
+For CivicConnect, the request and assignment table migrations discussed in Assignment 2 should be checked for backward compatibility, and the rollback path should be tested before an incident happens rather than during one. The team should also keep a documented backup and restore process with recovery time and recovery point targets, and should not treat a backup as reliable until a restore from it has actually been tested.
+
+### 3.5 Operations and Observability
+
+Functional testing shows that a feature works once, under the conditions that were tested; it does not show whether the team can detect or explain a problem that only appears in production. Observability is normally built from three types of information: logs, metrics and traces (Li et al., 2022). Logs explain what happened at a specific point, metrics show whether the system is healthy over time, and traces show where a request spent its time across components once the architecture is distributed enough for that to matter.
+
+Collecting this data is not enough on its own; the team also needs to know what it means. Alerts should focus on problems that are significant and actionable rather than every small change, otherwise the team can end up ignoring them (Puli, 2025). For CivicConnect, a dashboard is only useful if it is tied to a clear target, for example that requester-facing status updates should reliably reach the portal within the 15-second window required by NFR-002 (A2, Task 3).
+
+### 3.6 Operational Quality
+
+Reliability, performance, scalability, cost and supportability are connected and should not be treated as separate checklist items. A service-level objective turns a general reliability goal into a measurable target, together with an error budget the team can use to decide whether to prioritise new features or stability work in a given period (Puli, 2025).
+
+Performance and scalability claims need evidence from conditions that resemble real production traffic, not just correctness for a single test user, since an architecture that satisfies functional requirements does not automatically satisfy non-functional requirements such as response time under concurrent load (Shahin et al., 2019). Cost and supportability are easy to leave out of a research-stage discussion, but they matter in practice: a system that is reliable and fast but too expensive to run, or too complex for the team to operate and support, is not genuinely production-ready even if it passes every functional and load test.
+
+#### Production-Readiness Evidence Matrix
+
+| Concern                                                       | Risk if ignored                                                               | Evidence required before release                                                      | Evidence observed after release                                            |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Environment strategy and configuration parity                 | Changes may work in development but fail in production.                       | Development and staging environments are documented and kept close to production.     | No unexpected environment-specific failures after deployment.              |
+| Secrets and production configuration handling                 | Credentials or sensitive configuration may be exposed.                        | Secrets are stored outside source code and access is restricted.                      | Secret scanning and access reviews show no unexpected exposure.            |
+| Release and deployment automation                             | Manual deployment can introduce inconsistent or missed steps.                 | A repeatable build, test and deployment pipeline has been tested.                     | Deployment records show successful and repeatable releases.                |
+| Database migration compatibility and rollback                 | A failed migration may prevent the previous application version from working. | Migration and rollback procedures are tested against representative data.             | Failed changes can be recovered without losing required data.              |
+| Backup and disaster recovery                                  | Data may not be recoverable after a serious failure.                          | Backup, restore and recovery procedures are documented and tested.                    | Restore tests and recovery records demonstrate that backups remain usable. |
+| Observability, logs, metrics, monitoring and alerts           | Problems may occur without the team knowing what happened.                    | Relevant logs, metrics and alerts are configured and tested.                          | Monitoring shows system health and alerts identify significant problems.   |
+| Operational quality: reliability, performance and scalability | The system may meet functional requirements but fail under real usage.        | Reliability and performance targets are defined and tested under representative load. | Production measurements are compared against the defined targets.          |
+
+### 3.7 Critical Question
+
+> **Why can software that passes functional tests and runs successfully on a developer's machine still be unready for production?**
+
+Functional tests normally confirm that the expected behaviour works under the conditions that were tested. They do not necessarily show what will happen when the system is deployed into a different environment, receives concurrent requests, loses a dependency, or needs to recover from a failed deployment.
+
+A developer's machine can also have different configuration, dependency versions, database data and permissions from the production environment. Without deployment checks, monitoring, recovery procedures and performance evidence, a system can therefore appear to work correctly while still being difficult to operate or recover in production.
+
+
 
 ---
 ## Question 4
@@ -137,3 +196,10 @@ Transactions on Software Engineering and Methodology*, 31(1), pp. 1–74.
 * Trautsch, F., Herbold, S. and Grabowski, J. (2020) 'Are unit and integration test definitions still
 valid for modern Java projects? An empirical study on open-source projects', *Journal of Systems and
 Software*, 159, article 110421.
+* Koishybayev, I., Nahapetyan, A., Zachariah, R., Muralee, S., Reaves, B., Kapravelos, A. and Machiry, A. (2022) 'Characterizing the security of GitHub CI workflows', in *31st USENIX Security Symposium*, pp. 2747–2763.
+* Li, B., Peng, X., Xiang, Q., Wang, H., Xie, T., Sun, J. and Liu, X. (2022) 'Enjoy your observability: an industrial survey of microservice tracing and analysis', *Empirical Software Engineering*, 27(1), article 25.
+* Puli, B. (2025) 'Site reliability engineering (SRE) and observations on SRE process to make tasks easier', *arXiv preprint*, arXiv:2505.01926.
+* Qiu, D., Li, B. and Su, Z. (2013) 'An empirical analysis of the co-evolution of schema and code in database applications', in *Proceedings of the 2013 9th Joint Meeting on Foundations of Software Engineering (ESEC/FSE 2013)*, pp. 125–135.
+* Saleh, S.M., Madhavji, N. and Steinbacher, J. (2025) 'A systematic literature review on continuous integration and deployment (CI/CD) for secure cloud computing', *arXiv preprint*, arXiv:2506.08055.
+* Shahin, M., Babar, M.A. and Zhu, L. (2017) 'Continuous integration, delivery and deployment: a systematic review on approaches, tools, challenges and practices', *IEEE Access*, 5, pp. 3909–3943.
+* Shahin, M., Zahedi, M., Babar, M.A. and Zhu, L. (2019) 'An empirical study of architecting for continuous delivery and deployment', *Empirical Software Engineering*, 24(3), pp. 1061–1108.

@@ -7,7 +7,52 @@
 > * Mogau Malope 600192  
 ---
 ## Question 1
+## 1.1 QA, QC, Verification and Validation
 
+Four separate tasks must be covered by a quality approach. **Quality control** is product-oriented and investigative, **quality assurance** is process-oriented and preventative, **verification** is concerned with whether the product was constructed correctly in accordance with its specifications, and **validation** is concerned with whether the correct product was constructed for its intended purpose. They are not interchangeable: validation by itself may fail to identify internal flaws, while verification by itself may faithfully implement an incorrect specification. Additionally, the labels are not as trustworthy as they often are; Trautsch, Herbold, and Grabowski (2020) discovered that the traditional definitions of test levels are out of step with current developments. Therefore, the strategic challenge is not which activity is relevant, but which combination produces sufficient evidence for a given
+risk.
+
+## 1.2 Risk-Based Verification: What Earns Depth
+
+Suites outgrow the time and money available, therefore choosing which tests to run at all is an ongoing research problem because verifying everything is not an option. In their evaluation of machine-learning techniques for test case selection and prioritization, Pan et al. (2022) define it as integrating incomplete and flawed test case data into models that forecast which are most worthwhile to run.
+The same three factors influence the decision whether it is made by the team or by an automated system:
+
+- **Likelihood** — raised by complexity, concurrency, rate of change and defect history.
+- **Impact** — raised by data corruption, exposure of personal data, loss of an accountability record
+  or legal consequence.
+- **Business or technical criticality** — raised when the function sits on a core journey, other
+  components depend on it, or no workaround exists.
+
+*Team interpretation*: Detectability should be taken into consideration as a fourth factor. Since a quiet failure, like a lost update or an authorization gap, can last indefinitely, it deserves more consideration than likelihood and impact alone would indicate.
+
+*Limitation*: According to Pan et al. (2022), any method must be justified locally rather than imported because findings from prioritization studies are difficult to compare and significantly dependent on context. Additionally, any rating inherits the team's blind spots and becomes stale as the system changes.
+
+## 1.3 Comparing Complementary Forms of Verification Evidence
+
+| Form of evidence | Strong at exposing | What it cannot prove on its own |
+| --- | --- | --- |
+| **Static analysis and peer review** | Risky patterns in the artefact itself — missing checks, unsafe constructs — and defects in requirements and design before code exists | Run-time behaviour; it is blind to configuration, real data and business-rule correctness |
+| **Unit tests** | Logic defects inside one component, with the fastest and most precise fault localisation | That components work together; heavy mocking keeps a suite green while the assembled system fails |
+| **Integration / API tests** | Contract and interaction failures across a boundary, including access decisions taken at the endpoint | The end-user outcome; its meaning depends entirely on representative environments and data |
+| **End-to-end and performance tests** | Failures that appear only in the assembled system, or only under real volume and concurrency | Whether a journey is understandable; both are slow, brittle and prone to flakiness |
+
+There is a warning in the comparison. New definitions are required, according to Trautsch, Herbold, and Grabowski (2020), who discovered that neither unit nor integration tests were consistently better at identifying specific problem types in contemporary Java applications. Therefore, rather than making assumptions based on the test level name, evidence should be chosen based on the particular risk.
+
+
+## 1.4 Automation, Quality Gates and Their Limits
+
+Rather than insight, automation contributes repeatability: the same checks are performed on each modification, and the outcomes are preserved artifacts that may be linked to a progression choice. That evidence becomes consequential, a predetermined pass/fail condition in the pipeline, when a quality gate is used, and both its value and its risk come from the same source: Only what it encodes is asserted by a gate. The signal may not be audible. According to Parry et al. (2021), 59% of the developers they polled deal with flaky tests on a monthly, weekly, or daily basis, which directly reduces the degree to which a suite's conclusion can be accepted. Flaky tests are tests that fail inconsistently without any modification to the code under test. Conversely, coverage assesses execution as opposed to assertion. Once a threshold becomes a target, it is often met in the most economical manner possible. A gate is proof that certain requirements were met, never that they were sufficient.
+
+## 1.5 Critical Question
+
+> **Why is "all automated tests passed" insufficient evidence, by itself, to conclude that a software product is high quality or ready for release?**
+
+1. **It is a statement about a sample.** Because it is impossible to run everything, suites have already been chosen and prioritized (Pan et al., 2022), so a pass describes the behavior sampled rather than the behavior that really occurs.
+2. **It covers only encoded expectations.** The most detrimental flaws are in actions that no one could have predicted, such as an uncaptured requirement, an unhandled condition, or a missing authorization check.
+3. **Verification is not validation,** and the test level is not guaranteed by the test level (Trautsch et al., 2020). Green can only attest to the incorrect product's proper construction.
+4. **The signal itself may be unreliable.** Most developers frequently encounter flaky tests (Parry et al., 2021), unrepresentative data and skipped or quarantined tests remain undetectable in a pass/fail light. The suite does not address usability or other quality issues.
+
+## 1.6 Risk-to-Verification Evidence Map
 
 ---
 ## Question 2
@@ -74,7 +119,7 @@ A clean scanner result only demonstrates the absence of the specific, cataloged 
 ## Question 4
 | Research finding | Engineering concern it addresses | Candidate approach / evidence to consider | Trade-off / limitation found in research | Decision M3 must still make |
 | :--- | :--- | :--- | :--- | :--- |
-| 
+| Running every test is infeasible, so selection and prioritisation is itself an engineering decision. | Finite verification effort against uneven product risk | A documented scheme ranking features and quality concerns by likelihood, impact and criticality, with a depth of evidence per band | Results across prioritisation studies are hard to compare and context-dependent. Ratings inherit blind spots and go stale | Which CivicConnect requirements are risky enough to justify deeper evidence, on what scale, and who ratifies the rating? |
 
 ---
 ## References
@@ -83,4 +128,12 @@ A clean scanner result only demonstrates the absence of the specific, cataloged 
 * Pearce, H., Ahmad, B., Tan, B., Dolan-Gavitt, B. and Karri, R., 2025. Asleep at the keyboard? assessing the security of github copilot’s code contributions. Communications of the ACM, 68(2), pp.96-105.  
 * Perry, N., Srivastava, M., Kumar, D. and Boneh, D., 2023, November. Do users write more insecure code with ai assistants?. In Proceedings of the 2023 ACM SIGSAC conference on computer and communications security (pp. 2785-2799).  
 * Scandariato, R., Wuyts, K. and Joosen, W., 2015. A descriptive study of Microsoft’s threat modeling technique. Requirements Engineering, 20(2), pp.163-180.  
-* Shevchenko, N., Chick, T.A., O'riordan, P., Scanlon, T.P. and Woody, C., 2018. Threat modeling: a summary of available methods (No. AFLCMCAZS).  
+* Shevchenko, N., Chick, T.A., O'riordan, P., Scanlon, T.P. and Woody, C., 2018. Threat modeling: a summary of available methods (No. AFLCMCAZS). 
+* Pan, R., Bagherzadeh, M., Ghaleb, T.A. and Briand, L. (2022) 'Test case selection and prioritization
+using machine learning: a systematic literature review', Empirical Software Engineering, 27(2),
+article 29.
+* Parry, O., Kapfhammer, G.M., Hilton, M. and McMinn, P. (2021) 'A survey of flaky tests', *ACM
+Transactions on Software Engineering and Methodology*, 31(1), pp. 1–74.
+* Trautsch, F., Herbold, S. and Grabowski, J. (2020) 'Are unit and integration test definitions still
+valid for modern Java projects? An empirical study on open-source projects', *Journal of Systems and
+Software*, 159, article 110421.

@@ -7,3 +7,5 @@
 | Gerald Enright | Claude | Asked to identify how much of the project M1 is completed | yes | checked if the requirements mentioned exist in the provided documents | Rejected requirements that were not mentioned |
 | Gerald Enright | ChatGPT | Asked to find relevant sources for assignment 2 | yes | Checked if the sources exist and read through the introductions to determine if they were relevant | Rejected sources that were deemed irrelevant and sources older that 10 years |  
 | Mogau Malope | Perplexity| To find good and recent sources for information for database devlopment| yes | Readthroughb the sources for useful information to determine if they are relevant | Only 2 of the sources were used of the relevant site with relevant information|
+| Gerald Enright | Claude | Asked to identify how much of the project is completed | yes | checked if the requirements mentioned exist in the provided documents | Rejected requirements that were not mentioned |
+| Gerald Enright | Gemini | Asked to convert the PED from a Word Document to a markdown file | yes | Confirmed that the content remained unchanged | No changes or rejections were necessary |

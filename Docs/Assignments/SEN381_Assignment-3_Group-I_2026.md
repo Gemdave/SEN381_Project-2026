@@ -31,7 +31,7 @@ The same three factors influence the decision whether it is made by the team or 
 
 | Form of evidence | Strong at exposing | What it cannot prove on its own |
 | --- | --- | --- |
-| **Static analysis and peer review** | Risky patterns in the artefact itself — missing checks, unsafe constructs — and defects in requirements and design before code exists | Run-time behaviour; it is blind to configuration, real data and business-rule correctness |
+| **Static analysis and peer review** | Risky patterns in the artefact itself, missing checks, unsafe constructs and defects in requirements and design before code exists | Run-time behaviour; it is blind to configuration, real data and business-rule correctness |
 | **Unit tests** | Logic defects inside one component, with the fastest and most precise fault localisation | That components work together; heavy mocking keeps a suite green while the assembled system fails |
 | **Integration / API tests** | Contract and interaction failures across a boundary, including access decisions taken at the endpoint | The end-user outcome; its meaning depends entirely on representative environments and data |
 | **End-to-end and performance tests** | Failures that appear only in the assembled system, or only under real volume and concurrency | Whether a journey is understandable; both are slow, brittle and prone to flakiness |
@@ -53,7 +53,7 @@ Rather than insight, automation contributes repeatability: the same checks are p
 4. **The signal itself may be unreliable.** Most developers frequently encounter flaky tests (Parry et al., 2021), unrepresentative data and skipped or quarantined tests remain undetectable in a pass/fail light. The suite does not address usability or other quality issues.
 
 ### 1.6 Risk-to-Verification Evidence Map
-
+![Risk to Verification Evidence Map. Five example risks, each traced across five columns: the risk or quality concern, why it deserves deeper checking, the verification evidence chosen, what that evidence still cannot show, and the progression or quality gate decision it informs.](Diagrams/SEN381_A3_Fig1-1_Risk_to_Verification_Map.png)
 ---
 ## Question 2
 ### 2.1 Threat modelling: purpose and method

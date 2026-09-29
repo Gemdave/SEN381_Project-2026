@@ -1,68 +1,75 @@
-# ADR-006 REST interface between the browser and the backend
->**Status:** Proposed, awaiting team approval  
-**Owner:** Systems Architect and Backend Lead  
-**Builds on:** D-002  
-**Quality drivers:** ASR-05 for proportion, then ASR-02, ASR-06, ASR-04  
-**Research used:** Assignment 2, Task 3 on interfaces and integration. [insert final section reference]  
+# ADR-006 REST Interface Between the Browser and Backend
+
+> **Status:** Proposed, awaiting team approval
+> **Owner:** Systems Architect and Backend Lead
+> **Builds on:** D-002 and Task 3 API and integration decisions
+> **Quality drivers:** ASR-02, ASR-04, ASR-05, ASR-06
+> **Research used:** Assignment 2, Task 3 — APIs and Integration Decisions
 
 ## Problem
 
-ADR-001 puts a backend between the browser and the data, and ADR-005 makes that the place where permission is decided. The boundary needs a stated contract: what the browser may ask for, what comes back, and what happens when something is refused.
+ADR-001 places the backend between the browser and the database, while ADR-005 makes the backend responsible for access decisions. The system therefore needs a clear interface between the frontend and backend.
 
-Two behaviours make this more than routine. Validation failures must name each missing field, because AC-001.2 requires every missing field to be flagged rather than the form failing as a whole. And the accept conflict from ADR-002 needs its own outcome, because somebody else already owning a request is nothing like a malformed request.
+The Requester Portal needs to submit and view requests, while the Staff Panel needs to perform actions such as assigning requests and changing their status.
 
-There are no external integrations at this milestone. Email and text messages stay deferred under conflict C-4, so this is a contract between the team's own browser code and its own backend.
+The API also needs to handle validation errors, permission failures, privacy and conflicts in a consistent way.
 
 ## Options
 
-**A. REST with JSON over HTTPS.** Resource shaped addresses, ordinary status codes, familiar to the team, testable with plain tooling, and a natural fit for a pipeline that runs one permission check before each handler.
+**A. REST with JSON over HTTPS.** Resource-based endpoints and standard HTTP methods give the frontend a simple interface. The backend can handle validation and permission checks before any data is changed.
 
-**B. GraphQL.** Would suit the oversight views, which want different shapes of totals. It brings a schema layer and per resolver permission checks, which is harder to police than one check per route, and nobody on the team has used it (RSK-001).
+**B. GraphQL.** This could allow the frontend to request different data shapes, but it adds another technology and more setup than the current project requires.
 
-**C. Server rendered forms with no interface at all.** Fewest moving parts, but it clashes with ADR-004, which assumes a browser that fetches data and capabilities.
+**C. Server-rendered forms.** This would reduce some frontend work, but it does not fit the browser-based design used by the project.
 
-**D. One address per action, all posted.** Maps neatly onto accept and close, but gives up the uniform meanings and status codes that let a contract explain itself.
+**D. Separate endpoints for every action.** This can work for individual actions, but it would make the API less consistent and harder to maintain as more features are added.
 
 ## Decision
 
-Option A. REST with JSON over HTTPS, versioned at the front of the path as `/api/v1`.
+**Option A is selected.**
 
-**Operations**
+CivicConnect will use a REST API with JSON over HTTPS. API routes will be versioned under `/api/v1`.
 
-* Post `/requests` to submit, returning the reference and starting status (AC-001.1).
-* Get `/requests` to list, with scope applied on the server and filters as query values.
-* Get `/requests/{id}` for detail, returning the record plus the caller's capabilities for ADR-004.
-* Post `/requests/{id}/assignment` to accept. Assignment is its own thing, not a status field being written.
-* Patch `/requests/{id}/status` to move a request, checked against the allowed set.
-* Post `/requests/{id}/notes` to add a note. Append only, with no verb offered for changing or removing one.
-* Get `/categories` for the controlled list and `/reports/overview` for totals within scope.
+The main request operations will include:
 
-**Replies**
+* `POST /api/v1/requests` to submit a request.
+* `GET /api/v1/requests` to retrieve requests within the caller's allowed scope.
+* `GET /api/v1/requests/{id}` to retrieve a specific request.
+* `POST /api/v1/requests/{id}/assignment` to assign a request.
+* `PATCH /api/v1/requests/{id}/status` to change a request's status.
+* `POST /api/v1/requests/{id}/notes` to add a note.
+* `GET /api/v1/categories` to retrieve the controlled category list.
+* `GET /api/v1/reports/overview` for management reporting within the user's allowed scope.
 
-* 400 for validation, with one entry per failing field carrying the field and the message (AC-001.2, AC-002.2).
-* 401 when not signed in. 403 when not permitted. 404 when the record is outside the caller's scope, so the interface never confirms that somebody else's request exists.
-* 409 when another staff member already owns it, naming the owner where the caller may know (AC-011.2).
-* 422 for an invalid status move, naming the attempt and the allowed set (AC-012.2).
+The backend will validate requests before changing data and will check authorisation before returning protected information or performing protected actions.
 
-Every failure carries a stable code as well as a readable message, so the browser reacts to the code rather than matching text. New optional fields and new addresses ship inside v1. Anything removed or given a new meaning needs v2 and a new record.
+The API will use consistent responses:
+
+* `200` for a successful request.
+* `201` when a new resource is created.
+* `400` when the request is invalid.
+* `401` when authentication is required.
+* `403` when the user is not allowed to perform the action.
+* `404` when the requested resource cannot be found or is outside the caller's allowed scope.
+* `409` when the request conflicts with the current state, such as another staff member already assigning the request.
+* `422` when the request is understood but fails a business-rule validation.
+
+Validation responses should identify the fields that need correction rather than only returning a general failure.
+
+The API will not return another requester's information. Scope and permission checks will be applied by the backend.
+
+API changes will remain within version 1 when they are backwards compatible. A breaking change or change in meaning will require a new API version and an updated decision record.
 
 ## What it costs
 
-* Oversight views may need several calls where a query language would have taken one.
-* Returning 404 for scope failures makes a genuinely missing record harder to diagnose. The privacy is worth it.
-* The capability payload ties this contract to ADR-004, so the two change together.
-* Addresses multiply as features arrive, and each must register a permission check or ADR-005 refuses it.
-
-## Verification
-
-* Contract tests for each address covering success and each documented failure.
-* **TC-001.2** a missing field returns 400 naming that field.
-* **TC-011.2** the losing accept of a concurrent pair returns 409.
-* **TC-012.2** an invalid status move returns 422.
-* **TC-004.2** another requester's reference returns 404.
+* The backend needs to maintain and document the API contract.
+* Each endpoint needs its own validation and permission checks.
+* Versioning adds some maintenance when the API changes.
+* Returning `404` for requests outside the caller's scope can make a missing record harder to diagnose, but it avoids revealing whether another request exists.
 
 ## Evidence
 
-**RTM:** FR-001 to FR-005, FR-007 to FR-015, FR-017, FR-021.  
-**Requirements:** AC-001.1, AC-001.2, AC-002.2, AC-011.2, AC-012.2.  
-**Depends on:** ADR-001, ADR-002, ADR-005. **Feeds:** ADR-004.  
+**RTM:** FR-001 to FR-005, FR-007 to FR-015, FR-017, FR-021.
+**Requirements:** The request submission, validation, assignment, status-change and privacy requirements from Task 3.
+**Verification:** Test successful requests, validation failures, permission failures, privacy behaviour, concurrent assignment conflicts and invalid status changes.
+**Depends on:** ADR-001, ADR-002, ADR-005. **Feeds:** ADR-004.

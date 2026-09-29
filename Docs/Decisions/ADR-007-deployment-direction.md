@@ -1,4 +1,4 @@
-# ADR-007 One deployable unit with a managed database on a low cost plan
+# ADR-007
 
 **Status:** Proposed, awaiting team approval
 **Owner:** DevOps, Security and Quality Lead

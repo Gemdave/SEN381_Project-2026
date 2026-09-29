@@ -1,4 +1,4 @@
-# CivicConnect Requirements & Engineering Baseline (v2.0-2.1)
+# CivicConnect Requirements & Engineering Baseline (v2.0)
 
 **Authors:** Gerald Enright (577830) | Keletso Marota (601632) | Mogau Malope (600192)  
 **Course Code:** PEDSEN381  
@@ -194,43 +194,6 @@ The team deliberately defers email/SMS notifications beyond the baselined in-app
 > * **Source IDs:** ST-1 (Requester), ST-2 (Service Staff), ST-3 (Management), ST-4 (Administrator), ST-5 (Sponsor).
 > * **Priority (MoSCoW):** Must, Should, Could, Won't.
 > * **Status:** Baseline candidate, Baselined, Candidate / may defer.
-
-| ID | Source | Requirement | Acceptance Criteria | Priority | Status |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **FR-001** | ST-1 | Submit a new service request with the information needed to action it. | AC-001.1; AC-001.2 | Must | Baseline candidate |
-| **FR-002** | ST-1, ST-3 | Categorise the request from a controlled category list (not free text). | AC-002.1; AC-002.2 | Must | Baseline candidate |
-| **FR-003** | ST-1 | View the current status of a submitted request. | AC-003.1; AC-003.2 | Must | Baseline candidate |
-| **FR-004** | ST-1 | View a history/list of own previously submitted requests. | AC-004.1; AC-004.2 | Must | Baseline candidate |
-| **FR-005** | ST-1 | Search/filter own request history. | AC-005.1 | Should | Baseline candidate |
-| **FR-006** | ST-1, ST-2 | Attach supporting information to a request (e.g. a photo). | AC-006.1 | Could | Candidate may defer |
-| **FR-007** | ST-1 | Receive feedback when a request is accepted, rejected, updated or completed. | AC-007.1; AC-007.2 | Must | Baseline candidate |
-| **FR-008** | ST-2 | View the service requests relevant to authorised staff (staff queue). | AC-008.1; AC-008.2 | Must | Baseline candidate |
-| **FR-009** | ST-2 | Search, filter or sort requests using useful criteria. | AC-009.1; AC-009.2 | Must | Baseline candidate |
-| **FR-010** | ST-2 | View the full details of a request. | AC-010.1 | Must | Baseline candidate |
-| **FR-011** | ST-2 | Assign or accept responsibility for a request. | AC-011.1; AC-011.2 | Must | Baseline candidate |
-| **FR-012** | ST-2 | Update a request's status through controlled transitions. | AC-012.1; AC-012.2 | Must | Baseline candidate |
-| **FR-013** | ST-2 | Record actions, comments or resolution information on a request. | AC-013.1 | Must | Baseline candidate |
-| **FR-014** | ST-2 | Resolve or close requests where authorised. | AC-014.1; AC-014.2 | Must | Baseline candidate |
-| **FR-015** | ST-3 | View useful service-activity information (oversight overview). | AC-015.1 | Must | Baseline candidate |
-| **FR-016** | ST-3 | Identify open, overdue, resolved and closed requests. | AC-016.1; AC-016.2 | Must | Baseline candidate |
-| **FR-017** | ST-3 | View request information by category/status (or another justified dimension). | AC-017.1 | Must | Baseline candidate |
-| **FR-018** | ST-3 | Access enough information to support accountability and service-performance analysis. | AC-018.1; AC-018.2 | Should | Baseline candidate |
-| **FR-019** | ST-4 | Manage user accounts. | AC-019.1 | Must | Baseline candidate |
-| **FR-020** | ST-4 | Manage roles and permissions (RBAC). | AC-020.1; AC-020.2 | Must | Baseline candidate |
-| **FR-021** | ST-4 | Maintain the controlled category list. | AC-021.1 | Must | Baseline candidate |
-| **FR-022** | ST-4 | Access an audit trail of key controlled actions. | AC-022.1 | Should | Baseline candidate |
-| **FR-023** | ST-5 | Access high-level service-performance and accountability reporting. | AC-023.1 | Should | Baseline candidate |
-| **NFR-001** | ST-1 | Usability: first-time requester submits without training in $\le 5$ steps and $\le 5$ min. | Submission completes in $\le 5$ steps and $\le 5$ min, verified in usability testing. | Should | Baseline candidate |
-| **NFR-002** | ST-1 | Feedback timeliness: status/feedback visible within $\le 15$ sec of a staff change. | Feedback visible to requester $\le 15$ s after a staff status change. | Should | Baseline candidate |
-| **NFR-003** | ST-1 | Privacy: a requester can never view another requester's request. | Requester cannot access another's data (supports AC-004.2). | Must | Baseline candidate |
-| **NFR-004** | ST-2, ST-3 | Performance: staff queue and oversight views load quickly under load. | $\le 3$ s load time for 1,000 requests. | Should | Candidate |
-| **NFR-005** | ST-2 | Concurrency & integrity: no double-ownership or lost updates. | No duplicate ownership; atomic transitions (supports FR-011/012). | Must | Candidate |
-| **NFR-006** | ST-4 | Security / RBAC: every action authorised by role. | Unauthorised access denied (supports FR-008/014/020). | Must | Candidate |
-| **NFR-007** | ST-4 | Auditability: key actions recorded and tamper-evident. | Actor + timestamp, not silently altered (supports FR-013/022). | Must | Candidate |
-| **NFR-008** | ST-3, ST-5 | Reporting accuracy: reports reconcile with underlying records. | Zero discrepancy between reporting and data layer. | Should | Candidate |
-| **NFR-009** | ST-5 | Cost sustainability: run within free/low-cost tiers where practical. | Operates in free/low-cost tiers; cost documented. | Should | Candidate |
-
----
 
 ## CivicConnect: Requirements Traceability Matrix (RTM) v2.0
 

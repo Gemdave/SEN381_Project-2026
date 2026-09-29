@@ -1,4 +1,4 @@
-# CivicConnect Requirements & Engineering Baseline (v1.5)
+# CivicConnect Requirements & Engineering Baseline (v2.0-2.1)
 
 **Authors:** Gerald Enright (577830) | Keletso Marota (601632) | Mogau Malope (600192)  
 **Course Code:** PEDSEN381  
@@ -229,6 +229,68 @@ The team deliberately defers email/SMS notifications beyond the baselined in-app
 | **NFR-007** | ST-4 | Auditability: key actions recorded and tamper-evident. | Actor + timestamp, not silently altered (supports FR-013/022). | Must | Candidate |
 | **NFR-008** | ST-3, ST-5 | Reporting accuracy: reports reconcile with underlying records. | Zero discrepancy between reporting and data layer. | Should | Candidate |
 | **NFR-009** | ST-5 | Cost sustainability: run within free/low-cost tiers where practical. | Operates in free/low-cost tiers; cost documented. | Should | Candidate |
+
+---
+
+## CivicConnect: Requirements Traceability Matrix (RTM) v2.0
+
+**Evolved from v1.5:** Five decision columns and a reference column were added at M2; no M1 column was removed. The M1 column Design / Architecture ( M2) is now expanded into the ASR, architecture, data, and design/technology columns below.
+
+**Reading it:** Planned marks a controlled placeholder, not evidence means nothing is listed before the artefact exists. Slice 1 = current build slice; Later = approved, build not started; Blocked = awaiting a change request; Deferred = preserved, not dropped.
+
+| ID | Requirement | Source / Pri | AC | ASR | Design / Architecture (M2) | Data / Persistence (M2) | Design & Technology (M2) | Implementation & Test (-> M3) | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **FR-001** | Submit request | ST-1 / Must | AC-001.1; AC-001.2 | ASR-06 | UI.Requester.SubmitRequestForm -> POST /requests -> RequestService -> RequestRepository | Request row created (unique reference, status Received); Category FK; required fields NOT NULL | ADR-004 view composition; ADR-006 per-field validation errors; Stack pending ADR-003; PostgreSQL (candidate) | Slice 1: branch feature/fr-001-submit; migration 001_request -> TC-001.1 valid submit | Baselined |
+| **FR-002** | Controlled category list | ST-1, ST-3 / Must | AC-002.1; AC-002.2 | ASR-04; ASR-06 | Category selector -> GET /categories -> CategoryService -> CategoryRepository | Category reference table; Request.category_id FK NOT NULL; retired categories kept for history | ADR-004; ADR-006 reference-data endpoint; PostgreSQL (candidate) | Slice 1: seed migration 002_category -> TC-002.1 controlled values only | Baselined |
+| **FR-003** | View own status | ST-1 / Must | AC-003.1; AC-003.2 | ASR-06; ASR-01 | UI.Requester.RequestStatusView -> GET /requests/{id} | Request.status read only; constrained status vocabulary, not free text | ADR-004 read-only status display (resolves C-1); Pending ADR-003 | Slice 1 -> TC-003.1 plain-language status | Baselined |
+| **FR-004** | Own request history | ST-1 / Must | AC-004.1; AC-004.2 | ASR-02; ASR-06 | UI.Requester.RequestHistoryView -> GET /requests?mine -> AuthorisationPolicy | Query scoped by Request.requester_id; index on requester_id | ADR-005 server-side ownership scoping; ADR-004; Pending ADR-003; PostgreSQL | Slice 1 -> TC-004.1 own requests only | Baselined |
+| **FR-005** | Search own history | ST-1 / Should | AC-005.1 | ASR-04 | RequestHistoryView filters -> GET /requests?status= | Composite index (requester_id, status); pagination | ADR-004; ADR-006 query parameters; Pending ADR-003 | -> M3 | Baselined |
+| **FR-006** | Attachments | ST-1, ST-2 / Could | AC-006.1 | ASR-05 (cost/complexity) | Not allocated while deferred | Deliberately absent from the M2 schema; no Attachment entity or object storage | Deferred - no design decision taken; Deferred - storage not selected | -> M3 | Candidate - may defer |
+| **FR-007** | In-app feedback | ST-1 / Must | AC-007.1; AC-007.2 | ASR-06; ASR-05 | StatusTransitionService -> FeedbackService -> GET /feedback -> UI.Requester.FeedbackPanel | FeedbackItem written in the same transaction as the status change; rejection reason mandatory | ADR-002 same-transaction write; in-app pull only, no push; In-app only; no email/SMS (conflict C-4) | Slice 1: raised by the FR-012 path -> TC-007.1 visible within 15 s | Baselined |
+| **FR-008** | Staff queue | ST-2 / Must | AC-008.1; AC-008.2 | ASR-02; ASR-04 | UI.Staff.QueueView -> GET /requests/queue -> AuthorisationPolicy -> RequestRepository | Rows filtered by role/team/assignment; composite index (status, category, assigned_to) | ADR-005 policy check per query; ADR-004; Pending ADR-003 | Slice 1 -> TC-008.1 authorised rows only | Baselined |
+| **FR-009** | Filter / sort queue | ST-2 / Must | AC-009.1; AC-009.2 | ASR-04 | QueueView filter and sort controls -> API query parameters | Indexes on status, category, created_at; sort whitelist; pagination | ADR-006; Pending ADR-003 | -> M3 | Baselined |
+| **FR-010** | Full request detail | ST-2 / Must | AC-010.1 | ASR-02; ASR-03 | UI.Staff.RequestDetailView -> GET /requests/{id} -> AuthorisationPolicy | Request joined to RequestStatusHistory and action notes; attachments absent (FR-006 deferred) | ADR-005; ADR-006; Pending ADR-003 | Slice 1 -> TC-010.1 full detail including action history | Baselined |
+| **FR-011** | Assign / accept | ST-2 / Must | AC-011.1; AC-011.2 | ASR-01 (primary) | UI.Staff.ActionPanel -> POST /requests/{id}/assignment -> AssignmentService -> RequestRepository | assigned_to + assigned_at; single-owner invariant by conditional UPDATE ... WHERE assigned_to IS NULL; history row appended | ADR-002 layered responsibility + conditional update (A2 Task 2 evidence); ADR-006; PostgreSQL (candidate): transactional conditional update | Slice 1: branch feature/fr-011-assign-accept; AssignmentService; migration 003_assignment -> TC-011.1 accept records owner + timestamp | Baselined - M2 trace requirement |
+| **FR-012** | Controlled transitions | ST-2 / Must | AC-012.1; AC-012.2 | ASR-01; ASR-03 | ActionPanel -> PATCH /requests/{id}/status -> StatusTransitionService | Status constrained; RequestStatusHistory append-only (actor, from, to, timestamp); validated inside the transaction | ADR-002 explicit transition rules; ADR-006; PostgreSQL (candidate) | Slice 1 -> TC-012.1 valid transition recorded | Baselined |
+| **FR-013** | Action / resolution notes | ST-2 / Must | AC-013.1 | ASR-03 (primary) | ActionPanel -> POST /requests/{id}/notes -> HistoryRepository | Note rows append-only; no update or delete path exposed | ADR-002 append-only history; PostgreSQL (candidate) | Slice 1 -> TC-013.1 note saved with author + timestamp | Baselined |
+| **FR-014** | Resolve / close | ST-2 / Must | AC-014.1; AC-014.2 | ASR-01; ASR-02 | ActionPanel -> PATCH /status -> AuthorisationPolicy + StatusTransitionService + FeedbackService | Resolution information stored; feedback row written in the same transaction | ADR-002; ADR-005 close permission; Pending ADR-003 | -> M3 | Baselined |
+| **FR-015** | Oversight overview | ST-3 / Must | AC-015.1 | ASR-04 | UI.Management.OversightDashboard -> GET /reports/overview -> ReportingService | Aggregates computed from the transactional tables; no separate reporting store (NFR-008) | ADR-004; ADR-006; Pending ADR-003; PostgreSQL aggregates | -> M3 | Baselined |
+| **FR-016** | Open / overdue / closed | ST-3 / Must | AC-016.1; AC-016.2 | ASR-04 | OversightDashboard lifecycle filters -> ReportingService | Requires a target_response_at field on Request - schema addition pending CR-005 | ADR-004; PostgreSQL (candidate) | Blocked pending CR-005 | Changed - awaiting CR-005 |
+| **FR-017** | By category / status | ST-3 / Must | AC-017.1 | ASR-04 | OversightDashboard grouping -> ReportingService | Group-by on category and status with supporting indexes | ADR-004; ADR-006; PostgreSQL (candidate) | -> M3 | Baselined |
+| **FR-018** | Performance information | ST-3 / Should | AC-018.1; AC-018.2 | ASR-04 | UI.Management.ReportView -> GET /reports/performance -> ReportingService | Metrics derived from request and history tables; export scope pending CR-006 | ADR-004; Pending ADR-003 | -> M3 | Baselined - export per CR-006 |
+| **FR-019** | Manage users | ST-4 / Must | AC-019.1 | ASR-02 | UI.Admin.UserAdminView -> /admin/users -> UserRoleService | User entity with active flag; deactivation blocks sign-in; no hard delete (audit retention) | ADR-005 identity and authorisation model; Pending ADR-003 and ADR-005 | -> M3 | Baselined |
+| **FR-020** | Roles / permissions | ST-4 / Must | AC-020.1; AC-020.2 | ASR-02 (primary) | UI.Admin.RoleAdminView -> /admin/roles -> AuthorisationPolicy (single decision point) | Role, Permission and UserRole tables; permission checks resolved server-side | ADR-005 design decision 2: RBAC policy enforcement; Pending ADR-003 | Slice 1: enforcement path (admin UI later) - TC-020.1 role grants match actions | Baselined |
+| **FR-021** | Maintain category list | ST-4 / Must | AC-021.1 | ASR-04 | UI.Admin.CategoryAdminView -> /admin/categories -> CategoryService | Category rows editable with retire flag; submission form reads the current list, no code change | ADR-006 reference-data endpoint; PostgreSQL (candidate) | -> M3 | Baselined |
+| **FR-022** | Audit trail | ST-4 / Should | AC-022.1 | ASR-03 | UI.Admin audit view -> /admin/audit -> AuditService | Reads append-only history/audit tables; tamper-evident, no update path exposed | ADR-002 append-only; ADR-005 read permission; PostgreSQL (candidate) | Write path begins in Slice 1; read view -> M3 | Baselined |
+| **FR-023** | Sponsor reporting | ST-5 / Should | AC-023.1 | ASR-04 | Reuse UI.Management.ReportView at summary scope (access model pending CR-007) | Same aggregates as FR-018 with a narrower scope; no additional entity | ADR-004; Pending ADR-003 | -> M3 | Baselined - access model per CR-007 |
+| **NFR-001** | Usability <= 5 steps / 5 min | ST-1 / Should | ≤ 5 steps and ≤ 5 min (usability test) | ASR-06 | UI.Requester submission flow (single guided form) | No schema impact | ADR-004 one guided flow with per-field validation; Pending ADR-003 (frontend) | Slice 1: requester UI -> TC-N001 moderated walkthrough, 3 first-time users | Baselined |
+| **NFR-002** | Feedback <= 15 s | ST-1 / Should | ≤ 15 s after a staff status change (measured) | ASR-06 | FeedbackService write + UI.Requester refresh path | FeedbackItem written in the same transaction as the status change | ADR-002 pull-based refresh; no push infrastructure; Pending ADR-003 | Slice 1 -> TC-N002 timed observation after an FR-012 transition | Changed - confirmed by CR-001 |
+| **NFR-003** | Requester privacy | ST-1 / Must | Access-control test; supports AC-004.2 | ASR-02 | AuthorisationPolicy + ownership-scoped repository queries | requester_id scoping on every request read; no unscoped read path | ADR-005; Pending ADR-003 | Slice 1 -> TC-N003 negative access test using a direct reference ID | Baselined |
+| **NFR-004** | <= 3 s at 1,000 requests | ST-2, ST-3 / Should | ≤ 3 s for 1,000 requests (confirm target) | ASR-04 | Queue and oversight query paths (RequestRepository, ReportingService) | Indexing and pagination; aggregates read from the same store | ADR-002; ADR-006; PostgreSQL (candidate) | Seed script for 1,000 requests - planned -> TC-N004 timed load against the seeded dataset | Changed - target confirmed by CR-002 |
+| **NFR-005** | Concurrency & integrity | ST-2 / Must | No two owners; atomic transitions (supports FR-011/012) | ASR-01 | AssignmentService + StatusTransitionService behind the API boundary | Conditional update / optimistic concurrency; single-owner invariant enforced at database level | ADR-002 (A2 Task 2 research evidence); PostgreSQL (candidate): transactions required | Slice 1 -> TC-011.2 concurrent accept | Baselined - M2 trace requirement |
+| **NFR-006** | RBAC on every action | ST-4 / Must | Unauthorised access denied (supports FR-008/014/020) | ASR-02 | AuthorisationPolicy as the single authorisation decision point | Role and permission tables; checks never rely on UI state | ADR-005; Pending ADR-003 | Slice 1 -> TC-N006 role matrix negative tests per endpoint | Baselined |
+| **NFR-007** | Auditability | ST-4 / Must | Actor+timestamp, not silently altered (supports FR-013/022) | ASR-03 | AuditService and append-only history writes on every controlled action | Append-only tables; no UPDATE or DELETE endpoints over history rows | ADR-002; PostgreSQL (candidate) | Slice 1: history writes -> TC-N007 entry present per action | Baselined |
+| **NFR-008** | Reporting accuracy | ST-3, ST-5 / Should | No discrepancy between report and data | ASR-04 | ReportingService reading the transactional tables | Aggregates computed from source tables; no duplicated store to drift | ADR-001 no separate reporting database; PostgreSQL (candidate) | -> M3 | Baselined |
+| **NFR-009** | Cost sustainability | ST-5 / Should | Runs within free/low-cost tiers; cost documented | ASR-05 | Whole solution deployed as a single deployable unit | One managed PostgreSQL instance on a free or low-cost tier; backup limits recorded | ADR-007 deployment direction; Pending ADR-003 and ADR-007 | Hosting spike - planned -> TC-N009 cost sheet checked against tier limits | Baselined |
+
+**Demonstration trace:** FR-011 → ASR-01 → AssignmentService behind the API boundary (ADR-001) → conditional-update persistence decision → endpoint contract (ADR-006) → implementation → TC-011.2 accept test.
+
+### Controlled changes raised against the M1 baseline
+
+| CR | Affects | Requested change |
+| :--- | :--- | :--- |
+| **CR-001** | NFR-002 | Confirm feedback latency as 15 s; correct the M1 'Z sec' wording. |
+| **CR-002** | NFR-004 | Confirm 3 s at 1,000 seeded requests; record the seeding method. |
+| **CR-003** | NFR-006, FR-020, D-004 | Close the authentication and authorisation decision. |
+| **CR-004** | FR-011 (AC-011.2) | Confirm reassignment rules for an already-owned request. |
+| **CR-005** | FR-016 (AC-016.2) | Add a target-response field so 'overdue' is definable. |
+| **CR-006** | FR-018 (AC-018.2) | Decide whether reporting export is in scope or deferred. |
+| **CR-007** | FR-023 | Confirm sponsor view: dedicated or reuse management reporting. |
+| **CR-008** | FR-002, FR-021 | Confirm the initial controlled category list content. |
+
+### Decisions referenced above
+
+**ADR-001** architecture selection (continues D-001/D-002, R2) · **ADR-002** persistence and data integrity (R2) · **ADR-003** technology stack, supersedes D-003 (R3) · **ADR-004** design decision 1, role-based view composition (R1) · **ADR-005** design decision 2, RBAC policy and API security boundary, supersedes D-004 via CR-003 (R3) · **ADR-006** API contract, validation and errors (R2) · **ADR-007** deployment direction (R3). Superseded M1 entries stay in the Engineering Decision Log with their reason for change.
 
 ---
 

@@ -1,6 +1,5 @@
 # ADR-007
-
-**Status:** Proposed, awaiting team approval  
+>**Status:** Proposed, awaiting team approval  
 **Owner:** DevOps, Security and Quality Lead  
 **Quality drivers:** ASR-05 first, then ASR-01, ASR-04  
 **Risks touched:** RSK-005, RSK-006, RSK-014, RSK-015, RSK-020  
@@ -60,5 +59,5 @@ What constrains it is the sponsor's cost ceiling (NFR-009), a team of three with
 * The environment variable list actually required to run the app is documented in the README and matches what Render's dashboard has configured — no undocumented configuration key.
 
 ## Evidence
-**RTM:** NFR-004, NFR-009, and every implementation row depends on this.
-**Depends on:** ADR-001, ADR-003 (Proposed).
+**RTM:** NFR-004, NFR-009, and every implementation row depends on this.  
+**Depends on:** ADR-001, ADR-003 (Proposed).  

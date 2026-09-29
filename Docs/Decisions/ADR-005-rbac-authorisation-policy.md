@@ -1,13 +1,11 @@
-# ADR-005 One authorisation policy for roles and ownership
-
-**Design pattern decision 2 of 2.**
-
-**Status:** Proposed, awaiting team approval
-**Owner:** DevOps, Security and Quality Lead
-**Replaces:** D-004, through change request CR-003
-**Quality drivers:** ASR-02 first, then ASR-01, ASR-03
-**Risks touched:** RSK-011, RSK-012
-**Research used:** Assignment 2, Task 1 on design quality and design patterns.
+# ADR-005 One authorization policy for roles and ownership
+>**Design pattern decision 2 of 2.**  
+**Status:** Proposed, awaiting team approval  
+**Owner:** DevOps, Security and Quality Lead  
+**Replaces:** D-004, through change request CR-003  
+**Quality drivers:** ASR-02 first, then ASR-01, ASR-03  
+**Risks touched:** RSK-011, RSK-012  
+**Research used:** Assignment 2, Task 1 on design quality and design patterns.  
 
 ## Problem
 
@@ -34,8 +32,8 @@ The second kind cannot be answered from the role alone, because the answer depen
 Option C, refusing by default.
 
 1. One policy component runs in the request pipeline before any protected handler. A route with no policy is refused rather than allowed, so forgetting one breaks a feature loudly instead of opening a door quietly.
-2. Roles and permissions are stored as data, so granting a role changes behaviour without changing code (AC-020.1).
-3. Lists are filtered in the query, not after it. The repository receives the caller's scope and applies it, so unauthorised rows never load (AC-004.2, AC-008.2).
+2. Roles and permissions are stored as data, so granting a role changes behavior without changing code (AC-020.1).
+3. Lists are filtered in the query, not after it. The repository receives the caller's scope and applies it, so unauthorized rows never load (AC-004.2, AC-008.2).
 4. The same policy issues the capability object ADR-004 consumes, so what the interface shows and what the server allows come from one place.
 5. Decisions on controlled actions are written to history with the actor, which gives NFR-007 its record.
 
@@ -59,7 +57,7 @@ How people sign in is a separate matter, still open under CR-003. For the first 
 
 ## Evidence
 
-**RTM:** FR-004, FR-008, FR-010, FR-014, FR-019, FR-020, FR-022, NFR-003, NFR-006.
-**Requirements:** AC-004.2, AC-008.2, AC-014.2, AC-020.1, AC-020.2.
-**Change requests:** CR-003, which closes D-004.
-**Depends on:** ADR-001. **Feeds:** ADR-004 for capabilities, ADR-006 for refusal behaviour.
+**RTM:** FR-004, FR-008, FR-010, FR-014, FR-019, FR-020, FR-022, NFR-003, NFR-006.  
+**Requirements:** AC-004.2, AC-008.2, AC-014.2, AC-020.1, AC-020.2.  
+**Change requests:** CR-003, which closes D-004.  
+**Depends on:** ADR-001. **Feeds:** ADR-004 for capabilities, ADR-006 for refusal behavior.  

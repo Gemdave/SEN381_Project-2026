@@ -1,10 +1,9 @@
 # ADR-006 REST interface between the browser and the backend
-
-**Status:** Proposed, awaiting team approval
-**Owner:** Systems Architect and Backend Lead
-**Builds on:** D-002
-**Quality drivers:** ASR-05 for proportion, then ASR-02, ASR-06, ASR-04
-**Research used:** Assignment 2, Task 3 on interfaces and integration. [insert final section reference]
+>**Status:** Proposed, awaiting team approval  
+**Owner:** Systems Architect and Backend Lead  
+**Builds on:** D-002  
+**Quality drivers:** ASR-05 for proportion, then ASR-02, ASR-06, ASR-04  
+**Research used:** Assignment 2, Task 3 on interfaces and integration. [insert final section reference]  
 
 ## Problem
 
@@ -64,6 +63,6 @@ Every failure carries a stable code as well as a readable message, so the browse
 
 ## Evidence
 
-**RTM:** FR-001 to FR-005, FR-007 to FR-015, FR-017, FR-021.
-**Requirements:** AC-001.1, AC-001.2, AC-002.2, AC-011.2, AC-012.2.
-**Depends on:** ADR-001, ADR-002, ADR-005. **Feeds:** ADR-004.
+**RTM:** FR-001 to FR-005, FR-007 to FR-015, FR-017, FR-021.  
+**Requirements:** AC-001.1, AC-001.2, AC-002.2, AC-011.2, AC-012.2.  
+**Depends on:** ADR-001, ADR-002, ADR-005. **Feeds:** ADR-004.  

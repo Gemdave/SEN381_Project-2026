@@ -1,6 +1,5 @@
 # ADR-003 Technology stack
-
-**Status:** Incomplete. The team has to record its actual choice before this becomes Proposed.  
+>**Status:** Incomplete. The team has to record its actual choice before this becomes Proposed.  
 **Owner:** DevOps, Security and Quality Lead  
 **Replaces:** D-003  
 **Quality drivers:** ASR-05 first, then ASR-01, ASR-02, ASR-04  
@@ -57,5 +56,6 @@ Test framework: xUnit.net, with Testcontainers for .NET for integration tests th
 | App hosting | Render (Free tier, Docker) | — | Proprietary SaaS, $0 at Free tier | render.com/articles/platforms-with-a-real-free-tier-for-developers-in-2026, accessed 29 Sept 2026 |
 | CI | GitHub Actions | — | Free minutes included with the existing GitHub repository plan | github.com pricing |
 
-**RTM:** FR-001, FR-002, FR-003, FR-004, FR-005, FR-008, FR-009, FR-010, FR-011, FR-012, FR-013, FR-014, FR-015, FR-016, FR-017, FR-018, FR-019, FR-020, FR-021, FR-022, FR-023, NFR-001, NFR-002, NFR-003, NFR-004, NFR-005, NFR-006, NFR-007, NFR-008, NFR-009
-**Depends on:** ADR-001. **Blocks:** ADR-007 and all implementation evidence.
+**RTM:** FR-001, FR-002, FR-003, FR-004, FR-005, FR-008, FR-009, FR-010, FR-011, FR-012, FR-013, FR-014, FR-015, FR-016, FR-017, FR-018, FR-019, FR-020, FR-021, FR-022, FR-023, NFR-001, NFR-002, NFR-003, NFR-004, NFR-005, NFR-006, NFR-007, NFR-008, NFR-009  
+**Depends on:** ADR-001.  
+**Blocks:** ADR-007 and all implementation evidence.  

@@ -1,10 +1,9 @@
 # ADR-001 Layered modular monolith as one deployable unit
-
-**Status:** Proposed, awaiting team approval
-**Owner:** Systems Architect and Backend Lead
-**Builds on:** D-001, D-002 in the PED decision log
-**Quality drivers:** ASR-01, ASR-02, ASR-03, ASR-04, ASR-05
-**Risks touched:** RSK-001, RSK-015
+>**Status:** Proposed, awaiting team approval  
+**Owner:** Systems Architect and Backend Lead  
+**Builds on:** D-001, D-002 in the PED decision log  
+**Quality drivers:** ASR-01, ASR-02, ASR-03, ASR-04, ASR-05  
+**Risks touched:** RSK-001, RSK-015  
 
 ## Problem
 
@@ -37,7 +36,7 @@ Reporting reads the same tables the requests live in, so management figures cann
 
 ## Evidence
 
-**RTM:** every row. The architecture column places each requirement in a module.
-**Requirements:** NFR-003, NFR-004, NFR-005, NFR-007, NFR-008, NFR-009.
-**Verification:** reviewed at the architecture walkthrough against ASR-01 to ASR-06. Layer direction is checked in review, and is a candidate for an automated check once a build exists.
+**RTM:** every row. The architecture column places each requirement in a module.  
+**Requirements:** NFR-003, NFR-004, NFR-005, NFR-007, NFR-008, NFR-009.  
+**Verification:** reviewed at the architecture walkthrough against ASR-01 to ASR-06. Layer direction is checked in review, and is a candidate for an automated check once a build exists.  
 **Depends on this record:** ADR-002, ADR-005, ADR-006, ADR-007.

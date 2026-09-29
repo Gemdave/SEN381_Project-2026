@@ -1,12 +1,10 @@
 # ADR-004 Role based view composition
-
-**Design pattern decision 1 of 2.**
-
-**Status:** Proposed, awaiting team approval
-**Owner:** Requirements Lead and Frontend Engineer
-**Quality drivers:** ASR-06 first, then ASR-02, ASR-04
-**Risks touched:** RSK-011, RSK-016
-**Research used:** Assignment 2, Task 1 on design quality and design patterns.
+>**Design pattern decision 1 of 2.**  
+**Status:** Proposed, awaiting team approval  
+**Owner:** Requirements Lead and Frontend Engineer  
+**Quality drivers:** ASR-06 first, then ASR-02, ASR-04  
+**Risks touched:** RSK-011, RSK-016  
+**Research used:** Assignment 2, Task 1 on design quality and design patterns.  
 
 ## Problem
 
@@ -60,7 +58,7 @@ Contract: the capability payload served with the request resource by ADR-006.
 
 ## Evidence
 
-**RTM:** FR-001 to FR-005, FR-008, FR-010, FR-015 to FR-021, FR-023, NFR-001, NFR-003.
-**Requirements:** AC-003.1, AC-003.2, AC-004.2, and stakeholder conflict C-1.
-**Change requests:** CR-007 on the sponsor view.
-**Works with:** ADR-005 for enforcement, ADR-006 for the payload.
+**RTM:** FR-001 to FR-005, FR-008, FR-010, FR-015 to FR-021, FR-023, NFR-001, NFR-003.  
+**Requirements:** AC-003.1, AC-003.2, AC-004.2, and stakeholder conflict C-1.  
+**Change requests:** CR-007 on the sponsor view.  
+**Works with:** ADR-005 for enforcement, ADR-006 for the payload.  

@@ -1,11 +1,10 @@
 # ADR-002 Conditional update and append only history
-
-**Status:** Proposed, awaiting team approval
-**Owner:** Systems Architect and Backend Lead
-**Replaces part of:** D-003, for the database choice
-**Quality drivers:** ASR-01, ASR-03, ASR-04
-**Risks touched:** RSK-009, RSK-010, RSK-013
-**Research used:** Assignment 2, Task 2 on persistence and data integrity. [insert final section reference]
+>**Status:** Proposed, awaiting team approval  
+**Owner:** Systems Architect and Backend Lead  
+**Replaces part of:** D-003, for the database choice  
+**Quality drivers:** ASR-01, ASR-03, ASR-04  
+**Risks touched:** RSK-009, RSK-010, RSK-013  
+**Research used:** Assignment 2, Task 2 on persistence and data integrity. [insert final section reference]  
 
 ## Problem
 
@@ -55,6 +54,6 @@ CR-004 must settle whether an owned request can be reassigned and by whom. If it
 
 ## Evidence
 
-**RTM:** FR-007, FR-011, FR-012, FR-013, FR-014, FR-022, NFR-005, NFR-007, NFR-008.
-**Requirements:** AC-011.2, AC-012.1, AC-012.2, AC-013.1.
-**Depends on:** ADR-001. **Feeds:** ADR-006 for the conflict response.
+**RTM:** FR-007, FR-011, FR-012, FR-013, FR-014, FR-022, NFR-005, NFR-007, NFR-008.  
+**Requirements:** AC-011.2, AC-012.1, AC-012.2, AC-013.1.  
+**Depends on:** ADR-001. **Feeds:** ADR-006 for the conflict response.  

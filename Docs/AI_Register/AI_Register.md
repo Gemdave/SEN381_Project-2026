@@ -10,3 +10,4 @@
 | Gerald Enright | Claude | Asked to identify how much of the project is completed | yes | checked if the requirements mentioned exist in the provided documents | Rejected requirements that were not mentioned |
 | Gerald Enright | Gemini | Asked to convert the PED from a Word Document to a markdown file | yes | Confirmed that the content remained unchanged | No changes or rejections were necessary |
 | Gerald Enright | Claude | Asked to help identify risks present in the project | yes | Read through the risks one by one and discussed with the team | Changed risks that were determined to be inaccurate and removed risks that were determined to be irrelevant |
+| Gerald Enright | ChatGPT | Asked to identify which risks require updating | yes | Read the risks that were highlighted and evaluated if the topics were changed | Rejected any updates regarding risks that were not affected |

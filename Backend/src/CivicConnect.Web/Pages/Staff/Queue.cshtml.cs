@@ -30,7 +30,7 @@ public class QueueModel(RequestService requests, PageUserAccessor pageUser) : Pa
 
         try
         {
-            var page = await requests.QueueAsync(user, Status, null, "created", page: 1, pageSize: 20, ct);
+            var page = await requests.QueueAsync(user, Status, null, "created", page: 1, pageSize: 20, ct: ct);
             Items = page.Items;
             Total = page.Total;
             return Page();

@@ -20,7 +20,9 @@ public sealed class CapabilityFactory(AuthorisationPolicy policy)
         var owns = request.AssignedTo == user.Id;
         var canTransition = owns && user.Permissions.Contains(Permissions.UpdateStatus);
 
-        var next = canTransition ? Allowed(user, request.Status) : [];
+        // Explicitly typed: a collection expression needs a target type, and a
+        // conditional assigned to var does not give it one.
+        IReadOnlyList<RequestStatus> next = canTransition ? Allowed(user, request.Status) : [];
 
         return new RequestCapabilities(
             CanAccept: canAccept,

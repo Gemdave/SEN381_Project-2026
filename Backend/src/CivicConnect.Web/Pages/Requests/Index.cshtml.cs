@@ -30,7 +30,7 @@ public class IndexModel(RequestService requests, PageUserAccessor pageUser) : Pa
 
         try
         {
-            var page = await requests.ListOwnAsync(user, Status, page: 1, pageSize: 20, ct);
+            var page = await requests.ListOwnAsync(user, Status, page: 1, pageSize: 20, ct: ct);
             Items = page.Items;
             Total = page.Total;
             return Page();

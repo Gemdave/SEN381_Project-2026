@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] | CivicConnect</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <header>
+        <a class="brand" href="/">CivicConnect</a>
+        <nav>
+            <a href="/Requests/Submit">Submit a request</a>
+            <a href="/Requests">My requests</a>
+            <a href="/Staff/Queue">Staff queue</a>
+        </nav>
+    </header>
+    <main>
+        @if (ViewData["Message"] is string message && message.Length > 0)
+        {
+            <p class="message">@message</p>
+        }
+        @RenderBody()
+    </main>
+    <footer>
+        <small>Milestone 2 build. Sign in is a development placeholder while CR-003 is open.</small>
+    </footer>
+</body>
+</html>

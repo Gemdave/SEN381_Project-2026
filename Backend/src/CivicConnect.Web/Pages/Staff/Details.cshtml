@@ -1,0 +1,46 @@
+@page
+@model CivicConnect.Web.Pages.Staff.DetailsModel
+@{
+    ViewData["Title"] = Model.Request!.Reference;
+}
+
+<h1>@Model.Request!.Title</h1>
+
+<partial name="_RequestFields" model="Model.Request" />
+
+@*
+    ADR-004: a control is drawn only when the capability is present, and the
+    handler asks the authorisation policy again when the form is posted.
+*@
+<div class="actions">
+    @if (Model.Capabilities.CanAccept)
+    {
+        <form method="post" asp-page-handler="Accept">
+            <input type="hidden" name="id" value="@Model.Request!.Id" />
+            <button type="submit">Accept this request</button>
+        </form>
+    }
+
+    @if (Model.Capabilities.CanTransition)
+    {
+        <form method="post" asp-page-handler="Transition" class="inline">
+            <input type="hidden" name="id" value="@Model.Request!.Id" />
+            <label for="next">Move to</label>
+            <select id="next" name="next">
+                @foreach (var status in Model.Capabilities.NextStatuses)
+                {
+                    <option value="@status">@StatusRules.Display(status)</option>
+                }
+            </select>
+            <button type="submit" class="secondary">Update status</button>
+        </form>
+    }
+</div>
+
+@if (Model.Capabilities.CanSeeInternals)
+{
+    <h2>Action history</h2>
+    <partial name="_HistoryList" model="Model.History" />
+}
+
+<p><a href="/Staff/Queue">Back to the queue</a></p>

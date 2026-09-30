@@ -1,9 +1,8 @@
-using CivicConnect.Application.Abstractions;
-using CivicConnect.Application.Requests;
 using CivicConnect.Application.Results;
 using CivicConnect.Domain.Access;
 using CivicConnect.Domain.ReferenceData;
 using CivicConnect.Domain.Requests;
+using CivicConnect.Application.Requests;
 using CivicConnect.Infrastructure.Persistence;
 using CivicConnect.Infrastructure.Persistence.Repositories;
 using CivicConnect.Infrastructure.Security;
@@ -12,12 +11,12 @@ using Xunit;
 namespace CivicConnect.IntegrationTests;
 
 /// <summary>
-/// TC-011.2. This is the verification evidence for the M2 demonstration trace:
-/// FR-011, ASR-01, NFR-005, AC-011.2.
+/// TC-011.2, the verification evidence for the M2 demonstration trace:
+/// FR-011, ASR-01, NFR-005, AC-011.2. Skipped when no test database is set.
 /// </summary>
 public class ConcurrentAcceptTests(TestDatabaseFixture fixture) : IClassFixture<TestDatabaseFixture>
 {
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Exactly_one_of_eight_simultaneous_accepts_succeeds()
     {
         const int attempts = 8;
@@ -76,7 +75,6 @@ public class ConcurrentAcceptTests(TestDatabaseFixture fixture) : IClassFixture<
         Assert.NotNull(stored.AssignedToUserId);
         Assert.Equal(RequestStatus.Assigned, stored.Status);
 
-        // One accept, one history row. AC-013.1 and NFR-007.
         var history = check.RequestHistory.Where(h => h.RequestId == requestId).ToList();
         Assert.Single(history);
         Assert.Equal("Assigned", history[0].Action);

@@ -1,0 +1,9 @@
+@model CivicConnect.Web.Models.StaffQueueItem
+
+<article class="request-summary">
+    <a href="/Staff/Details?id=@Model.Id">@Model.Reference</a>
+    <h3>@Model.Title</h3>
+    <status-badge status="@Model.Status"></status-badge>
+    <span class="category">@Model.Category</span>
+    <time datetime="@Model.CreatedAtUtc.ToString("o")">@Model.CreatedAtUtc.ToString("u")</time>
+</article>

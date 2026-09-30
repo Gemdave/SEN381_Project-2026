@@ -1,0 +1,29 @@
+@page
+@model CivicConnect.Web.Pages.Staff.DetailsModel
+@{
+    ViewData["Title"] = "Request " + Model.Reference;
+}
+
+<h1>@Model.Reference</h1>
+<h2>@Model.Title</h2>
+<status-badge status="@Model.Status"></status-badge>
+
+@if (Model.Message is not null)
+{
+    <p class="message">@Model.Message</p>
+}
+
+<p>@Model.Description</p>
+
+@* ADR-004: the control appears only when the capability is present, and the
+   handler authorises the action again on post. *@
+@if (Model.Capabilities.CanAccept)
+{
+    <form method="post" asp-page-handler="Accept">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <button type="submit">Accept this request</button>
+    </form>
+}
+
+<h3>Action history</h3>
+<partial name="_HistoryList" model="Model.History" />

@@ -1,0 +1,243 @@
+openapi: 3.0.3
+info:
+  title: CivicConnect API
+  version: "1.0"
+  description: Build Slice 1 contract. Errors are application/problem+json.
+servers:
+  - url: /api/v1
+paths:
+  /categories:
+    get:
+      summary: Active categories
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Category" }
+  /requests:
+    post:
+      summary: Submit a request (FR-001)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/NewRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Request" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+    get:
+      summary: My requests (FR-004, FR-005)
+      parameters:
+        - { name: status, in: query, schema: { $ref: "#/components/schemas/Status" } }
+        - { $ref: "#/components/parameters/page" }
+        - { $ref: "#/components/parameters/pageSize" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RequestPage" }
+  /requests/queue:
+    get:
+      summary: Staff queue (FR-008, FR-009)
+      parameters:
+        - { name: status, in: query, schema: { $ref: "#/components/schemas/Status" } }
+        - { name: categoryId, in: query, schema: { type: integer } }
+        - name: sort
+          in: query
+          schema: { type: string, enum: [created, -created, status, category] }
+        - { $ref: "#/components/parameters/page" }
+        - { $ref: "#/components/parameters/pageSize" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RequestPage" }
+        "403": { $ref: "#/components/responses/Problem" }
+  /requests/{id}:
+    get:
+      summary: One request (FR-003, FR-010)
+      parameters: [ { $ref: "#/components/parameters/id" } ]
+      responses:
+        "200":
+          description: Requester gets the request; staff also get history and notes
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RequestDetail" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /requests/{id}/assignment:
+    post:
+      summary: Accept a request (FR-011)
+      parameters: [ { $ref: "#/components/parameters/id" } ]
+      responses:
+        "200":
+          description: Assigned to the caller
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Request" }
+        "409": { $ref: "#/components/responses/Problem" }
+  /requests/{id}/status:
+    patch:
+      summary: Move a request to its next status (FR-012, FR-014)
+      parameters: [ { $ref: "#/components/parameters/id" } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StatusChange" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Request" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+  /requests/{id}/notes:
+    post:
+      summary: Add a note (FR-013)
+      parameters: [ { $ref: "#/components/parameters/id" } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                body: { type: string, minLength: 1, maxLength: 2000 }
+      responses:
+        "201":
+          description: Saved
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Note" }
+  /feedback:
+    get:
+      summary: My feedback (FR-007)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Feedback" }
+  /feedback/{id}/read:
+    post:
+      summary: Mark feedback as read
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        "204": { description: Marked }
+        "404": { $ref: "#/components/responses/Problem" }
+components:
+  parameters:
+    id: { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    page: { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+    pageSize: { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 50, default: 20 } }
+  responses:
+    Problem:
+      description: Error (application/problem+json)
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+  schemas:
+    Status:
+      type: string
+      enum: [Received, Assigned, InProgress, Resolved, Closed, Rejected]
+    Category:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+    NewRequest:
+      type: object
+      required: [title, description, location, categoryId]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 120 }
+        description: { type: string, minLength: 1, maxLength: 2000 }
+        location: { type: string, minLength: 1, maxLength: 200 }
+        categoryId: { type: integer }
+    Request:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        reference: { type: string }
+        title: { type: string }
+        description: { type: string }
+        location: { type: string }
+        categoryId: { type: integer }
+        categoryName: { type: string }
+        status: { $ref: "#/components/schemas/Status" }
+        statusText: { type: string }
+        assignedTo: { type: string, format: uuid, nullable: true }
+        assignedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    RequestPage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/Request" } }
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+    RequestDetail:
+      type: object
+      properties:
+        request: { $ref: "#/components/schemas/Request" }
+        history: { type: array, items: { $ref: "#/components/schemas/History" } }
+        notes: { type: array, items: { $ref: "#/components/schemas/Note" } }
+    History:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        action: { type: string }
+        fromStatus: { $ref: "#/components/schemas/Status" }
+        toStatus: { $ref: "#/components/schemas/Status" }
+        actorId: { type: string, format: uuid }
+        note: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+    Note:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        authorId: { type: string, format: uuid }
+        body: { type: string }
+        createdAt: { type: string, format: date-time }
+    StatusChange:
+      type: object
+      required: [status]
+      properties:
+        status: { $ref: "#/components/schemas/Status" }
+        reason: { type: string, maxLength: 500, description: Required when status is Rejected }
+    Feedback:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        requestId: { type: string, format: uuid }
+        kind: { type: string, enum: [Accepted, Rejected, Updated, Completed] }
+        message: { type: string }
+        reason: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        readAt: { type: string, format: date-time, nullable: true }
+    Problem:
+      type: object
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        errors:
+          type: object
+          additionalProperties: { type: array, items: { type: string } }

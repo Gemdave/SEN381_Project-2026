@@ -1,0 +1,19 @@
+@page
+@model CivicConnect.Web.Pages.Staff.QueueModel
+@{
+    ViewData["Title"] = "Staff queue";
+}
+
+<h1>Staff queue</h1>
+
+@if (Model.Items.Count == 0)
+{
+    <partial name="_EmptyState" model="@("No requests match this view.")" />
+}
+else
+{
+    foreach (var item in Model.Items)
+    {
+        <partial name="_RequestSummary" model="item" />
+    }
+}

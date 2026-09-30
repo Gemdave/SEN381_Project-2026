@@ -1,0 +1,9 @@
+:root { --ink: #1f2933; --line: #d9dee3; }
+body { font-family: system-ui, sans-serif; color: var(--ink); margin: 0 auto; max-width: 60rem; padding: 1rem; }
+header { display: flex; gap: 1rem; align-items: baseline; border-bottom: 1px solid var(--line); padding-bottom: .5rem; }
+.request-summary { border-bottom: 1px solid var(--line); padding: .75rem 0; }
+.status { font-size: .8rem; padding: .1rem .5rem; border: 1px solid var(--line); border-radius: 1rem; }
+.empty-state { color: #6b7280; }
+.history { list-style: none; padding-left: 0; }
+.history li { border-bottom: 1px solid var(--line); padding: .4rem 0; font-size: .9rem; }
+.message { background: #f3f4f6; padding: .5rem .75rem; border-left: 3px solid var(--ink); }

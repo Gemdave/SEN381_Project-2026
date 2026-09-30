@@ -4,6 +4,7 @@ using CivicConnect.Core.Rules;
 using CivicConnect.Core.Services;
 using CivicConnect.Data;
 using CivicConnect.Web.Infrastructure;
+using CivicConnect.Web.UI;
 using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +28,13 @@ builder.Services.AddScoped<FeedbackService>();
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<CurrentUserAccessor>();
 
+// Razor Pages for the screens (ADR-003), with the two pieces ADR-004 needs:
+// the capability object handed to each view, and the development page identity
+// that stands in until CR-003 closes.
+builder.Services.AddRazorPages();
+builder.Services.AddScoped<PageUserAccessor>();
+builder.Services.AddScoped<CapabilityFactory>();
+
 builder.Services.AddControllers().AddJsonOptions(o =>
 {
     o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
@@ -45,7 +53,9 @@ if (app.Configuration.GetValue<bool>("Database:RunMigrations"))
 }
 
 app.UseExceptionHandler();
+app.UseStaticFiles();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 app.MapControllers();
+app.MapRazorPages();
 
 app.Run();

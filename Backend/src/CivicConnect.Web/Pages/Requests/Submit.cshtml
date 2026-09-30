@@ -1,0 +1,36 @@
+@page
+@model CivicConnect.Web.Pages.Requests.SubmitModel
+@{
+    ViewData["Title"] = "Submit a request";
+}
+
+<h1>Submit a request</h1>
+<p class="hint">Five steps: title, description, location, category, submit (NFR-001).</p>
+
+<form method="post" class="stacked">
+    <div asp-validation-summary="ModelOnly" class="errors"></div>
+
+    <label asp-for="Input.Title">Title</label>
+    <input asp-for="Input.Title" maxlength="120" />
+    <span asp-validation-for="Input.Title" class="field-error"></span>
+
+    <label asp-for="Input.Description">What needs attention</label>
+    <textarea asp-for="Input.Description" rows="5" maxlength="2000"></textarea>
+    <span asp-validation-for="Input.Description" class="field-error"></span>
+
+    <label asp-for="Input.Location">Where is it</label>
+    <input asp-for="Input.Location" maxlength="200" />
+    <span asp-validation-for="Input.Location" class="field-error"></span>
+
+    <label asp-for="Input.CategoryId">Category</label>
+    <select asp-for="Input.CategoryId">
+        <option value="0">Choose a category</option>
+        @foreach (var category in Model.Categories)
+        {
+            <option value="@category.Id">@category.Name</option>
+        }
+    </select>
+    <span asp-validation-for="Input.CategoryId" class="field-error"></span>
+
+    <button type="submit">Submit request</button>
+</form>

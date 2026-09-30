@@ -1,0 +1,32 @@
+@page
+@model CivicConnect.Web.Pages.Requests.IndexModel
+@{
+    ViewData["Title"] = "My requests";
+}
+
+<h1>My requests</h1>
+
+<form method="get" class="filters">
+    <label for="status">Status</label>
+    <select id="status" name="status">
+        <option value="">All</option>
+        @foreach (var status in Model.StatusOptions)
+        {
+            <option value="@status" selected="@(Model.Status == status)">@StatusRules.Display(status)</option>
+        }
+    </select>
+    <button type="submit" class="secondary">Filter</button>
+</form>
+
+@if (Model.Items.Count == 0)
+{
+    <partial name="_EmptyState" model="@("No requests match this filter.")" />
+}
+else
+{
+    foreach (var request in Model.Items)
+    {
+        <partial name="_RequestSummary" model="request" />
+    }
+    <p class="paging">Showing @Model.Items.Count of @Model.Total.</p>
+}

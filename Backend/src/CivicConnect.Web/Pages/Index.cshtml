@@ -1,0 +1,41 @@
+@page
+@model CivicConnect.Web.Pages.IndexModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<h1>CivicConnect</h1>
+
+@if (Model.SignedInAs is not null)
+{
+    <p>Signed in as <strong>@Model.SignedInAs</strong>.</p>
+    <ul class="links">
+        <li><a href="/Requests/Submit">Submit a request</a></li>
+        <li><a href="/Requests">My requests</a></li>
+        <li><a href="/Staff/Queue">Staff queue</a></li>
+    </ul>
+    <form method="post" asp-page-handler="SignOut">
+        <button type="submit" class="secondary">Sign out</button>
+    </form>
+}
+else if (Model.DevelopmentSignInAvailable)
+{
+    <p>
+        Sign in is a development placeholder while CR-003 is open. Pick one of the
+        seeded users from <code>db/dev_seed.sql</code>.
+    </p>
+    <form method="post" asp-page-handler="SignIn" class="signin">
+        <label for="email">Development user</label>
+        <select id="email" name="email">
+            @foreach (var user in Model.SeededUsers)
+            {
+                <option value="@user">@user</option>
+            }
+        </select>
+        <button type="submit">Continue</button>
+    </form>
+}
+else
+{
+    <p>Sign in is not available in this environment.</p>
+}

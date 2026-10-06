@@ -4,18 +4,29 @@ on:
   pull_request:
     branches:
       - main
-
   push:
     branches:
       - main
+    tags:
+      - "v*"
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+# Cancel superseded runs on the same PR/branch so the latest commit is what gets judged
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # ---------------------------------------------------------------------------
+  # 1. Build + Tests
+  # ---------------------------------------------------------------------------
   build-and-test:
     name: Build and Test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     defaults:
       run:
@@ -36,5 +47,164 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
+      # NOTE: Testcontainers-based integration tests need Docker; ubuntu-latest provides it.
+      # Coverage needs the coverlet.collector package in the test project(s).
       - name: Run tests
-        run: dotnet test --no-build --configuration Release --verbosity normal
+        run: >
+          dotnet test --no-build --configuration Release --verbosity normal
+          --logger "trx;LogFileName=test-results.trx"
+          --collect:"XPlat Code Coverage"
+          --results-directory "${{ github.workspace }}/TestResults"
+
+      - name: Upload test results and coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults/**
+          if-no-files-found: warn
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # 2. Static / code-quality check
+  # ---------------------------------------------------------------------------
+  static-analysis:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        working-directory: app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      # Roslyn analyzers: warnings are reported in the log and summary (not blocking at first)
+      - name: Build with analyzers
+        run: >
+          dotnet build --no-restore --configuration Release
+          -p:EnableNETAnalyzers=true -p:AnalysisLevel=latest-recommended
+          | tee "${{ github.workspace }}/analyzer-output.txt"
+
+      # Formatting/style is a blocking check: fails if code does not match .editorconfig
+      - name: Verify formatting
+        run: dotnet format --verify-no-changes --no-restore --verbosity diagnostic
+
+      - name: Summarize analyzer warnings
+        if: always()
+        run: |
+          {
+            echo "### Static analysis"
+            echo "Analyzer warnings: $(grep -c 'warning ' "${{ github.workspace }}/analyzer-output.txt" || true)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload analyzer output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analyzer-output
+          path: analyzer-output.txt
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # 3. Dependency vulnerability check
+  # ---------------------------------------------------------------------------
+  dependency-check:
+    name: Dependency Vulnerabilities
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        working-directory: app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      # Fails on High/Critical advisories; Low/Moderate are reported but do not block
+      - name: Check NuGet packages for known vulnerabilities
+        run: |
+          dotnet list package --vulnerable --include-transitive 2>&1 | tee vuln-report.txt
+          {
+            echo "### Dependency vulnerabilities"
+            echo '```'
+            cat vuln-report.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if grep -Eq '[[:space:]](High|Critical)[[:space:]]' vuln-report.txt; then
+            echo "::error::High or Critical vulnerable dependency found"
+            exit 1
+          fi
+
+  # ---------------------------------------------------------------------------
+  # 4. Secrets scan (full history, so past commits are covered too)
+  # ---------------------------------------------------------------------------
+  secrets-scan:
+    name: Secrets Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ---------------------------------------------------------------------------
+  # 5. Quality gate - the single required status check for branch protection
+  # ---------------------------------------------------------------------------
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: [build-and-test, static-analysis, dependency-check, secrets-scan]
+    if: always()
+
+    steps:
+      - name: Evaluate gate
+        run: |
+          echo "build-and-test:   ${{ needs.build-and-test.result }}"
+          echo "static-analysis:  ${{ needs.static-analysis.result }}"
+          echo "dependency-check: ${{ needs.dependency-check.result }}"
+          echo "secrets-scan:     ${{ needs.secrets-scan.result }}"
+          {
+            echo "### Quality Gate"
+            echo "| Check | Result |"
+            echo "|---|---|"
+            echo "| Build and Test | ${{ needs.build-and-test.result }} |"
+            echo "| Static Analysis | ${{ needs.static-analysis.result }} |"
+            echo "| Dependency Vulnerabilities | ${{ needs.dependency-check.result }} |"
+            echo "| Secrets Scan | ${{ needs.secrets-scan.result }} |"
+            echo ""
+            echo "Commit: \`${{ github.sha }}\`  Ref: \`${{ github.ref_name }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ needs.build-and-test.result }}" != "success" ] || \
+             [ "${{ needs.static-analysis.result }}" != "success" ] || \
+             [ "${{ needs.dependency-check.result }}" != "success" ] || \
+             [ "${{ needs.secrets-scan.result }}" != "success" ]; then
+            echo "::error::Quality gate failed - a required check did not pass"
+            exit 1
+          fi

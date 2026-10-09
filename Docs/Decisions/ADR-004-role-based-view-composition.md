@@ -1,74 +1,90 @@
 # ADR-004 Role based view composition
 >**Design pattern decision 1 of 2.**  
-**Status:** Proposed, awaiting team approval  
+**Status:** Proposed, revision 2 (08/10/2026); to align with the revised ADR-001 (CR-010), ADR-005 and ADR-006  
 **Owner:** Requirements Lead and Frontend Engineer  
-**Quality drivers:** ASR-06 first, then ASR-02, ASR-04  
-**Risks touched:** RSK-011, RSK-016  
-**Assumes:** ADR-003, which selected ASP.NET Core Razor Pages  
-**Research used:** Assignment 2, Task 1 on design quality and design patterns.  
+**Quality drivers:** ASR-06 first, then ASR-02, ASR-05, ASR-07, ASR-04  
+**Risks touched:** RSK-011, RSK-016, RSK-022  
+**Assumes:** ADR-003 (ASP.NET Core Razor Pages) and CR-010 (microservices)  
+**Research used:** Assignment 2, Task 1 on design quality and design patterns (Naghdipour, 2023; Silva, 2021)
+
+| Rev | Date | Change |
+| :--- | :--- | :--- |
+| 1 | 29/09/2026 | How each role's pages are built inside one application (now P3). Full text in commit `ad2a501`. |
+| 2 | 08/10/2026 | Adds Part 1 for microservices (CR-010) and a comparison table for each part; the P3 decision is unchanged. |
 
 ## Problem
 
-Four roles look at the same request data and need different things from it. Requesters see their own requests with status they cannot change (AC-003.2). Staff see the queue they are entitled to, with the actions that move a request along. Management sees totals and lifecycle states. Administrators manage users, roles, categories and the audit trail.
+Four roles use the same request data but need different fields and actions. Requesters see their own requests with read-only status (AC-003.2) and must never see another requester's data (NFR-003, AC-004.2). Staff see their permitted queue and actions, management sees totals, and administrators manage users, roles and categories. Left undecided, Razor Pages drifts into either copied markup per role or one page full of role checks.
 
-The overlap is large, since every role shows identity, category, status and dates. The differences are not decoration. They decide which fields appear and which actions exist, and one of them is a correctness rule: a requester must have no status control anywhere, and must never see another requester's data (NFR-003, AC-004.2).
+With microservices (CR-010), one screen draws on several services. This record therefore answers two questions: where the screens get their data (Part 1) and how each role's pages are built (Part 2).
 
-Left undecided this settles itself badly in Razor Pages. Either each role gets its own `.cshtml` with its own copy of the request markup and the copies drift apart, or one shared page fills with `@if (User.IsInRole(...))` blocks until nobody can say what a manager actually sees without reading every branch.
+## Scoring
 
-## Options
+Options score 1 (poor), 2 (acceptable) or 3 (good) per criterion, weighted 1 to 3 by the ASR, requirement or risk the criterion comes from. ASR-07 is ×2 in Part 1 because no growth figures exist and the scope is deliberately small. Build effort is ×2 in Part 2, not ×3, because those options differ only in coding effort inside one service, not in services to build, host and pay for.
 
-**A. A page for each role with its own markup.** Easy to read alone, but every visual change has to be made four times, and the drift lands on the rule that says status must read the same everywhere.
+## Part 1: where the screens get their data
 
-**B. One page with role conditions in the markup.** No duplication, but role logic spreads through the view. Each new rule adds a branch, so one edit can affect everybody. This is the low cohesion outcome the research describes, and in Razor it also puts authorisation vocabulary into the markup.
+* **A. The browser calls each service.** Every service faces the internet, and the screens are rewritten client-side.
+* **B. A gateway merges responses.** One call per screen, but role shaping moves into shared infrastructure.
+* **C. One web frontend service.** A single backend-for-frontend serves every role from role-separated page folders, calls the services server-side and reuses the existing pages.
+* **D. A frontend service per role group.** Each role scales and releases alone, at the cost of three or four more deployables.
+* **E. Micro-frontends.** Each service deploys its own piece of the screen: the most independence and the most work.
 
-**C. Shared partials and view components, with a page model for each role.** The partials and view components know how things look and nothing about roles. Each role gets its own page and page model, which loads only what that role may see and hands the view a capability object naming the actions this viewer has.
+| Criterion (weight) | A | B | C | D | E |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **ASR-02** Privacy (×3) | **1** Every service exposed to the browser | **2** Role shaping in shared infrastructure | **3** Services hidden; controls set server-side | **3** Smallest exposure per role | **2** Many exposed pieces |
+| **ASR-06** Consistent screens (×3) | **2** Status logic repeated in browser code | **2** Consistent only if the gateway shapes data alike | **3** One shared status partial | **2** Shared partials copied or packaged per service | **1** Pieces can look and behave differently |
+| **ASR-05** Cost for a team of three (×3) | **1** Screens rewritten client-side | **2** Custom merge code in the gateway | **3** One extra deployable reusing existing pages | **1** Three or four deployables, each with its own pipeline, configuration, secrets and hosting slot (NFR-009) | **1** Most build and deployment work |
+| **ASR-07** Growth (×2) | **2** Screens change when services split | **2** Every screen change passes the gateway | **2** Runs as copies; splits per role later | **3** Each role scales and releases alone | **3** Each piece scales and releases alone |
+| **ASR-04** Oversight speed (×1) | **1** Many browser round trips | **3** One call per screen | **2** Several server-side calls | **3** Tailored per role | **2** Pieces load separately |
+| **Total (max 36)** | **17** | **25** | **33** | **27** | **20** |
 
-**D. One page that delegates rendering to a per role service.** A strategy chosen at request time decides what to render. Reasonable where an algorithm varies by role, but here the variation is in composition and visibility, so it adds a layer that does not match the problem and fights the Razor Pages convention of one page per screen.
+## Part 2: how each role's pages are built
+
+* **P1.** A page per role with its own markup (option A in revision 1).
+* **P2.** One page with role conditions in the markup (B).
+* **P3.** Shared partials and view components, a page model per role, and a capability object (C).
+* **P4.** One page that hands rendering to a per-role strategy (D), which also carries Strategy's own maintenance cost (Silva, 2021).
+
+| Criterion (weight) | P1 | P2 | P3 | P4 |
+| :--- | :--- | :--- | :--- | :--- |
+| **ASR-06** Status the same for all roles (×3) | **1** Four copies drift | **2** Branches multiply | **3** One partial per status piece | **2** Rendering split across strategies |
+| **ASR-02** No role logic in markup (×3) | **2** Loading rules repeated | **1** Role checks spread through views | **3** Server-built capability object; handlers re-check | **2** Logic in strategies |
+| **ASR-05** Build effort (×2) | **2** Every change made four times | **3** Fastest | **2** Capability object to build and pass | **1** Extra layer against Razor conventions |
+| **Changeability**, from FR-023 and RSK-016 (×2) | **1** Copy everything | **1** New branches affect all roles | **3** New page folder on existing partials | **2** New strategy plus wiring |
+| **Testability**, from RTM verification evidence (×1) | **2** Each page tested four times | **1** Every branch per role | **2** Page tests with a seeded user | **3** Strategies tested alone |
+| **Total (max 33)** | **17** | **18** | **30** | **21** |
 
 ## Decision
 
-Option C, expressed in Razor Pages terms.
+**Option C, with P3 inside it.**
+* The browser talks only to the frontend service. It calls the back-end services through the ADR-006 interfaces and keeps no in-memory session state, so it can run as several copies.
+* Shared partials (`_RequestSummary`, `_RequestDetail`, `_HistoryList`, `_EmptyState`, the status badge tag helper) carry no role knowledge. View components cover the queue list and the oversight totals.
+* Each role has its own page folder (`Pages/Requests`, `Pages/Staff`, `Pages/Management`, `Pages/Admin`), and its page models load only what that role may see.
+* `RequestCapabilities` decides only whether a control is drawn. Its values come from the owning service using the ADR-005 policy, and that service re-checks every action, so a hidden button is a courtesy, not a control. The polled status fragment uses the same partial and capability object.
 
-* **Shared partials** hold markup with no role knowledge: `_RequestSummary.cshtml`, `_RequestDetail.cshtml`, `_HistoryList.cshtml`, `_EmptyState.cshtml`, and a status badge tag helper.
-* **View components** cover the pieces that need their own query, such as the queue list and the oversight totals, so a page does not have to fetch on their behalf.
-* **A page model for each role** is the composition point. `Pages/Requests/*` for the requester, `Pages/Staff/*` for service staff, `Pages/Management/*` for oversight, `Pages/Admin/*` for administration. Each page model loads only the rows that role may see and passes a **capability object** to its view.
-* **The capability object** is a small immutable view model, for example `RequestCapabilities` carrying `CanAssign`, `CanTransition`, `CanAddNote` and `CanClose`. It is built on the server by the authorisation policy from ADR-005. The page never works it out from the signed in user itself, so one source of truth decides what a role may do.
+C beats D because D adds three or four deployables now (ASR-05), while C's page folders are where D can be split out later.
 
-The capability object decides whether a control is rendered. It never decides whether an action is allowed. Every handler method, such as `OnPostAcceptAsync`, calls the same policy again before it does anything, so a request forged against a hidden control is refused on its merits. Not rendering a button is a courtesy to the user, not a control.
+## Consequences
 
-The status fragment that ADR-003 polls with JavaScript returns the same partial and the same capability object, so the polled view cannot drift from the rendered page.
-
-## What it buys
-
-Status renders in one place, so AC-003.1 and AC-003.2 cannot drift apart between roles. A new role becomes a new folder of pages over partials that already exist, which is how the sponsor view in FR-023 is expected to arrive. The read only requester view, which is how M1 settled conflict C-1, becomes structural: no capability, no control, and the page model never even loads the transition options.
-
-## What it costs
-
-* Indirection. Tracing why a button appears means reading the page model, the capability object and the partial.
-* The capability object has to be built and passed on every page that renders an action, which is more ceremony than putting a role check in the markup.
-* The capability contract is shared with the backend, so changing it changes ADR-004, ADR-005 and the polled fragment in ADR-006 together.
-* Testing costs more than it would with a client side component model. A partial cannot be rendered in isolation as cheaply, so the checks below run as page tests through `WebApplicationFactory` with a seeded user rather than as unit tests.
-
-RSK-016 warns against abstraction that never earns its place, so this record carries a revision trigger. If adding the sponsor view (FR-023, waiting on CR-007) does not reuse the existing partials and view components, the pattern has not paid for itself and should be simplified through controlled change.
+**Buys:** status renders in one place for every role; a new role is a new page folder over existing partials, which is how FR-023 is expected to arrive; the services stay hidden from the browser; the frontend can run as several copies.  
+**Costs:** indirection across page model, capability object and partial; one more deployable and network hop per screen; a frontend defect can affect every role; a multi-service screen is as slow as its slowest service; the capability contract changes together with ADR-005 and ADR-006; page tests need the services faked or running.  
+**Revision triggers:** simplify P3 if the sponsor view (FR-023, CR-007) cannot reuse the partials (RSK-016). Split per role (option D) only if measurement shows one role holding the others back.
 
 ## Components
 
-**Partials:** `_RequestSummary.cshtml`, `_RequestDetail.cshtml`, `_HistoryList.cshtml`, `_FilterBar.cshtml`, `_EmptyState.cshtml`, status badge tag helper.
-**View components:** `StaffQueueViewComponent`, `OversightTotalsViewComponent`.
-**Pages and page models:** `Pages/Requests/Submit.cshtml`, `Pages/Requests/Index.cshtml`, `Pages/Requests/Details.cshtml`, `Pages/Staff/Queue.cshtml`, `Pages/Staff/Details.cshtml`, `Pages/Management/Oversight.cshtml`, `Pages/Admin/Users.cshtml`, `Pages/Admin/Roles.cshtml`, `Pages/Admin/Categories.cshtml`.
-**Contract:** the `RequestCapabilities` view model, built by the ADR-005 policy and returned with the polled status fragment defined in ADR-006.
+**Exist:** both code trees (RSK-022) have `_RequestSummary`, `_HistoryList`, `_EmptyState`, `StatusBadgeTagHelper`, the staff Queue and Details pages, `RequestCapabilities` and `CapabilityFactory`. The capability fields differ: `Backend/` uses `CanAccept`, `CanTransition`, `CanSeeInternals` and `NextStatuses`; `app/` uses `CanAccept`, `CanTransition`, `CanAddNote` and `CanClose`. Only `Backend/` has the requester pages and `_RequestFields`, and only `app/` has `status-poll.js`.  
+**Planned:** the frontend service, `_RequestDetail`, `_FilterBar`, `StaffQueueViewComponent`, `OversightTotalsViewComponent`, and the management and admin pages.
 
 ## Verification
 
-* **TC-003.2** no status control is rendered on any requester page, and the requester page model does not load transition options.
-* **TC-004.1 and TC-004.2** the requester history page shows own requests only, and another requester's reference is refused by the page model rather than merely hidden.
-* **TC-008.1** the staff queue view component returns only permitted rows.
-* **TC-N001** three first time users submit in five steps or fewer, inside five minutes.
-* Page tests render each role's pages with and without each capability, and assert both the rendered markup and that the matching handler refuses the action when the capability is absent.
+* **TC-003.2:** no status control on any requester page.
+* **TC-004.1, TC-004.2:** own requests only; another requester's reference is refused, not just hidden.
+* **TC-008.1:** the staff queue shows only permitted rows.
+* **TC-N001:** three first-time users submit in five steps or fewer, inside five minutes.
+* Page tests with and without each capability check both the markup and that the action is refused.
+* The browser never calls a back-end service directly, and two frontend copies serve the same pages (NFR-010).
 
 ## Evidence
 
-**RTM:** FR-001 to FR-005, FR-008, FR-010, FR-015 to FR-021, FR-023, NFR-001, NFR-003.  
-**Requirements:** AC-003.1, AC-003.2, AC-004.2, and stakeholder conflict C-1.  
-**Change requests:** CR-007 on the sponsor view.  
-**Works with:** ADR-003 for the runtime, ADR-005 for enforcement, ADR-006 for the polled fragment.
+**RTM:** FR-001 to FR-005, FR-008, FR-010, FR-015 to FR-021, FR-023, NFR-001, NFR-003, NFR-010. **Requirements:** AC-003.1, AC-003.2, AC-004.2; conflicts C-1 and C-5. **Change requests:** CR-007, CR-010, CR-011. **Works with:** the revised ADR-001, ADR-003, ADR-005 and ADR-006.

@@ -269,6 +269,8 @@ cannot be merged unless the Quality Gate passes.
 | **NFR-009** | ST-5 | Cost sustainability: run within free/low-cost tiers where practical. | Operates in free/low-cost tiers; cost documented. | Should | Candidate |
 | **NFR-010** | ST-5 | Growth readiness: able to expand in future without a redesign (added through CR-011). | Scale-out, data ownership and extension checks all pass (NFR-010). | Must | Candidate (CR-011) |
 
+**Demonstration trace.** FR-011 (AC-011.2) -> ASR-01 -> the Requests service, the only service allowed to assign (ADR-001) -> a conditional update in the requests schema that succeeds only while the request is unassigned, with the history row in the same transaction (ADR-002) -> `POST /api/v1/requests/{id}/assignment` through the API entry point (ADR-006) -> `app/` code: `AssignmentService`, `RequestRepository` and `AssignmentEndpoints` -> `AssignmentServiceTests` (run in CI) and `ConcurrentAcceptTests` (skipped in CI until a test database is provided).
+
 ---
 
 ## Controlled Changes to the Baseline

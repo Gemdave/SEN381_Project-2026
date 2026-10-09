@@ -271,6 +271,8 @@ cannot be merged unless the Quality Gate passes.
 
 **Demonstration trace.** FR-011 (AC-011.2) -> ASR-01 -> the Requests service, the only service allowed to assign (ADR-001) -> a conditional update in the requests schema that succeeds only while the request is unassigned, with the history row in the same transaction (ADR-002) -> `POST /api/v1/requests/{id}/assignment` through the API entry point (ADR-006) -> `app/` code: `AssignmentService`, `RequestRepository` and `AssignmentEndpoints` -> `AssignmentServiceTests` (run in CI) and `ConcurrentAcceptTests` (skipped in CI until a test database is provided).
 
+**Verification evidence.** CI builds and tests only the `app/` tree. `StatusTransitionTests` and `AssignmentServiceTests` run in the Quality Gate, while `ConcurrentAcceptTests` is skipped until CI provides a test database. RTM rows that cite `Backend/` tests are marked "Not in CI" and do not count as verified.
+
 ---
 
 ## Controlled Changes to the Baseline

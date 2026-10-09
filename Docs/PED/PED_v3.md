@@ -29,9 +29,10 @@
    - [Initial Architecture Strategy](#initial-architecture-strategy)
    - [Engineering Decision Log](#engineering-decision-log)
    - [Technical Constraints](#technical-constraints)
-9. [Risk Register](#risk-register)
-10. [Baseline Sign-Off](#baseline-sign-off)
-11. [References](#references)
+9. [Verification Strategy and Test Plan](#verification-and-test-plan)
+10. [Risk Register](#risk-register)
+11. [Baseline Sign-Off](#baseline-sign-off)
+12. [References](#references)
 
 ---
 
@@ -273,7 +274,26 @@ The initial architecture utilizes a backend API layer situated between the front
 | **Learning Curve** | Priority is given to frameworks familiar to the team to minimize execution risk. |
 
 ---
+## Verification and Test Plan
+**Claim:** the release candidate is verified by a small, risk-based suite that protects the behavior that matters most: request submission, controlled status transitions, ownership integrity, role-based access and requester privacy.  
+**Basis for selection:** tests were chosen from the acceptance criteria and the highest-rated
+risks (RSK-010 double ownership, RSK-011 access control, RSK-021 input handling), not to maximize test count. Expected results were derived from the PED before execution.  
+| Level | Cases | Focus |
+| :--- | :--- | :--- |
+| Unit/component | UT-01 to UT-05 | Status transitions, category validation, ownership rule, permission policy, new-request defaults |
+| Black-box functional | BB-01 to BB-05 | Missing fields, length boundaries, staff queue scope, transition behavior, requester privacy |
+| API/integration | IT-01 to IT-03 | Request creation against the database, concurrent accept, unauthorized access to the API |
+| E2E/system | E2E-01, E2E-02 | Requester journey; request lifecycle across requester and staff |
+| Performance | PT-01 | Staff queue load time with 1,000 requests (NFR-004, target 3 seconds or less) |
 
+**Coverage of the M3 minimum:** 15 distinct functional/automated cases (5 unit, 5 black-box, 3 API/integration, 2 E2E), 8 negative or unauthorized cases, 13 cases addressing high-priority requirements or risks, and four black-box techniques (equivalence partitioning, boundary value analysis, decision table, state transition).
+
+**Execution:** unit and integration tests run in the CI Build and Test job and gate merges; E2E and performance runs are executed against staging and recorded as evidence. A skipped test is reported as blocked, not passed.  
+**Evidence:** [Test plan and evidence record](/Test/Docs/Test_Plan_v1.md) | [CI run for release candidate] | [Test results artifact] | [RTM test columns]
+
+**Limitations:** the suite does not prove the absence of defects; development identity is used for access control, so RBAC results say nothing about real authentication (RSK-012); staging performance on free-tier hosting does not predict municipal-scale load.
+
+---
 ## Risk Register
 
 | ID | Category | Risk (Cause / Event / Consequence) | Rating (P / I) | Mitigation | Contingency | Owner, Status & Mitigation Evidence |

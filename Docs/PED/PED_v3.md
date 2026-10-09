@@ -322,7 +322,7 @@ The initial architecture utilizes a backend API layer situated between the front
 
 ## Engineering Decisions and Comparisons
 
-Every decision is compared here against CivicConnect's own drivers, including those researched in Assignment 2 or 3; full records stay in `Docs/Decisions/`. Options score 1 (poor), 2 (acceptable) or 3 (good) per criterion, weighted 1 to 3 by the ASR, requirement or risk the criterion comes from. Still to be added by their owners: ADR-001, ADR-002 and ADR-006 (K. Marota); ADR-003, ADR-005 and ADR-007 (G. Enright).
+Every decision is compared here against CivicConnect's own drivers, including those researched in Assignment 2 or 3; full records stay in `Docs/Decisions/`. Each option is rated Strong, Fair or Weak per criterion; criteria come from the ASRs, requirements or risks named in them and are listed in priority order (the first three are equally important in Part 1, the first two in Part 2). Still to be added by their owners: ADR-001, ADR-002 and ADR-006 (K. Marota); ADR-003, ADR-005 and ADR-007 (G. Enright).
 
 ### ADR-004: Role-Based View Composition (Design Decision 1)
 
@@ -330,27 +330,27 @@ Every decision is compared here against CivicConnect's own drivers, including th
 
 **Part 1: where the screens get their data**
 
-| Criterion (weight) | A. Browser calls services | B. Gateway merges | C. One frontend service | D. Frontend per role | E. Micro-frontends |
+| Criterion (priority order) | A. Browser calls services | B. Gateway merges | C. One frontend service | D. Frontend per role | E. Micro-frontends |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **ASR-02** Privacy (×3) | **1** Every service exposed to the browser | **2** Role shaping in shared infrastructure | **3** Services hidden; controls set server-side | **3** Smallest exposure per role | **2** Many exposed pieces |
-| **ASR-06** Consistent screens (×3) | **2** Status logic repeated in browser code | **2** Consistent only if the gateway shapes data alike | **3** One shared status partial | **2** Shared partials copied or packaged per service | **1** Pieces can look and behave differently |
-| **ASR-05** Cost for a team of three (×3) | **1** Screens rewritten client-side | **2** Custom merge code in the gateway | **3** One extra deployable reusing existing pages | **1** Three or four deployables, each with its own pipeline, configuration, secrets and hosting slot (NFR-009) | **1** Most build and deployment work |
-| **ASR-07** Growth (×2) | **2** Screens change when services split | **2** Every screen change passes the gateway | **2** Runs as copies; splits per role later | **3** Each role scales and releases alone | **3** Each piece scales and releases alone |
-| **ASR-04** Oversight speed (×1) | **1** Many browser round trips | **3** One call per screen | **2** Several server-side calls | **3** Tailored per role | **2** Pieces load separately |
-| **Total (max 36)** | **17** | **25** | **33** | **27** | **20** |
+| **ASR-02** Privacy | **Weak** Every service exposed to the browser | **Fair** Role shaping in shared infrastructure | **Strong** Services hidden; controls set server-side | **Strong** Smallest exposure per role | **Fair** Many exposed pieces |
+| **ASR-06** Consistent screens | **Fair** Status logic repeated in browser code | **Fair** Consistent only if the gateway shapes data alike | **Strong** One shared status partial | **Fair** Shared partials copied or packaged per service | **Weak** Pieces can look and behave differently |
+| **ASR-05** Cost for a team of three | **Weak** Screens rewritten client-side | **Fair** Custom merge code in the gateway | **Strong** One extra deployable reusing existing pages | **Weak** Three or four deployables, each with its own pipeline, configuration, secrets and hosting slot (NFR-009) | **Weak** Most build and deployment work |
+| **ASR-07** Growth | **Fair** Screens change when services split | **Fair** Every screen change passes the gateway | **Fair** Runs as copies; splits per role later | **Strong** Each role scales and releases alone | **Strong** Each piece scales and releases alone |
+| **ASR-04** Oversight speed | **Weak** Many browser round trips | **Strong** One call per screen | **Fair** Several server-side calls | **Strong** Tailored per role | **Fair** Pieces load separately |
+| **Overall** | No Strong, 3 Weak | 1 Strong, no Weak | **3 Strong, no Weak** | 3 Strong, Weak on cost | 1 Strong, 2 Weak |
 
-**Part 2: how each role's pages are built.** Build effort is ×2 here, not ×3, because these options differ only in coding effort inside one service, not in services to build, host and pay for.
+**Part 2: how each role's pages are built.** Build effort ranks lower here than in Part 1, because these options differ only in coding effort inside one service, not in services to build, host and pay for.
 
-| Criterion (weight) | P1. Page per role | P2. Role conditions in markup | P3. Partials, page models, capability object | P4. Per-role strategy |
+| Criterion (priority order) | P1. Page per role | P2. Role conditions in markup | P3. Partials, page models, capability object | P4. Per-role strategy |
 | :--- | :--- | :--- | :--- | :--- |
-| **ASR-06** Status the same for all roles (×3) | **1** Four copies drift | **2** Branches multiply | **3** One partial per status piece | **2** Rendering split across strategies |
-| **ASR-02** No role logic in markup (×3) | **2** Loading rules repeated | **1** Role checks spread through views | **3** Server-built capability object; handlers re-check | **2** Logic in strategies |
-| **ASR-05** Build effort (×2) | **2** Every change made four times | **3** Fastest | **2** Capability object to build and pass | **1** Extra layer against Razor conventions |
-| **Changeability**, from FR-023 and RSK-016 (×2) | **1** Copy everything | **1** New branches affect all roles | **3** New page folder on existing partials | **2** New strategy plus wiring |
-| **Testability**, from RTM verification evidence (×1) | **2** Each page tested four times | **1** Every branch per role | **2** Page tests with a seeded user | **3** Strategies tested alone |
-| **Total (max 33)** | **17** | **18** | **30** | **21** |
+| **ASR-06** Status the same for all roles | **Weak** Four copies drift | **Fair** Branches multiply | **Strong** One partial per status piece | **Fair** Rendering split across strategies |
+| **ASR-02** No role logic in markup | **Fair** Loading rules repeated | **Weak** Role checks spread through views | **Strong** Server-built capability object; handlers re-check | **Fair** Logic in strategies |
+| **ASR-05** Build effort | **Fair** Every change made four times | **Strong** Fastest | **Fair** Capability object to build and pass | **Weak** Extra layer against Razor conventions |
+| **Changeability**, from FR-023 and RSK-016 | **Weak** Copy everything | **Weak** New branches affect all roles | **Strong** New page folder on existing partials | **Fair** New strategy plus wiring |
+| **Testability**, from RTM verification evidence | **Fair** Each page tested four times | **Weak** Every branch per role | **Fair** Page tests with a seeded user | **Strong** Strategies tested alone |
+| **Overall** | No Strong, 2 Weak | 1 Strong, 3 Weak | **3 Strong, no Weak** | 1 Strong, 1 Weak |
 
-**Decision.** Option C with P3 inside it. One web frontend service serves every role from role-separated page folders over shared partials, and the browser talks only to it. The capability object only decides which controls appear; its values come from the owning service, which re-checks every action. The frontend keeps no in-memory session state, so it can run as several copies. C beats D because D adds three or four deployables now, while C's page folders are where D can be split out later. **Costs and triggers:** one more deployable and network hop per screen, and a frontend defect can affect every role. Split per role (D) only if measurement shows one role holding the others back; simplify P3 if the sponsor view (FR-023) cannot reuse the partials.
+**Decision.** Option C with P3 inside it. One web frontend service serves every role from role-separated page folders over shared partials, and the browser talks only to it. The capability object only decides which controls appear; its values come from the owning service, which re-checks every action. The frontend keeps no in-memory session state, so it can run as several copies. C and D both have three Strong ratings, but D is Weak on cost, one of the three top-priority criteria, because it adds three or four deployables now, while C's page folders are where D can be split out later. **Costs and triggers:** one more deployable and network hop per screen, and a frontend defect can affect every role. Split per role (D) only if measurement shows one role holding the others back; simplify P3 if the sponsor view (FR-023) cannot reuse the partials.
 
 ---
 

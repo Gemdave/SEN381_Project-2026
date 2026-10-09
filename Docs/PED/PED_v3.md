@@ -178,7 +178,7 @@ The team deliberately defers email/SMS notifications beyond the baselined in-app
 * **NFR-007 - Auditability:** Key controlled actions are recorded with actor + timestamp and cannot be silently altered (supports FR-013, FR-022).
 * **NFR-008 - Reporting Accuracy:** Management and sponsor reports reconcile completely with underlying request records without discrepancy.
 * **NFR-009 - Cost Sustainability (Sponsor):** The solution runs within free/low-cost tiers where practical, and operational cost projections are documented.
-* **NFR-010 - Growth Readiness (CR-011):** CivicConnect can later support more users or features without a redesign. No volume target is set, since no growth figures exist. Checks: a second copy of a service changes no behaviour; no service touches another service's data store; a new service needs no schema change elsewhere.
+* **NFR-010 - Growth Readiness (CR-011):** CivicConnect can later support more users or features without a redesign. No volume target is set, since no growth figures exist. Checks: a second copy of a service changes no behaviour; no service touches another service's schema in the shared PostgreSQL instance (ADR-001); a new service needs no schema change elsewhere.
 
 ### Open Items to Confirm in Later Milestones
 1. Authentication model assumed; final selection deferred to M2. **Status:** Open under CR-003. Authorisation is covered by ADR-005, but the sign-in mechanism has not been chosen.
@@ -202,10 +202,10 @@ Full register, sources and open targets: `Docs/Requirements/ASR_Register.md` (ow
 | **ASR-01** | Ownership and status correctness: of simultaneous accepts on one request, exactly one succeeds; no status change is lost; invalid transitions are refused. | Assignment, status and the single-owner check stay inside one service with one data store. Other services learn of a change only after it commits. | ADR-001 (rev.), ADR-002 |
 | **ASR-02** | Authorisation and privacy: every read and write is authorised on the server; another requester's reference is refused. | Each service checks identity and role for its own data; role rules keep one source of truth. | ADR-005, ADR-001 (rev.) |
 | **ASR-03** | Auditability: every controlled action is recorded with actor and timestamp; history cannot be edited. | An action and its audit record succeed or fail together; audit is append-only and a lost message must not lose an entry. | ADR-002 (rev.) |
-| **ASR-04** | Oversight views within 3 s at 1,000 requests; reports match the records exactly. | If reporting keeps its own copy of the data, NFR-008 needs a change request stating the allowed lag. | ADR-001 (rev.), ADR-002 |
+| **ASR-04** | Oversight views within 3 s at 1,000 requests; reports match the records exactly. | Reporting reads request data through the Requests service and keeps no copy, so NFR-008 stands as written. | ADR-001 (rev.), ADR-002 |
 | **ASR-05** *(restated)* | Sustainable cost and complexity: each service on free or low-cost plans with its cost recorded; no more services than needed; one person can run the system locally. | Build only the services needed now, on one stack with shared build and run steps. | ADR-001 (rev.), ADR-003, ADR-007 |
 | **ASR-06** | Requester self-service: submit in ≤ 5 steps and ≤ 5 min; a staff status change is visible within 15 s. | Short guided flow with read-only status; the 15 s check covers the whole path across services. | ADR-004, ADR-003 |
-| **ASR-07** *(new)* | Growth readiness: the three NFR-010 checks pass; no volume target until growth figures exist. | Services hold no in-memory state, own their data, and are split only along boundaries the current requirements show. | ADR-001 (rev.), ADR-006, ADR-007 |
+| **ASR-07** *(new)* | Growth readiness: the three NFR-010 checks pass; no volume target until growth figures exist. | Services hold no in-memory state, own their schema in the shared instance, and are split only along boundaries the current requirements show. | ADR-001 (rev.), ADR-006, ADR-007 |
 
 Superseded by CR-011: ASR-05 previously favoured "one deployable unit over a distributed design", and ASR-04 held that reporting "does not justify a separate reporting database"; the full earlier wording is kept in the register. Failure isolation, independent deployability and a fixed volume target were considered but not adopted, because no stakeholder evidence or growth figures support them yet.
 
@@ -273,17 +273,17 @@ cannot be merged unless the Quality Gate passes.
 
 ## Controlled Changes to the Baseline
 
-Each change is recorded here before the affected section changes, and the original wording is kept. Working copy: the Change Register sheet in `Docs/Risks/RTM/CivicConnect-RTM-v2.0.xlsx`.
+Each change is recorded here before the affected section changes, and the original wording is kept. Working copy: `Docs/Risks/RTM/CivicConnect-Change-Register.xlsx`.
 
 | ID | Affects | Change | Status | Owner |
 | :--- | :--- | :--- | :--- | :--- |
 | **CR-001 to CR-008** | NFR-002, NFR-004 and Open Items 1, 2, 4 to 8 | Clarifications carried from the first M2 pass; each is shown against its open item above, with full wording in the workbook. | Open | M. Malope (CR-003: G. Enright) |
 | **CR-009** | FR-007, FR-012 | Add Rejected as a terminal status, reachable only from Received and always with a reason (`Data_Model.md`, section 8). | Proposed | K. Marota proposes, M. Malope records |
-| **CR-010** | ADR-001 (to be superseded); RTM architecture and data columns; ADR-002, ADR-004 to ADR-007 | Move from the modular monolith to microservices so the system can grow without a redesign (M2 review). Functional scope unchanged. | Open; revised ADR-001 pending | K. Marota, M. Malope |
+| **CR-010** | ADR-001 (superseded, D-005); RTM architecture and data columns; ADR-002, ADR-004 to ADR-007 | Move from the modular monolith to four services (Requests, Access, ReferenceData, Reporting) behind one API entry point, with a schema per service in one PostgreSQL instance, so the system can grow without a redesign (M2 review). Functional scope unchanged. | Approved through the revised ADR-001 (D-005) | K. Marota, M. Malope |
 | **CR-011** | NFR-010, ASR-05, ASR-07, C-5 | Add NFR-010 Growth Readiness (three checks, no volume target), restate ASR-05, add ASR-07 and C-5. | Open | M. Malope |
 | **EC-001** | FR-021 (AC-021.1) | Editorial: cited AC-002.3, which does not exist; now AC-002.1. No change in meaning. | Applied | M. Malope |
 
-All open CRs need approval before baseline sign-off. Two more may follow once the revised ADRs exist: NFR-008, if reporting gets its own data copy, and AC-019.1, if a deactivated user's session can stay valid for a time.
+All open CRs need approval before baseline sign-off. One more may follow once ADR-005 is revised: AC-019.1, if a deactivated user's session can stay valid for a time. NFR-008 needs no change, because reporting keeps no copy of the data (ADR-001).
 
 ---
 

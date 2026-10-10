@@ -255,14 +255,30 @@ cannot be merged unless the Quality Gate passes.
 ### Initial Architecture Strategy
 The initial architecture utilizes a backend API layer situated between the frontend UI and data persistence layer. This provides a central point for validation, business rules, and authorization enforcement while decoupling domain logic from UI components. Backend framework, database choice, API standard, authentication scheme, and deployment details are directional for M1 and will be finalized in M2.
 
+### Architecture Update (ADR-001, D-005)
+The first M2 version of ADR-001 chose a layered modular monolith. The team has since decided to move to microservices, so ADR-001 was rewritten and the change is recorded as D-005. The backend/API layer from D-001 and D-002 is kept, but it is now delivered as four services behind one API entry point:
+
+| Deployable | Responsibility |
+| :--- | :--- |
+| **Requests service** | Creating requests, ownership, status changes and the history record for each change. |
+| **Access service** | Users, roles, permissions and the RBAC policy (ADR-005). |
+| **ReferenceData service** | Categories and other lookup data. |
+| **Reporting service** | Management and oversight figures, built from request data. |
+| **Web frontend (`CivicConnect.Web`)** | Razor Pages UI, run and deployed separately. It has no database access and no business rules, and gets all data through the API (ADR-006). |
+
+Rules that keep this safe: only the Requests service can assign a request or change its status, so the single-owner rule (NFR-005) stays inside one transaction; services do not read each other's tables; the services share one managed PostgreSQL instance with a separate schema per service to stay within free-tier limits (NFR-009); and every service applies the ADR-005 policy rather than trusting the caller.
+
+Main costs: more hosting units and deployment work (NFR-009, RSK-014), cross-service calls that can fail or be slow, no single transaction across services, and harder testing. The team's limited experience with the stack remains the main risk (RSK-001), so a small two-service proof of concept should come before the full split. ADR-002, ADR-005, ADR-006 and ADR-007 still describe a single application and need matching updates.
+
 ### Engineering Decision Log
 
 | ID | Decision | Reason | Status |
 | :--- | :--- | :--- | :--- |
-| **D-001** | Separate UI, backend/API, and data persistence layers. | Supports maintainability, clean separation of concerns, and modular testing. | Initial |
-| **D-002** | Use a central backend/API layer for application operations. | Provides a consistent location for validation, business rules, and access control. | Initial |
+| **D-001** | Separate UI, backend/API, and data persistence layers. | Supports maintainability, clean separation of concerns, and modular testing. | Carried forward into ADR-001 |
+| **D-002** | Use a central backend/API layer for application operations. | Provides a consistent location for validation, business rules, and access control. | Carried forward into ADR-001 |
 | **D-003** | Defer final backend framework and database selection to M2. | Tech selection requires structured evaluation and proof-of-concept testing. | Open |
 | **D-004** | Treat authentication and authorization as M2 decisions. | Specific security architecture depends on stack selection and RBAC refinement. | Open |
+| **D-005** | Build CivicConnect as independently deployable services (Requests, Access, ReferenceData, Reporting) behind one API entry point, with the web frontend deployed separately. Replaces the layered modular monolith. | Services can be built, deployed and changed on their own, and ownership and history stay inside Requests so NFR-005 still holds. Accepted trade-offs: more hosting and deployment work, cross-service failures, harder testing. | Approved – recorded in ADR-001 (PR #23) |
 
 ### Technical Constraints
 
@@ -310,6 +326,7 @@ The initial architecture utilizes a backend API layer situated between the front
 | **Baseline Type** | Milestone 3 (M3) |
 | **Version** | v3.0 |
 | **Date** | 14/10/2026 |
+| **Architecture Decision Recorded** | ADR-001 microservices (D-005); change under review in PR #23 |
 | **Scope Reviewed** | Pending |
 | **Requirements / Traceability Checked** | Pending |
 | **Risk Review Completed** | Pending |

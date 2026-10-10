@@ -1,0 +1,20 @@
+@page
+@model CivicConnect.Web.Pages.Requests.DetailsModel
+@{
+    ViewData["Title"] = Model.Request!.Reference;
+}
+
+@if (Model.JustSubmitted)
+{
+    <p class="message">Saved. Your reference is <strong>@Model.Request!.Reference</strong>.</p>
+}
+
+<h1>@Model.Request!.Title</h1>
+
+@*
+    FR-003 and AC-003.2. This page renders fields only. There is no status
+    control here for a requester to use, because the page never asks for one.
+*@
+<partial name="_RequestFields" model="Model.Request" />
+
+<p><a href="/Requests">Back to my requests</a></p>

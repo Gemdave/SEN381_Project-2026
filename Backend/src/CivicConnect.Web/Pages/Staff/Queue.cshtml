@@ -1,0 +1,40 @@
+@page
+@model CivicConnect.Web.Pages.Staff.QueueModel
+@{
+    ViewData["Title"] = "Staff queue";
+}
+
+<h1>Staff queue</h1>
+
+<form method="get" class="filters">
+    <label for="status">Status</label>
+    <select id="status" name="status">
+        <option value="">Open work</option>
+        @foreach (var status in Model.StatusOptions)
+        {
+            <option value="@status" selected="@(Model.Status == status)">@StatusRules.Display(status)</option>
+        }
+    </select>
+    <button type="submit" class="secondary">Filter</button>
+</form>
+
+@if (Model.Items.Count == 0)
+{
+    <partial name="_EmptyState" model="@("No requests match this view.")" />
+}
+else
+{
+    <ul class="queue">
+        @foreach (var request in Model.Items)
+        {
+            <li>
+                <a class="reference" href="@request.StaffDetailPath()">@request.Reference</a>
+                <span class="title">@request.Title</span>
+                <status-badge status="@request.Status"></status-badge>
+                <span class="category">@request.CategoryName</span>
+                <span class="owner">@(request.AssignedTo is null ? "Unassigned" : "Assigned")</span>
+            </li>
+        }
+    </ul>
+    <p class="paging">Showing @Model.Items.Count of @Model.Total.</p>
+}

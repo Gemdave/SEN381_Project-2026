@@ -1,0 +1,7 @@
+# add these lines to the repo .gitignore
+bin/
+obj/
+.env
+appsettings.*.local.json
+*.user
+TestResults/

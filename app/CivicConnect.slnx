@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CivicConnect.Domain/CivicConnect.Domain.csproj" />
+    <Project Path="src/CivicConnect.Application/CivicConnect.Application.csproj" />
+    <Project Path="src/CivicConnect.Infrastructure/CivicConnect.Infrastructure.csproj" />
+    <Project Path="src/CivicConnect.Web/CivicConnect.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CivicConnect.Domain.Tests/CivicConnect.Domain.Tests.csproj" />
+    <Project Path="tests/CivicConnect.Application.Tests/CivicConnect.Application.Tests.csproj" />
+    <Project Path="tests/CivicConnect.IntegrationTests/CivicConnect.IntegrationTests.csproj" />
+  </Folder>
+</Solution>

@@ -1,4 +1,4 @@
-# CivicConnect Requirements & Engineering Baseline (v2.1)
+# CivicConnect Requirements & Engineering Baseline (PED) (v2.1)
 
 **Authors:** Gerald Enright (577830) | Keletso Marota (601632) | Mogau Malope (600192)  
 **Course Code:** SEN381  
@@ -234,7 +234,7 @@ The team deliberately defers email/SMS notifications beyond the baselined in-app
 | **NFR-006** | RBAC on every action | ST-4 / Must | Unauthorised access denied (supports FR-008/014/020) | ASR-02 | AuthorisationPolicy invoked by every page handler and every endpoint | Role and permission tables; checks never rely on UI state | ADR-005; Razor Pages; ASP.NET Core on .NET 10 (C# 13); Npgsql with SQL migrations; PostgreSQL 17.x (ADR-003) | ADR-005; CR-003; RSK-011; RSK-012 | AuthorisationPolicy.Require called by every service; capabilities on the pages come from the same permissions (UI/CapabilityFactory) | Permission refusal cases across the service tests; role matrix test planned | In Development |
 | **NFR-007** | Auditability | ST-4 / Must | Actor+timestamp, not silently altered (supports FR-013/022) | ASR-03 | AuditService and append only history writes on every controlled action | Append-only tables; no UPDATE or DELETE endpoints over history rows | ADR-002; ASP.NET Core on .NET 10 (C# 13); Npgsql with SQL migrations; PostgreSQL 17.x (ADR-003) | ADR-002; RSK-009; RSK-013; RSK-015 | Append only history and notes enforced by the block_history_changes triggers, not only by the application | RealDatabaseTests.History_rows_cannot_be_changed_or_deleted | In Development |
 | **NFR-008** | Reporting accuracy | ST-3, ST-5 / Should | No discrepancy between report and data | ASR-04 | ReportingService reading the transactional tables | Aggregates computed from source tables; no duplicated store to drift | ADR-001 no separate reporting database; ASP.NET Core on .NET 10 (C# 13); Npgsql with SQL migrations; PostgreSQL 17.x (ADR-003) | ADR-001 | Reporting reads the same tables; no reporting screen yet | at M3 | Baselined |
-| **NFR-009** | Cost sustainability | ST-5 / Should | Runs within free/low-cost tiers; cost documented | ASR-05 | Each service deployed as its own unit, so hosting cost is counted per service | Managed PostgreSQL on a free or low-cost tier; backup limits and per-service limits recorded | ADR-007 deployment direction; Render free tier and Neon free plan (ADR-007) | ADR-007; RSK-006; RSK-014; RSK-015; RSK-019 | Not deployed yet; plan limits recorded in ADR-007 | Planned: cost sheet against the plan limits | Baselined |
+| **NFR-009** | Cost sustainability | ST-5 / Should | Runs within free/low-cost tiers; cost documented | ASR-05 | Whole solution deployed as a single deployable unit | One managed PostgreSQL instance on a free or low-cost tier; backup limits recorded | ADR-007 deployment direction; Render free tier and Neon free plan (ADR-007) | ADR-007; RSK-006; RSK-014; RSK-015; RSK-019 | Not deployed yet; plan limits recorded in ADR-007 | Planned: cost sheet against the plan limits | Baselined |
 
 **Demonstration trace (section 9).** FR-011 to ASR-01 to AssignmentService behind the API boundary (ADR-001) to the conditional update in RequestRepository.TryAssignAsync (ADR-002, informed by Assignment 2 Task 2) to the endpoint and page handler (ADR-006, ADR-004) to RealDatabaseTests.Ten_staff_accepting_at_once_leaves_exactly_one_owner. Every link exists in the repository. The last one has not been executed yet, because it needs a test database.
 
@@ -258,10 +258,10 @@ The initial architecture utilizes a backend API layer situated between the front
 
 | Item | Where | Decision record |
 | :--- | :--- | :--- |
-| Microservices: Requests, Access, ReferenceData and Reporting as separate, independently deployable services behind one API entry point, with one PostgreSQL instance and a separate schema per service | `Docs/Architecture/Backend_Architecture.md` (to be updated) | ADR-001 |
+| Modular monolith: Web, Core, Data projects, one deployable unit | `Docs/Architecture/Backend_Architecture.md` | ADR-001 |
 | PostgreSQL 17 schema, constraints, indexes, migrations 001 to 005 | `Docs/Data/Data_Model.md`, `src/CivicConnect.Data/Migrations` | ADR-002, ADR-003 |
 | REST contract v1 (`/api/v1`), problem+json errors, polling for status | `Docs/API/API_Contract_v1.md`, `openapi.yaml` | ADR-006 |
-| Deployment direction: one Render container per service, Neon PostgreSQL | as recorded in ADR-007 (to be revised for microservices) | ADR-007 |
+| Deployment direction: Render container, Neon PostgreSQL | as recorded in ADR-007 | ADR-007 |
 
 Repository layout, run steps and test instructions are kept in `README_backend.md`. This PED and that README are updated in the same pull request whenever a decision above changes, so the two never drift apart (RSK-017).
 
@@ -284,11 +284,10 @@ Recorded here so nobody discovers them later. Each one needs either an ADR note 
 | Point | What the code does | Why it needs a decision |
 | :--- | :--- | :--- |
 | Validation status code | Returns `400` with a per-field `errors` object for every validation failure | ADR-006 distinguishes `400` (malformed request) from `422` (understood but fails a business-rule check). The code does not yet make this distinction; either `ApiExceptionHandler` and the contract both change to use `422` for business-rule failures, or ADR-006 is amended to drop the distinction — a decision either way, not a default |
-| Data access | Plain SQL through Npgsql, no ORM | ADR-003 previously named Entity Framework Core as the ORM. The implementation has been aligned to the actual choice: plain SQL through Npgsql, with no ORM |
+| Data access | Plain SQL through Npgsql, no ORM | ADR-003 names Entity Framework Core as the ORM. This is a confirmed deviation from a recorded decision, not an interpretation gap, and needs either a migration to EF Core or a superseding note on ADR-003 explaining why plain SQL was kept |
 | Migration names | `001_request`, `002_category`, `003_assignment` match the RTM; `004_feedback` and `005_rbac` have been added | The RTM's Data / Persistence column only names the first three migrations; it needs updating so the schema and the RTM stay in step |
 | Staff visibility | Staff currently see unassigned requests and their own | AC-008.1 (Must priority) requires scoping "by team/category/assignment." The narrower rule is not yet a fulfillment of that acceptance criterion — it is an interim implementation pending the forward consideration above |
 | Who can add notes / change status | The owner only, except rejecting an unowned request | Not stated in M1; needs confirmation with Service Staff before it is treated as settled |
-| Architecture style | The code is still the modular monolith (Web, Core, Data projects, one deployable unit) | ADR-001 now records microservices (D-005) and matches this PED, but the code has not caught up: it is still one deployable unit, and migrations 001 to 005 build one shared schema that has to be split into one schema per service. ADR-002, ADR-007, `Backend_Architecture.md` and the M2 architecture diagrams still describe the monolith. They need updating, or superseding notes, when the code and infrastructure are changed. Until then, the monolith is a transition state and not a claim that the system is already split |
 
 ### Engineering Decision Log
 
@@ -298,7 +297,6 @@ Recorded here so nobody discovers them later. Each one needs either an ADR note 
 | **D-002** | Use a central backend/API layer for application operations. | Provides a consistent location for validation, business rules, and access control. | Carried forward into ADR-001 |
 | **D-003** | Defer final backend framework and database selection to M2. | Tech selection requires structured evaluation and proof-of-concept testing. | Closed – superseded by ADR-002 (database) and ADR-003 (stack) |
 | **D-004** | Treat authentication and authorization as M2 decisions. | Specific security architecture depends on stack selection and RBAC refinement. | Closed – superseded by ADR-005; sign-in mechanism itself still open under CR-003 |
-| **D-005** | Change the architecture style from a modular monolith to microservices. | Team decision to move away from the single deployable unit chosen earlier. Each service can be built, deployed and changed on its own, boundaries are enforced by the network and not only by code review, and each team member can own a service. The cost is accepted openly in ADR-001: more deployment work, hosting limits counted per service, and no single transaction across services, so ownership and history stay inside the Requests service. | Decided – ADR-001 records the microservices decision; code and infrastructure change to follow, starting with a small two-service proof of concept before the full split |
 
 ### Technical Constraints
 
@@ -361,7 +359,7 @@ Owner note: G. Enright owns the register. New risk evidence produced during cons
 | :--- | :--- |
 | **Project** | CivicConnect |
 | **Baseline Type** | Architecture, Technology & Initial Design Baseline (M2) |
-| **Version** | v2.1 |
+| **Version** | v2.0 |
 | **Date** | To be entered at sign-off |
 | **Scope Reviewed** | Pending team review |
 | **Requirements / Traceability Checked** | RTM v2.0 updated with M2 evidence; CR-001 to CR-009 open |

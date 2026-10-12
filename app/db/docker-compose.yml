@@ -1,0 +1,12 @@
+services:
+  testdb:
+    image: postgres:17
+    container_name: civicconnect-testdb
+    environment:
+      POSTGRES_DB: civicconnect_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data

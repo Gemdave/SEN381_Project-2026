@@ -30,6 +30,15 @@ public static class DevelopmentSeed
         var staffTwo = AppUser.Create("Dev Staff Two", UserRole.ServiceStaff);
         db.Users.AddRange(requester, staffOne, staffTwo);
 
+        // FR-008. Split the categories so each staff member sees a different part
+        // of the queue, and BB-03 has an out-of-scope request to try.
+        string[] staffOneCategories = ["Fault", "Equipment", "Security", "Other"];
+        foreach (var category in categories)
+        {
+            var owner = staffOneCategories.Contains(category.Name) ? staffOne : staffTwo;
+            db.StaffCategoryScopes.Add(StaffCategoryScope.Create(owner.Id, category.Id));
+        }
+
         var now = DateTimeOffset.UtcNow;
         for (var i = 1; i <= 5; i++)
         {

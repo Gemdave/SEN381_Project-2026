@@ -19,6 +19,7 @@ public class DetailsModel(
     CivicConnectDbContext db,
     AssignmentService assignment,
     IRequestHistoryRepository historyRepository,
+    IAuthorisationPolicy policy,
     CapabilityFactory capabilities,
     ICurrentUser currentUser) : PageModel
 {
@@ -44,21 +45,27 @@ public class DetailsModel(
         {
             AssignmentOutcome.Assigned => "You now own this request.",
             AssignmentOutcome.AlreadyOwned => "Another staff member has already accepted this request.",
-            AssignmentOutcome.Forbidden => "You are not permitted to accept requests.",
+            AssignmentOutcome.Forbidden => "You are not permitted to accept this request.",
             _ => "That request no longer exists."
         };
 
-        if (result.Outcome == AssignmentOutcome.NotFound)
+        if (result.Outcome == AssignmentOutcome.NotFound || !await LoadAsync(ct))
         {
             return NotFound();
         }
 
-        await LoadAsync(ct);
         return Page();
     }
 
     private async Task<bool> LoadAsync(CancellationToken ct)
     {
+        // AC-008.2: a request outside this user's scope answers exactly like a
+        // missing one, so the page confirms nothing about it.
+        if (!await policy.MayAsync(currentUser.Id, RequestAction.View, Id, ct))
+        {
+            return false;
+        }
+
         var request = await db.Requests.AsNoTracking()
             .Where(r => r.Id == Id)
             .Select(r => new { r.Reference, r.Title, r.Description, r.Status })

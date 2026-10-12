@@ -11,6 +11,7 @@ public class CivicConnectDbContext(DbContextOptions<CivicConnectDbContext> optio
     public DbSet<RequestHistoryEntry> RequestHistory => Set<RequestHistoryEntry>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<AppUser> Users => Set<AppUser>();
+    public DbSet<StaffCategoryScope> StaffCategoryScopes => Set<StaffCategoryScope>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -57,6 +58,13 @@ public class CivicConnectDbContext(DbContextOptions<CivicConnectDbContext> optio
             e.HasKey(x => x.Id);
             e.Property(x => x.DisplayName).HasMaxLength(100).IsRequired();
             e.Property(x => x.Role).HasConversion<string>().HasMaxLength(20).IsRequired();
+        });
+
+        b.Entity<StaffCategoryScope>(e =>
+        {
+            // FR-008: the queue and the policy both look up (user, category).
+            e.ToTable("staff_category_scopes");
+            e.HasKey(x => new { x.UserId, x.CategoryId });
         });
     }
 }

@@ -37,6 +37,10 @@ public class ConcurrentAcceptTests(TestDatabaseFixture fixture) : IClassFixture<
                 var staff = AppUser.Create("Staff " + i, UserRole.ServiceStaff);
                 setup.Users.Add(staff);
                 staffIds.Add(staff.Id);
+
+                // FR-008: every competitor must be in scope, so the race is decided
+                // by the conditional update and not by the policy.
+                setup.StaffCategoryScopes.Add(StaffCategoryScope.Create(staff.Id, category.Id));
             }
 
             var request = Request.Submit(

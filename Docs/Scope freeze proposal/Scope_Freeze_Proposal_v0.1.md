@@ -1,6 +1,8 @@
-# M3 Scope Freeze Proposal (v0.1, draft for team agreement)
+# M3 Scope Freeze Proposal (v1.0, for team sign-off)
 
-**Course:** SEN381 | **Milestone:** 3 | **Role:** Requirements & UX | **Basis:** `main` at 3462b5a
+**Course:** SEN381 | **Milestone:** 3 | **Role:** Requirements & UX | **Basis:** `main` at fe217d9 plus `frontend-milestone-3-development` at 44759ab
+
+**Changes from v0.1:** B4 closed by FR-008 category scoping, so FR-008 is now fully IN. B3 is partly mitigated, because IT-02 now passes against a local PostgreSQL. B5 is added for the missing EF Core migrations.
 
 ## 1. Purpose
 M3 step 1 asks the team to agree which *implemented* requirements form the release candidate (RC), and then to stop adding features. This proposal starts from the M3 slice in the Test Plan (FR-001, 002, 004, 007, 008, 011, 012, 014, 020; NFR-003 to 006) and checks each item against what the CI-built tree (`app/`) actually contains today.
@@ -29,19 +31,19 @@ Status key: **IN** is frozen in scope; **IN\*** is in scope only if the gap clos
 | FR-001 | Must | No (`Backend/` only) | Port submit page, service, validation | IN\* | UT-05, BB-01, BB-02, IT-01, E2E-01 |
 | FR-002 | Must | Category entity and seed only | Port category list into the submit form | IN\* | UT-02 |
 | FR-003 | Must | No | Port requester details view (E2E-01 uses AC-003.1) | IN\* | E2E-01 |
-| FR-004 | Must | Requester View rule only | Port history page | IN\* | BB-05, E2E-01 |
+| FR-004 | Must | Requester View rule only (RequestAccess) | Port history page | IN\* | UT-04, BB-05, E2E-01 |
 | FR-007 | Must | No | Port feedback; needs FR-012 wired first | IN\* (stretch) | E2E-02 |
-| FR-008 | Must | Queue page, no team/category scope | Add scope, or narrow AC-008.1 by CR | IN | BB-03 |
-| FR-010 | Must | Staff details page | None | IN (added, already built) | Walked in E2E-02 |
-| FR-011 | Must | Yes: service, `POST .../assignment` with 409, UI, tests | CI test DB so IT-02 actually runs | IN | UT-03, IT-02, E2E-02 |
+| FR-008 | Must | Yes: queue and details scoped by staff category (`StaffCategoryScope`, `RequestAccess`); an out-of-scope request returns 404 | None | IN | UT-04, BB-03 |
+| FR-010 | Must | Staff details page, checked by the policy first | None | IN (added, already built) | Walked in E2E-02 |
+| FR-011 | Must | Yes: service, `POST .../assignment` with 409, UI, tests | CI test DB (B3); IT-02 passes locally | IN | UT-03, IT-02, E2E-02 |
 | FR-012 | Must | Rules and service, not wired to any page or endpoint | Status endpoint and Details actions | IN\* | UT-01, BB-04, E2E-02 |
-| FR-014 | Must | Close rule in policy (assigned staff only), no flow | Comes with FR-012 (Resolved to Closed) | IN\* | UT-04, IT-03, E2E-02 |
+| FR-014 | Must | Close rule in policy (owning, in-scope staff only), no flow | Comes with FR-012 (Resolved to Closed) | IN\* | UT-04, IT-03, E2E-02 |
 | FR-020 | Must | Not built in either tree; roles are seeded | None feasible before freeze | OUT | Drop UT-04's role-change rows |
 | NFR-001 | Should | No | Depends on FR-001 | IN\* | Usability walkthrough |
-| NFR-003 | Must | Requester View rule | Depends on FR-004 | IN\* | BB-05 |
-| NFR-004 | Should | Queue query (capped at 50 rows) | Staging (see B2) | IN\* | PT-01 |
-| NFR-005 | Must | Guarded update and concurrency test | CI test DB (see B3) | IN | UT-03, IT-02 |
-| NFR-006 | Must | Fail-closed policy, 403 on assign | None | IN | UT-04, IT-03 |
+| NFR-003 | Must | Requester View rule | Depends on FR-004 | IN\* | UT-04, BB-05 |
+| NFR-004 | Should | Queue query (capped at 50 rows) | Staging and migrations (B2, B5) | IN\* | PT-01 |
+| NFR-005 | Must | Guarded update and concurrency test | CI test DB (B3); IT-02 passes locally | IN | UT-03, IT-02 |
+| NFR-006 | Must | Fail-closed policy with category scope, 403 on assign | None | IN | UT-04, IT-03 |
 
 **OUT for M3:**
 - FR-013 is a Must but exists in `Backend/` only, so AC-014.1 "resolution info recorded" is partial.
@@ -56,11 +58,12 @@ Out-of-scope items carry no verification claim.
 | :--- | :--- | :--- | :--- |
 | B1 | Requester slice exists only in `Backend/` | FR-001 to 004, 007, NFR-001, 003 | Team decision (Section 3), then frontend and backend |
 | B2 | `Program.cs` refuses to start outside Development until CR-003 closes, so no staging RC | E2E-01, E2E-02, PT-01, M3 deployment evidence | Decide: close CR-003, or run staging with the development identity and record it under RSK-012 |
-| B3 | CI has no PostgreSQL, so ConcurrentAcceptTests is skipped (skipped counts as blocked, not passed) | IT-01 to IT-03, NFR-005 | Gerald (CI) |
-| B4 | Test Plan seed assumes staff category scope and per-staff close permission; `app/` has neither | BB-03, UT-04 expected results | Implement scope, or raise a CR narrowing AC-008.1 and AC-014.2 |
+| B3 | CI has no PostgreSQL, so ConcurrentAcceptTests is skipped (skipped counts as blocked, not passed). Partly mitigated: `feature/test-database` adds a local test DB, and IT-02 passes locally (21/21) | IT-01 to IT-03, NFR-005 | Gerald (CI) |
+| B4 | **Closed.** Staff category scope is built and UT-04 passes (0339355, 44759ab). Close stays with the owning in-scope staff member, so there is no separate per-staff close permission | BB-03, UT-04 | Gerald: align the Test Plan seed (Staff 2 "no close permission" becomes "not the owner") |
+| B5 | `app/` has no EF Core migrations, so the app creates no tables on startup. A migration generated locally works, but it is not committed | E2E-01, E2E-02, PT-01, staging | Team decision: commit an initial migration |
 
 ## 6. Release candidate identifier
-Proposed tag: `m3-rc1` on `main` once the IN\* gaps are closed or deferred. All execution evidence and the RTM M3 columns must reference that tag.
+Proposed tag: `m3-rc1` on `main` once the IN\* gaps are closed or deferred. All execution evidence and the RTM M3 columns must reference that tag. Evidence so far is in `Docs/Risks/RTM/CivicConnect-RTM-v3.0.xlsx` (UT-01, UT-03 and UT-04 passed; IT-02 passed locally).
 
 ## 7. Agreement
 | Member | Role | Agreed (Y/N, date) | Comment |

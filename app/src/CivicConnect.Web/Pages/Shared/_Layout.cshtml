@@ -1,3 +1,9 @@
+@using CivicConnect.Infrastructure.Persistence
+@using CivicConnect.Web.Security
+@using Microsoft.EntityFrameworkCore
+@inject IWebHostEnvironment HostEnvironment
+@inject CivicConnectDbContext Db
+@inject ICurrentUser CurrentUser
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,6 +18,28 @@
         <nav>
             <a href="/Staff/Queue">Staff queue</a>
         </nav>
+        @* Development only: the CR-003 stand-in for sign-in (RSK-012). *@
+        @if (HostEnvironment.IsDevelopment())
+        {
+            var users = await Db.Users.AsNoTracking()
+                .OrderBy(u => u.Role).ThenBy(u => u.DisplayName)
+                .Select(u => new { u.Id, u.DisplayName, u.Role })
+                .ToListAsync();
+            <nav class="dev-users" aria-label="Development user switcher">
+                Viewing as:
+                @foreach (var u in users)
+                {
+                    if (u.Id == CurrentUser.Id)
+                    {
+                        <strong>@u.DisplayName (@u.Role)</strong>
+                    }
+                    else
+                    {
+                        <a href="/Staff/Queue?user=@u.Id">@u.DisplayName</a>
+                    }
+                }
+            </nav>
+        }
     </header>
     <main>
         @RenderBody()

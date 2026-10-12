@@ -5,6 +5,10 @@ namespace CivicConnect.Application.Tests;
 
 internal sealed class FakeRequestRepository(int rowsAffected, RequestOwnership? ownership) : IRequestRepository
 {
+    private long nextReference = 1000;
+
+    public List<Request> Added { get; } = [];
+
     public Task<int> TryAssignAsync(Guid requestId, Guid staffUserId, DateTimeOffset now, CancellationToken ct)
         => Task.FromResult(rowsAffected);
 
@@ -14,7 +18,13 @@ internal sealed class FakeRequestRepository(int rowsAffected, RequestOwnership? 
     public Task<RequestOwnership?> GetOwnershipAsync(Guid requestId, CancellationToken ct)
         => Task.FromResult(ownership);
 
-    public Task AddAsync(Request request, CancellationToken ct) => Task.CompletedTask;
+    public Task<long> NextReferenceNumberAsync(CancellationToken ct) => Task.FromResult(nextReference++);
+
+    public Task AddAsync(Request request, CancellationToken ct)
+    {
+        Added.Add(request);
+        return Task.CompletedTask;
+    }
 }
 
 internal sealed class FakeHistoryRepository : IRequestHistoryRepository
@@ -29,8 +39,31 @@ internal sealed class FakeHistoryRepository : IRequestHistoryRepository
 
 internal sealed class FakePolicy(bool permitted) : IAuthorisationPolicy
 {
+    public List<RequestAction> Asked { get; } = [];
+
     public Task<bool> MayAsync(Guid userId, RequestAction action, Guid requestId, CancellationToken ct)
-        => Task.FromResult(permitted);
+    {
+        Asked.Add(action);
+        return Task.FromResult(permitted);
+    }
+
+    public Task<bool> MaySubmitAsync(Guid userId, CancellationToken ct) => Task.FromResult(permitted);
+}
+
+internal sealed class FakeQueries(params Guid[] activeCategories) : IRequestQueries
+{
+    public Task<IReadOnlyList<CategoryOption>> ListActiveCategoriesAsync(CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<CategoryOption>>(
+            activeCategories.Select(id => new CategoryOption(id, "Category")).ToList());
+
+    public Task<bool> IsActiveCategoryAsync(Guid categoryId, CancellationToken ct)
+        => Task.FromResult(activeCategories.Contains(categoryId));
+
+    public Task<IReadOnlyList<RequestListItem>> ListForRequesterAsync(Guid requesterId, CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<RequestListItem>>([]);
+
+    public Task<RequestDetail?> GetDetailAsync(Guid requestId, CancellationToken ct)
+        => Task.FromResult<RequestDetail?>(null);
 }
 
 internal sealed class DirectUnitOfWork : IUnitOfWork

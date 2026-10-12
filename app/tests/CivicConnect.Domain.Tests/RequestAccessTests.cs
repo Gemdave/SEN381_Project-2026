@@ -14,6 +14,14 @@ public class RequestAccessTests
     private static readonly Guid Someone = Guid.NewGuid();
 
     [Theory]
+    [InlineData(UserRole.Requester, true)]
+    [InlineData(UserRole.ServiceStaff, false)]
+    [InlineData(UserRole.Management, false)]
+    [InlineData(UserRole.Administrator, false)]
+    public void Only_requesters_may_submit(UserRole role, bool expected)
+        => Assert.Equal(expected, RequestAccess.MaySubmit(role));
+
+    [Theory]
     [InlineData(true, true)]
     [InlineData(false, false)]
     public void Staff_see_a_request_only_inside_their_category_scope(bool inScope, bool expected)

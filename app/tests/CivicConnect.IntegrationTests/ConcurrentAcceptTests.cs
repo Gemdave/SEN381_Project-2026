@@ -47,6 +47,7 @@ public class ConcurrentAcceptTests(TestDatabaseFixture fixture) : IClassFixture<
                 reference: "REQ-" + Random.Shared.Next(1000, 9999),
                 title: "Concurrent accept",
                 description: "Two staff accept at the same moment.",
+                location: "Integration test",
                 categoryId: category.Id,
                 requesterId: requester.Id,
                 now: DateTimeOffset.UtcNow);

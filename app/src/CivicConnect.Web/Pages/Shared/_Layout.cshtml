@@ -16,6 +16,8 @@
     <header>
         <strong>CivicConnect</strong>
         <nav>
+            <a href="/Requests/Submit">Submit a request</a>
+            <a href="/Requests">My requests</a>
             <a href="/Staff/Queue">Staff queue</a>
         </nav>
         @* Development only: the CR-003 stand-in for sign-in (RSK-012). *@
@@ -35,7 +37,8 @@
                     }
                     else
                     {
-                        <a href="/Staff/Queue?user=@u.Id">@u.DisplayName</a>
+                        var home = u.Role == CivicConnect.Domain.Access.UserRole.Requester ? "/Requests" : "/Staff/Queue";
+                        <a href="@(home)?user=@u.Id">@u.DisplayName</a>
                     }
                 }
             </nav>

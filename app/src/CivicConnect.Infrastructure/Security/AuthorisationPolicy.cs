@@ -47,4 +47,14 @@ public sealed class AuthorisationPolicy(CivicConnectDbContext db) : IAuthorisati
             _ => false
         };
     }
+
+    public async Task<bool> MaySubmitAsync(Guid userId, CancellationToken ct)
+    {
+        var role = await db.Users.AsNoTracking()
+            .Where(u => u.Id == userId)
+            .Select(u => (UserRole?)u.Role)
+            .FirstOrDefaultAsync(ct);
+
+        return role is { } known && RequestAccess.MaySubmit(known);
+    }
 }

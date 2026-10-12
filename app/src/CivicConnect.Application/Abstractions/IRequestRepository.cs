@@ -18,5 +18,8 @@ public interface IRequestRepository
 
     Task<RequestOwnership?> GetOwnershipAsync(Guid requestId, CancellationToken ct);
 
+    /// <summary>FR-001. Next number from a database sequence, so two submissions never share a reference.</summary>
+    Task<long> NextReferenceNumberAsync(CancellationToken ct);
+
     Task AddAsync(Request request, CancellationToken ct);
 }

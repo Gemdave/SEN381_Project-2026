@@ -1,0 +1,26 @@
+@page
+@model CivicConnect.Web.Pages.Requests.IndexModel
+@{
+    ViewData["Title"] = "My requests";
+}
+
+<h1>My requests</h1>
+<p><a href="/Requests/Submit">Submit a new request</a></p>
+
+@if (Model.Items.Count == 0)
+{
+    <partial name="_EmptyState" model="@("You have not submitted any requests yet.")" />
+}
+else
+{
+    foreach (var item in Model.Items)
+    {
+        <article class="request-summary">
+            <a href="/Requests/Details?id=@item.Id">@item.Reference</a>
+            <h3>@item.Title</h3>
+            <status-badge status="@item.Status"></status-badge>
+            <span class="category">@item.CategoryName</span>
+            <time datetime="@item.CreatedAtUtc.ToString("o")">@item.CreatedAtUtc.ToString("u")</time>
+        </article>
+    }
+}

@@ -2,22 +2,22 @@ using CivicConnect.Application.Abstractions;
 using CivicConnect.Application.Requests;
 using CivicConnect.Application.Results;
 using CivicConnect.Domain.Requests;
-using CivicConnect.Infrastructure.Persistence;
 using CivicConnect.Web.Models;
 using CivicConnect.Web.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 
 namespace CivicConnect.Web.Pages.Staff;
 
 /// <summary>
-/// FR-010 for the view, FR-011 for the accept handler. This page is the user
-/// facing end of the M2 demonstration trace.
+/// FR-010 for the view, FR-011 for the accept handler, FR-012 and FR-014 for
+/// the status handler. This page is the user facing end of the M2
+/// demonstration trace.
 /// </summary>
 public class DetailsModel(
-    CivicConnectDbContext db,
+    IRequestQueries queries,
     AssignmentService assignment,
+    StatusTransitionService transitions,
     IRequestHistoryRepository historyRepository,
     IAuthorisationPolicy policy,
     CapabilityFactory capabilities,
@@ -26,11 +26,9 @@ public class DetailsModel(
     [BindProperty(SupportsGet = true)]
     public Guid Id { get; set; }
 
-    public string Reference { get; private set; } = string.Empty;
-    public string Title { get; private set; } = string.Empty;
-    public string Description { get; private set; } = string.Empty;
-    public RequestStatus Status { get; private set; }
+    public RequestDetail? Detail { get; private set; }
     public RequestCapabilities Capabilities { get; private set; } = RequestCapabilities.None;
+    public IReadOnlyList<RequestStatus> NextStatuses { get; private set; } = [];
     public IReadOnlyList<RequestHistoryEntry> History { get; private set; } = [];
     public string? Message { get; private set; }
 
@@ -57,6 +55,29 @@ public class DetailsModel(
         return Page();
     }
 
+    public async Task<IActionResult> OnPostTransitionAsync(RequestStatus next, string? note, CancellationToken ct)
+    {
+        var outcome = await transitions.MoveAsync(Id, currentUser.Id, next, note, ct);
+
+        // AC-012.2: a refused move is explained, and the status stays as it was.
+        Message = outcome switch
+        {
+            TransitionOutcome.Changed => "Status changed.",
+            TransitionOutcome.NotAllowed => "That status change is not allowed from the current status.",
+            TransitionOutcome.NoteTooLong => $"Please keep the note to {StatusTransitionService.NoteMax} characters or fewer.",
+            TransitionOutcome.Conflicted => "The status changed while you were working. Reload and try again.",
+            TransitionOutcome.Forbidden => "You are not permitted to change this request's status.",
+            _ => "That request no longer exists."
+        };
+
+        if (outcome == TransitionOutcome.NotFound || !await LoadAsync(ct))
+        {
+            return NotFound();
+        }
+
+        return Page();
+    }
+
     private async Task<bool> LoadAsync(CancellationToken ct)
     {
         // AC-008.2: a request outside this user's scope answers exactly like a
@@ -66,21 +87,20 @@ public class DetailsModel(
             return false;
         }
 
-        var request = await db.Requests.AsNoTracking()
-            .Where(r => r.Id == Id)
-            .Select(r => new { r.Reference, r.Title, r.Description, r.Status })
-            .FirstOrDefaultAsync(ct);
-
-        if (request is null)
+        Detail = await queries.GetDetailAsync(Id, ct);
+        if (Detail is null)
         {
             return false;
         }
 
-        Reference = request.Reference;
-        Title = request.Title;
-        Description = request.Description;
-        Status = request.Status;
         Capabilities = await capabilities.ForAsync(currentUser.Id, Id, ct);
+
+        // Only moves the domain allows (AC-012.1), and closing only with the
+        // close capability (AC-014.2).
+        NextStatuses = StatusTransition.NextFrom(Detail.Status)
+            .Where(s => s == RequestStatus.Closed ? Capabilities.CanClose : Capabilities.CanTransition)
+            .ToList();
+
         History = await historyRepository.ForRequestAsync(Id, ct);
         return true;
     }

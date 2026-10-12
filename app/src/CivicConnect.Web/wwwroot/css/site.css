@@ -7,3 +7,13 @@ header { display: flex; gap: 1rem; align-items: baseline; border-bottom: 1px sol
 .history { list-style: none; padding-left: 0; }
 .history li { border-bottom: 1px solid var(--line); padding: .4rem 0; font-size: .9rem; }
 .message { background: #f3f4f6; padding: .5rem .75rem; border-left: 3px solid var(--ink); }
+header nav { display: flex; gap: .75rem; }
+.dev-users { margin-left: auto; font-size: .85rem; }
+.stacked { display: grid; gap: .35rem; max-width: 32rem; margin: 1rem 0; }
+.stacked input, .stacked textarea, .stacked select { font: inherit; padding: .35rem; }
+.stacked button { justify-self: start; margin-top: .5rem; }
+.field-error, .errors { color: #b42318; font-size: .85rem; }
+.fields { display: grid; grid-template-columns: max-content 1fr; gap: .25rem 1rem; }
+.fields dt { font-weight: 600; }
+.fields dd { margin: 0; }
+.hint { color: #6b7280; }

@@ -46,6 +46,7 @@ public static class DevelopmentSeed
                 reference: "REQ-" + i.ToString("D4"),
                 title: "Sample request " + i,
                 description: "Seeded for local development.",
+                location: "Main building, room " + (100 + i),
                 categoryId: categories[i % categories.Count].Id,
                 requesterId: requester.Id,
                 now: now));

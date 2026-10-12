@@ -16,4 +16,7 @@ public enum RequestAction
 public interface IAuthorisationPolicy
 {
     Task<bool> MayAsync(Guid userId, RequestAction action, Guid requestId, CancellationToken ct);
+
+    /// <summary>FR-001. Submitting has no request yet, so it is decided on the user alone.</summary>
+    Task<bool> MaySubmitAsync(Guid userId, CancellationToken ct);
 }

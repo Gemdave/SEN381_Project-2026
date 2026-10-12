@@ -7,6 +7,9 @@ namespace CivicConnect.Domain.Access;
 /// </summary>
 public static class RequestAccess
 {
+    /// <summary>FR-001. Requests are submitted by requesters, not on their behalf.</summary>
+    public static bool MaySubmit(UserRole role) => role == UserRole.Requester;
+
     /// <summary>AC-004.2 and NFR-003 for requesters, AC-008.1 and AC-008.2 for staff.</summary>
     public static bool MayView(UserRole role, Guid userId, Guid requesterId, bool inScope) => role switch
     {

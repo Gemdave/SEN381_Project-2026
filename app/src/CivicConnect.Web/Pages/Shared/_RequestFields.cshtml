@@ -1,0 +1,15 @@
+@*
+    Presentation only: the fields of one request (AC-003.1, AC-010.1). It has no
+    controls, so a page that renders this alone is read only by construction.
+*@
+@model CivicConnect.Application.Abstractions.RequestDetail
+
+<dl class="fields">
+    <dt>Reference</dt><dd>@Model.Reference</dd>
+    <dt>Status</dt><dd><status-badge status="@Model.Status"></status-badge></dd>
+    <dt>Category</dt><dd>@Model.CategoryName</dd>
+    <dt>Location</dt><dd>@Model.Location</dd>
+    <dt>Requester</dt><dd>@Model.RequesterName</dd>
+    <dt>Submitted</dt><dd><time datetime="@Model.CreatedAtUtc.ToString("o")">@Model.CreatedAtUtc.ToString("u")</time></dd>
+    <dt>Description</dt><dd>@Model.Description</dd>
+</dl>

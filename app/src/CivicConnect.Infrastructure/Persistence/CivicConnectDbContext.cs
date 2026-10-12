@@ -13,8 +13,13 @@ public class CivicConnectDbContext(DbContextOptions<CivicConnectDbContext> optio
     public DbSet<AppUser> Users => Set<AppUser>();
     public DbSet<StaffCategoryScope> StaffCategoryScopes => Set<StaffCategoryScope>();
 
+    /// <summary>FR-001. Numbers for request references (REQ-001000 and up).</summary>
+    public const string ReferenceSequence = "request_reference_seq";
+
     protected override void OnModelCreating(ModelBuilder b)
     {
+        b.HasSequence<long>(ReferenceSequence).StartsAt(1000);
+
         b.Entity<Request>(e =>
         {
             e.ToTable("requests");
@@ -23,6 +28,7 @@ public class CivicConnectDbContext(DbContextOptions<CivicConnectDbContext> optio
             e.HasIndex(x => x.Reference).IsUnique();
             e.Property(x => x.Title).HasMaxLength(200).IsRequired();
             e.Property(x => x.Description).IsRequired();
+            e.Property(x => x.Location).HasMaxLength(Request.LocationMax).IsRequired();
             e.Property(x => x.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
 
             // FR-004 and NFR-003: every requester query filters on this column.

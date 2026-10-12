@@ -7,12 +7,18 @@ namespace CivicConnect.Domain.Requests;
 /// </summary>
 public class Request
 {
+    // FR-001 field limits, the same as the ADR-006 contract.
+    public const int TitleMax = 120;
+    public const int DescriptionMax = 2000;
+    public const int LocationMax = 200;
+
     private Request() { }
 
     public Guid Id { get; private set; } = Guid.NewGuid();
     public string Reference { get; private set; } = string.Empty;
     public string Title { get; private set; } = string.Empty;
     public string Description { get; private set; } = string.Empty;
+    public string Location { get; private set; } = string.Empty;
     public Guid CategoryId { get; private set; }
     public Guid RequesterId { get; private set; }
     public RequestStatus Status { get; private set; } = RequestStatus.Received;
@@ -25,6 +31,7 @@ public class Request
         string reference,
         string title,
         string description,
+        string location,
         Guid categoryId,
         Guid requesterId,
         DateTimeOffset now)
@@ -33,6 +40,7 @@ public class Request
         if (string.IsNullOrWhiteSpace(reference)) missing.Add(nameof(reference));
         if (string.IsNullOrWhiteSpace(title)) missing.Add(nameof(title));
         if (string.IsNullOrWhiteSpace(description)) missing.Add(nameof(description));
+        if (string.IsNullOrWhiteSpace(location)) missing.Add(nameof(location));
         if (categoryId == Guid.Empty) missing.Add(nameof(categoryId));
         if (requesterId == Guid.Empty) missing.Add(nameof(requesterId));
 
@@ -46,6 +54,7 @@ public class Request
             Reference = reference,
             Title = title,
             Description = description,
+            Location = location,
             CategoryId = categoryId,
             RequesterId = requesterId,
             Status = RequestStatus.Received,

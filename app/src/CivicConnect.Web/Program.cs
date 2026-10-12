@@ -1,6 +1,7 @@
 using CivicConnect.Application.Abstractions;
 using CivicConnect.Application.Requests;
 using CivicConnect.Infrastructure.Persistence;
+using CivicConnect.Infrastructure.Persistence.Queries;
 using CivicConnect.Infrastructure.Persistence.Repositories;
 using CivicConnect.Infrastructure.Security;
 using CivicConnect.Infrastructure.Seed;
@@ -23,11 +24,13 @@ builder.Services.AddDbContext<CivicConnectDbContext>(o => o.UseNpgsql(connection
 
 builder.Services.AddScoped<IRequestRepository, RequestRepository>();
 builder.Services.AddScoped<IRequestHistoryRepository, RequestHistoryRepository>();
+builder.Services.AddScoped<IRequestQueries, RequestQueries>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IAuthorisationPolicy, AuthorisationPolicy>();
 builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddScoped<AssignmentService>();
 builder.Services.AddScoped<StatusTransitionService>();
+builder.Services.AddScoped<SubmissionService>();
 // While CR-003 is open there is no authentication, so the development stand in
 // is registered only in Development. Anywhere else the application refuses to
 // start rather than running with no identity (RSK-012).
@@ -67,5 +70,6 @@ app.UseRouting();
 
 app.MapRazorPages();
 app.MapAssignmentEndpoints();
+app.MapRequestEndpoints();
 
 app.Run();

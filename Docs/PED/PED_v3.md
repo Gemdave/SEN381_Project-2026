@@ -33,9 +33,13 @@
     - [Engineering Decision Log](#engineering-decision-log)
     - [Technical Constraints](#technical-constraints)
 12. [Engineering Decisions and Comparisons](#engineering-decisions-and-comparisons)
-13. [Risk Register](#risk-register)
-14. [Baseline Sign-Off](#baseline-sign-off)
-15. [References](#references)
+13. [M3 Overview](#m3-overview)
+14. [M2 Baseline Conformance (Requirements)](#m2-baseline-conformance-requirements)
+15. [Controlled Changes (M3)](#controlled-changes-m3)
+16. [Release Readiness (Requirements)](#release-readiness-requirements)
+17. [Risk Register](#risk-register)
+18. [Baseline Sign-Off](#baseline-sign-off)
+19. [References](#references)
 
 ---
 
@@ -385,6 +389,35 @@ Every decision is compared here against CivicConnect's own drivers, including th
 | **Overall** | No Strong, 2 Weak | 1 Strong, 3 Weak | **3 Strong, no Weak** | 1 Strong, 1 Weak |
 
 **Decision.** Option C with P3 inside it. One web frontend service serves every role from role-separated page folders over shared partials, and the browser talks only to it. The capability object only decides which controls appear; its values come from the owning service, which re-checks every action. The frontend keeps no in-memory session state, so it can run as several copies. C and D both have three Strong ratings, but D is Weak on cost, one of the three top-priority criteria, because it adds three or four deployables now, while C's page folders are where D can be split out later. **Costs and triggers:** one more deployable and network hop per screen, and a frontend defect can affect every role. Split per role (D) only if measurement shows one role holding the others back; simplify P3 if the sponsor view (FR-023) cannot reuse the partials.
+
+---
+
+## M3 Overview
+**Release candidate:** the merged build of `main` and `frontend-milestone-3-development`, with its scope frozen in `Docs/Scope freeze proposal/Scope_Freeze_Proposal_v2.0.md`.  
+**Implemented:** FR-001 to FR-004, FR-007 to FR-014, and NFR-003 to NFR-007 (NFR-007 for request history only). NFR-001 awaits its walkthrough. **Not delivered:** FR-015 to FR-017 and FR-019 to FR-021 (CR-013), plus the Shoulds and Could listed in the scope freeze.  
+**Status:** 76 automated tests pass locally, 26 of 26 acceptance checks pass, and PT-01 passes (p95 0.064 s). CI skips the integration tests until it has a test database (B3), and there is no staging yet (B2). Evidence: `Test/Evidence/` and `Docs/Risks/RTM/CivicConnect-RTM-v3.0.xlsx`.
+
+## M2 Baseline Conformance (Requirements)
+Most requirement areas match the M2 baseline. CR-003, CR-009, CR-012 and CR-013 control the deviations. Two remain open for Architecture: one deployable instead of separate services (CR-014), and the ADR-006 contract (CR-015). The full table is in `Docs/Requirements/M3_Baseline_Conformance.md`.
+
+## Controlled Changes (M3)
+The M2 table in Controlled Changes to the Baseline is kept as history. The M3 decisions are in full in `Docs/Risks/RTM/CivicConnect-Change-Register-v3.0.xlsx`.
+
+| Decision | CRs |
+| :--- | :--- |
+| Approved and applied | CR-001, CR-002, CR-004, CR-008, CR-011, EC-001 |
+| Deferred to M4 | CR-003 (sign-in), CR-005 to CR-007 (reporting), CR-009 (Rejected status) |
+| Proposed | CR-012 (the owner in scope or an administrator closes), CR-013 (six Musts deferred) |
+| Raised for Architecture | CR-010 (approved, not built), CR-014 (one deployable), CR-015 (POST, GUID ids) |
+
+## Release Readiness (Requirements)
+| Requirements | State |
+| :--- | :--- |
+| FR-001 to FR-004, FR-007 to FR-014, NFR-003 to NFR-007 | Delivered and verified (automated and acceptance) |
+| NFR-001 | Delivered; walkthrough pending |
+| FR-015 to FR-017, FR-019 to FR-021 | Not delivered (CR-013) |
+
+**Open blockers:** B2 (staging) and B3 (no test database in CI). **Accepted limitations:** development identity instead of sign-in (RSK-012), and local evidence only. The gate summary and residual risk are in CI & Automated Verification and the Risk Register.
 
 ---
 

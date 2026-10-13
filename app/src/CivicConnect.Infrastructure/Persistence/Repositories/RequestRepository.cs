@@ -29,7 +29,7 @@ public sealed class RequestRepository(CivicConnectDbContext db) : IRequestReposi
     public async Task<RequestOwnership?> GetOwnershipAsync(Guid requestId, CancellationToken ct)
         => await db.Requests
             .Where(r => r.Id == requestId)
-            .Select(r => new RequestOwnership(r.Id, r.AssignedToUserId, r.Status))
+            .Select(r => new RequestOwnership(r.Id, r.AssignedToUserId, r.Status, r.RequesterId))
             .FirstOrDefaultAsync(ct);
 
     private const string NextReferenceSql =

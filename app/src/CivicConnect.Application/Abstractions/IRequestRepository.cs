@@ -2,7 +2,7 @@ using CivicConnect.Domain.Requests;
 
 namespace CivicConnect.Application.Abstractions;
 
-public sealed record RequestOwnership(Guid RequestId, Guid? OwnerId, RequestStatus Status);
+public sealed record RequestOwnership(Guid RequestId, Guid? OwnerId, RequestStatus Status, Guid RequesterId = default);
 
 public interface IRequestRepository
 {

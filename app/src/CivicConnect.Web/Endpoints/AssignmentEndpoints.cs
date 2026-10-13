@@ -30,6 +30,11 @@ public static class AssignmentEndpoints
                     ownerId = result.OwnerId
                 }),
                 AssignmentOutcome.Forbidden => Results.StatusCode(StatusCodes.Status403Forbidden),
+                AssignmentOutcome.NotAvailable => Results.Conflict(new
+                {
+                    code = "request_not_available",
+                    message = "This request can no longer be accepted."
+                }),
                 _ => Results.NotFound()
             };
         });

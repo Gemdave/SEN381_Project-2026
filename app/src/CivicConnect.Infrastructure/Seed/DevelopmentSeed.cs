@@ -35,7 +35,9 @@ public static class DevelopmentSeed
         var requester = AppUser.Create("Dev Requester", UserRole.Requester);
         var staffOne = AppUser.Create("Dev Staff One", UserRole.ServiceStaff);
         var staffTwo = AppUser.Create("Dev Staff Two", UserRole.ServiceStaff);
-        db.Users.AddRange(requester, staffOne, staffTwo);
+        var manager = AppUser.Create("Dev Manager", UserRole.Management);
+        var admin = AppUser.Create("Dev Administrator", UserRole.Administrator);
+        db.Users.AddRange(requester, staffOne, staffTwo, manager, admin);
 
         // FR-008. Split the categories so each staff member sees a different part
         // of the queue, and BB-03 has an out-of-scope request to try.
@@ -56,7 +58,7 @@ public static class DevelopmentSeed
                 location: "Main building, room " + (100 + i),
                 categoryId: categories[i % categories.Count].Id,
                 requesterId: requester.Id,
-                now: now));
+                now: now.AddMinutes((i - 6) * 10)));
         }
 
         await db.SaveChangesAsync(ct);

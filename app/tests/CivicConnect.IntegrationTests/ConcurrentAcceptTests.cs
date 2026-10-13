@@ -14,7 +14,8 @@ namespace CivicConnect.IntegrationTests;
 /// TC-011.2, the verification evidence for the M2 demonstration trace:
 /// FR-011, ASR-01, NFR-005, AC-011.2. Skipped when no test database is set.
 /// </summary>
-public class ConcurrentAcceptTests(TestDatabaseFixture fixture) : IClassFixture<TestDatabaseFixture>
+[Collection(DatabaseCollection.Name)]
+public class ConcurrentAcceptTests(TestDatabaseFixture fixture)
 {
     [RequiresDatabaseFact]
     public async Task Exactly_one_of_eight_simultaneous_accepts_succeeds()

@@ -43,8 +43,10 @@ public sealed class AuthorisationPolicy(CivicConnectDbContext db) : IAuthorisati
             RequestAction.Assign => user.Role == UserRole.ServiceStaff,
             RequestAction.Transition or RequestAction.AddNote =>
                 user.Role == UserRole.ServiceStaff && request.AssignedToUserId == userId,
+            // Closing (AC-014.2): the staff member who owns it, or an administrator.
             RequestAction.Close =>
-                user.Role == UserRole.ServiceStaff && request.AssignedToUserId == userId,
+                (user.Role == UserRole.ServiceStaff && request.AssignedToUserId == userId)
+                || user.Role == UserRole.Administrator,
 
             // Anything new is refused until a rule is written for it.
             _ => false

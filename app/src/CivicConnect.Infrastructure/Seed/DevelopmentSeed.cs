@@ -28,7 +28,9 @@ public static class DevelopmentSeed
         var requester = AppUser.Create("Dev Requester", UserRole.Requester);
         var staffOne = AppUser.Create("Dev Staff One", UserRole.ServiceStaff);
         var staffTwo = AppUser.Create("Dev Staff Two", UserRole.ServiceStaff);
-        db.Users.AddRange(requester, staffOne, staffTwo);
+        var manager = AppUser.Create("Dev Manager", UserRole.Management);
+        var admin = AppUser.Create("Dev Administrator", UserRole.Administrator);
+        db.Users.AddRange(requester, staffOne, staffTwo, manager, admin);
 
         var now = DateTimeOffset.UtcNow;
         for (var i = 1; i <= 5; i++)
@@ -39,7 +41,7 @@ public static class DevelopmentSeed
                 description: "Seeded for local development.",
                 categoryId: categories[i % categories.Count].Id,
                 requesterId: requester.Id,
-                now: now));
+                now: now.AddMinutes((i - 6) * 10)));
         }
 
         await db.SaveChangesAsync(ct);

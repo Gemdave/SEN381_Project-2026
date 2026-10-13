@@ -21,13 +21,20 @@ if (string.IsNullOrWhiteSpace(connectionString))
 
 builder.Services.AddDbContext<CivicConnectDbContext>(o => o.UseNpgsql(connectionString));
 
+// Statuses travel as text ("Assigned"), not numbers, so API clients can read them.
+builder.Services.ConfigureHttpJsonOptions(o =>
+    o.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
+
 builder.Services.AddScoped<IRequestRepository, RequestRepository>();
 builder.Services.AddScoped<IRequestHistoryRepository, RequestHistoryRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+builder.Services.AddScoped<IQueueRepository, QueueRepository>();
 builder.Services.AddScoped<IAuthorisationPolicy, AuthorisationPolicy>();
 builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddScoped<AssignmentService>();
 builder.Services.AddScoped<StatusTransitionService>();
+builder.Services.AddScoped<NoteService>();
 // While CR-003 is open there is no authentication, so the development stand in
 // is registered only in Development. Anywhere else the application refuses to
 // start rather than running with no identity (RSK-012).
@@ -67,5 +74,10 @@ app.UseRouting();
 
 app.MapRazorPages();
 app.MapAssignmentEndpoints();
+app.MapStatusEndpoints();
+app.MapQueueEndpoints();
 
 app.Run();
+
+// Lets the integration tests start the real application in memory.
+public partial class Program { }

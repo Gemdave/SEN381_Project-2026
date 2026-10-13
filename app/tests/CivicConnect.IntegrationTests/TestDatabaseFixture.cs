@@ -5,11 +5,9 @@ using Xunit;
 namespace CivicConnect.IntegrationTests;
 
 /// <summary>
-/// Marks a test that needs a real PostgreSQL database. Without the environment
-/// variable the test is skipped, so an ordinary `dotnet test` and the CI run
-/// both stay green. Previously this threw, which failed the build.
-///
-///   setx CIVICCONNECT_TEST_DB "Host=localhost;Database=civicconnect_test;Username=postgres;Password=..."
+/// Marks a test that needs a real PostgreSQL database. Without the CIVICCONNECT_TEST_DB
+/// environment variable the test is skipped, so an ordinary `dotnet test` stays green.
+/// The value is a normal connection string for a throwaway local database. See app/db for the setup.
 /// </summary>
 public sealed class RequiresDatabaseFactAttribute : FactAttribute
 {
@@ -24,10 +22,21 @@ public sealed class RequiresDatabaseFactAttribute : FactAttribute
     }
 }
 
+/// <summary>The same rule for tests that run with several sets of data.</summary>
+public sealed class RequiresDatabaseTheoryAttribute : TheoryAttribute
+{
+    public RequiresDatabaseTheoryAttribute()
+    {
+        if (Environment.GetEnvironmentVariable(RequiresDatabaseFactAttribute.Variable) is null)
+        {
+            Skip = "Set " + RequiresDatabaseFactAttribute.Variable + " to a throwaway PostgreSQL database to run this test.";
+        }
+    }
+}
+
 /// <summary>
-/// The behaviour under test is the database evaluating a condition during a
-/// write, so it needs a real database (ADR-002). The fixture stays quiet when
-/// none is configured and the tests that use it skip.
+/// One shared database for all integration tests. It is rebuilt from the real
+/// migrations, so the tests check the same schema the application uses (ADR-002).
 /// </summary>
 public sealed class TestDatabaseFixture : IAsyncLifetime
 {
@@ -45,7 +54,7 @@ public sealed class TestDatabaseFixture : IAsyncLifetime
 
         await using var db = NewContext();
         await db.Database.EnsureDeletedAsync();
-        await db.Database.EnsureCreatedAsync();
+        await db.Database.MigrateAsync();
     }
 
     public CivicConnectDbContext NewContext()
@@ -54,4 +63,11 @@ public sealed class TestDatabaseFixture : IAsyncLifetime
             .Options);
 
     public Task DisposeAsync() => Task.CompletedTask;
+}
+
+/// <summary>Tests in this collection share one database and run one after another.</summary>
+[CollectionDefinition(Name)]
+public sealed class DatabaseCollection : ICollectionFixture<TestDatabaseFixture>, ICollectionFixture<ApiFactory>
+{
+    public const string Name = "Database";
 }

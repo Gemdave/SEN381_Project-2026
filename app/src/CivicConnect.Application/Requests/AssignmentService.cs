@@ -4,15 +4,13 @@ using CivicConnect.Domain.Requests;
 
 namespace CivicConnect.Application.Requests;
 
-/// <summary>
-/// FR-011 and NFR-005. This is the class the M2 demonstration trace points at.
-/// </summary>
 public sealed class AssignmentService(
     IRequestRepository requests,
     IRequestHistoryRepository history,
     IAuthorisationPolicy policy,
     IUnitOfWork unitOfWork,
-    IClock clock)
+    IClock clock,
+    IFeedbackRepository? feedback = null)
 {
     public async Task<AssignmentResult> AcceptAsync(Guid requestId, Guid staffUserId, CancellationToken ct)
     {
@@ -24,9 +22,6 @@ public sealed class AssignmentService(
         return await unitOfWork.ExecuteInTransactionAsync(async token =>
         {
             var now = clock.UtcNow;
-
-            // ADR-002: the precondition lives in the write itself, so no window
-            // exists between checking and writing.
             var rows = await requests.TryAssignAsync(requestId, staffUserId, now, token);
 
             if (rows == 0)
@@ -37,14 +32,23 @@ public sealed class AssignmentService(
                     return AssignmentResult.NotFound();
                 }
 
+                // Owned by someone: a clear conflict. Unowned but not open any more: say so.
                 return ownership.OwnerId is { } owner
                     ? AssignmentResult.AlreadyOwned(owner)
-                    : AssignmentResult.NotFound();
+                    : AssignmentResult.NotAvailable();
             }
 
             history.Add(RequestHistoryEntry.ForAssignment(requestId, staffUserId, now));
-            await unitOfWork.SaveChangesAsync(token);
 
+            // FR-007: tell the requester their request was accepted.
+            var saved = await requests.GetOwnershipAsync(requestId, token);
+            if (feedback is not null && saved is not null && saved.RequesterId != Guid.Empty)
+            {
+                feedback.Add(RequesterFeedback.Create(
+                    requestId, saved.RequesterId, "Your request has been accepted by a staff member.", now));
+            }
+
+            await unitOfWork.SaveChangesAsync(token);
             return AssignmentResult.Assigned(staffUserId);
         }, ct);
     }

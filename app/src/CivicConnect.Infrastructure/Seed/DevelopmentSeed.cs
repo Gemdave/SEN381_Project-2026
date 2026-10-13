@@ -13,13 +13,20 @@ namespace CivicConnect.Infrastructure.Seed;
 /// </summary>
 public static class DevelopmentSeed
 {
+    public const string SecondRequester = "Dev Requester Two";
+
     public static async Task RunAsync(CivicConnectDbContext db, CancellationToken ct = default)
     {
-        if (await db.Categories.AnyAsync(ct))
+        if (!await db.Categories.AnyAsync(ct))
         {
-            return;
+            await SeedBaseAsync(db, ct);
         }
 
+        await EnsureSecondRequesterAsync(db, ct);
+    }
+
+    private static async Task SeedBaseAsync(CivicConnectDbContext db, CancellationToken ct)
+    {
         // FR-002. The final list is pending CR-008.
         string[] names = ["Fault", "Equipment", "Security", "IT", "Maintenance", "Lost Property", "Other"];
         var categories = names.Select(Category.Create).ToList();
@@ -51,6 +58,46 @@ public static class DevelopmentSeed
                 requesterId: requester.Id,
                 now: now));
         }
+
+        await db.SaveChangesAsync(ct);
+    }
+
+    /// <summary>
+    /// BB-05 and NFR-003 need a second requester with requests of their own.
+    /// This runs on its own, so a database seeded before it existed gets the
+    /// requester too.
+    /// </summary>
+    private static async Task EnsureSecondRequesterAsync(CivicConnectDbContext db, CancellationToken ct)
+    {
+        if (await db.Users.AnyAsync(u => u.DisplayName == SecondRequester, ct))
+        {
+            return;
+        }
+
+        var requester = AppUser.Create(SecondRequester, UserRole.Requester);
+        db.Users.Add(requester);
+
+        var fault = await db.Categories.SingleAsync(c => c.Name == "Fault", ct);
+        var it = await db.Categories.SingleAsync(c => c.Name == "IT", ct);
+        var now = DateTimeOffset.UtcNow;
+
+        db.Requests.Add(Request.Submit(
+            reference: "REQ-0006",
+            title: "Sample request 6",
+            description: "Seeded for local development.",
+            location: "Annex, room 6",
+            categoryId: fault.Id,
+            requesterId: requester.Id,
+            now: now));
+
+        db.Requests.Add(Request.Submit(
+            reference: "REQ-0007",
+            title: "Sample request 7",
+            description: "Seeded for local development.",
+            location: "Annex, room 7",
+            categoryId: it.Id,
+            requesterId: requester.Id,
+            now: now));
 
         await db.SaveChangesAsync(ct);
     }

@@ -73,3 +73,6 @@ app.MapAssignmentEndpoints();
 app.MapRequestEndpoints();
 
 app.Run();
+
+// Lets the integration tests host this application in process (WebAppFixture).
+public partial class Program { }

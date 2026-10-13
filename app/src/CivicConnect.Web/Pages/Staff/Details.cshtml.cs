@@ -11,13 +11,14 @@ namespace CivicConnect.Web.Pages.Staff;
 
 /// <summary>
 /// FR-010 for the view, FR-011 for the accept handler, FR-012 and FR-014 for
-/// the status handler. This page is the user facing end of the M2
-/// demonstration trace.
+/// the status handler, FR-013 for the note handler. This page is the user
+/// facing end of the M2 demonstration trace.
 /// </summary>
 public class DetailsModel(
     IRequestQueries queries,
     AssignmentService assignment,
     StatusTransitionService transitions,
+    NoteService notes,
     IRequestHistoryRepository historyRepository,
     IAuthorisationPolicy policy,
     CapabilityFactory capabilities,
@@ -29,7 +30,7 @@ public class DetailsModel(
     public RequestDetail? Detail { get; private set; }
     public RequestCapabilities Capabilities { get; private set; } = RequestCapabilities.None;
     public IReadOnlyList<RequestStatus> NextStatuses { get; private set; } = [];
-    public IReadOnlyList<RequestHistoryEntry> History { get; private set; } = [];
+    public HistoryView History { get; private set; } = new([], new Dictionary<Guid, string>());
     public string? Message { get; private set; }
 
     public async Task<IActionResult> OnGetAsync(CancellationToken ct)
@@ -78,6 +79,22 @@ public class DetailsModel(
         return Page();
     }
 
+    public async Task<IActionResult> OnPostNoteAsync(string? text, CancellationToken ct)
+    {
+        // FR-013 (AC-013.1): saved to the history with author and time, never edited.
+        var outcome = await notes.AddAsync(Id, currentUser.Id, text, ct);
+
+        Message = outcome switch
+        {
+            NoteOutcome.Added => "Note added.",
+            NoteOutcome.Empty => "A note cannot be empty.",
+            NoteOutcome.TooLong => $"A note can be {NoteService.MaxLength} characters at most.",
+            _ => "You are not permitted to add notes to this request."
+        };
+
+        return await LoadAsync(ct) ? Page() : NotFound();
+    }
+
     private async Task<bool> LoadAsync(CancellationToken ct)
     {
         // AC-008.2: a request outside this user's scope answers exactly like a
@@ -101,7 +118,8 @@ public class DetailsModel(
             .Where(s => s == RequestStatus.Closed ? Capabilities.CanClose : Capabilities.CanTransition)
             .ToList();
 
-        History = await historyRepository.ForRequestAsync(Id, ct);
+        var entries = await historyRepository.ForRequestAsync(Id, ct);
+        History = new HistoryView(entries, await queries.DisplayNamesAsync(HistoryView.PeopleIn(entries), ct));
         return true;
     }
 }

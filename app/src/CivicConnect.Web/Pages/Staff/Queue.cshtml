@@ -1,19 +1,86 @@
 @page
 @model CivicConnect.Web.Pages.Staff.QueueModel
+@using CivicConnect.Application.Abstractions
 @{
     ViewData["Title"] = "Staff queue";
 }
 
 <h1>Staff queue</h1>
 
-@if (Model.Items.Count == 0)
+@if (!Model.IsStaff)
 {
-    <partial name="_EmptyState" model="@("No requests match this view.")" />
+    <partial name="_EmptyState" model="@("The staff queue is for service staff. Choose a staff member in the bar above.")" />
 }
 else
 {
-    foreach (var item in Model.Items)
+    @* FR-009: filter, search and sort within what this staff member may see. *@
+    <form method="get" class="filters">
+        <label>
+            Status
+            <select name="status">
+                <option value="">Any</option>
+                @foreach (var status in Enum.GetValues<RequestStatus>())
+                {
+                    <option value="@status" selected="@(Model.Status == status)">@(status == RequestStatus.InProgress ? "In progress" : status.ToString())</option>
+                }
+            </select>
+        </label>
+        <label>
+            Category
+            <select name="categoryId">
+                <option value="">Any</option>
+                @foreach (var category in Model.Categories)
+                {
+                    <option value="@category.Id" selected="@(Model.CategoryId == category.Id)">@category.Name</option>
+                }
+            </select>
+        </label>
+        <label>
+            Search
+            <input name="q" value="@Model.Q" placeholder="Title or reference" />
+        </label>
+        <label class="inline-check">
+            <input type="checkbox" name="mine" value="true" checked="@Model.Mine" />
+            Mine only
+        </label>
+        <label>
+            Sort
+            <select name="sort">
+                @foreach (var sort in Enum.GetValues<QueueSort>())
+                {
+                    <option value="@sort" selected="@(Model.Sort == sort)">@sort</option>
+                }
+            </select>
+        </label>
+        <button type="submit">Apply</button>
+        @if (Model.Filtered)
+        {
+            <a href="/Staff/Queue">Clear filters</a>
+        }
+    </form>
+
+    @if (Model.Items.Count == 0)
     {
-        <partial name="_RequestSummary" model="item" />
+        @* AC-009.2: a clear message when nothing matches. *@
+        <partial name="_EmptyState" model="@(Model.Filtered ? "No requests match these filters." : "Your queue is empty.")" />
     }
+    else
+    {
+        foreach (var item in Model.Items)
+        {
+            <partial name="_RequestSummary" model="item" />
+        }
+    }
+
+    <nav class="paging" aria-label="Queue pages">
+        @if (Model.PageNumber > 1)
+        {
+            <a href="@Model.LinkTo(Model.PageNumber - 1)">Previous</a>
+        }
+        <span>Page @Model.PageNumber</span>
+        @if (Model.HasNextPage)
+        {
+            <a href="@Model.LinkTo(Model.PageNumber + 1)">Next</a>
+        }
+    </nav>
 }

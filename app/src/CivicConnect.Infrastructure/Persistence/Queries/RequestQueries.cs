@@ -39,4 +39,12 @@ public sealed class RequestQueries(CivicConnectDbContext db) : IRequestQueries
                 r.Id, r.Reference, r.Title, r.Description, r.Location,
                 c.Name, u.DisplayName, r.Status, r.CreatedAtUtc))
             .FirstOrDefaultAsync(ct);
+
+    public async Task<IReadOnlyDictionary<Guid, string>> DisplayNamesAsync(IEnumerable<Guid> userIds, CancellationToken ct)
+    {
+        var ids = userIds.Distinct().ToList();
+        return await db.Users.AsNoTracking()
+            .Where(u => ids.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, u => u.DisplayName, ct);
+    }
 }

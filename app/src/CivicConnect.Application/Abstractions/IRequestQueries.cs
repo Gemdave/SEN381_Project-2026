@@ -35,4 +35,7 @@ public interface IRequestQueries
 
     /// <summary>FR-003 and FR-010 (AC-010.1).</summary>
     Task<RequestDetail?> GetDetailAsync(Guid requestId, CancellationToken ct);
+
+    /// <summary>Display names for the people named in a request's history (NFR-007 readability).</summary>
+    Task<IReadOnlyDictionary<Guid, string>> DisplayNamesAsync(IEnumerable<Guid> userIds, CancellationToken ct);
 }

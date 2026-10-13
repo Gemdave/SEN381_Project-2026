@@ -64,6 +64,9 @@ internal sealed class FakeQueries(params Guid[] activeCategories) : IRequestQuer
 
     public Task<RequestDetail?> GetDetailAsync(Guid requestId, CancellationToken ct)
         => Task.FromResult<RequestDetail?>(null);
+
+    public Task<IReadOnlyDictionary<Guid, string>> DisplayNamesAsync(IEnumerable<Guid> userIds, CancellationToken ct)
+        => Task.FromResult<IReadOnlyDictionary<Guid, string>>(new Dictionary<Guid, string>());
 }
 
 internal sealed class DirectUnitOfWork : IUnitOfWork

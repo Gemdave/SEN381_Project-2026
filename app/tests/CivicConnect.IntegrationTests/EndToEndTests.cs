@@ -76,6 +76,10 @@ public class EndToEndTests(WebAppFixture app)
         Assert.Equal(4, feedback.Count);
         Assert.All(feedback, f => Assert.NotEqual(default, f.CreatedAtUtc));
         Assert.Contains(feedback, f => f.Message.Contains("Replaced the starter."));
+
+        // ...and the requester sees every one of them on their next visit.
+        var page = Html.BodyOf(await requester.GetStringAsync("/Requests/Details?id=" + id));
+        Assert.All(feedback, f => Assert.Contains(System.Net.WebUtility.HtmlEncode(f.Message), page));
     }
 
     private static async Task<(Guid Id, string Reference, string Confirmation)> SubmitAsync(

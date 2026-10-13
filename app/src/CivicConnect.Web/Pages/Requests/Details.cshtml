@@ -14,4 +14,23 @@
 @* AC-003.2: fields only. There is no status control here for a requester to use. *@
 <partial name="_RequestFields" model="Model.Detail" />
 
+@* FR-007, AC-007.1: one timestamped update for each change made by staff. *@
+<h3>Updates</h3>
+@if (Model.Updates.Count == 0)
+{
+    <partial name="_EmptyState" model="@("No updates yet. You will see one here each time staff work on your request.")" />
+}
+else
+{
+    <ul class="history updates">
+        @foreach (var update in Model.Updates.OrderByDescending(u => u.CreatedAtUtc))
+        {
+            <li>
+                <time datetime="@update.CreatedAtUtc.ToString("o")">@update.CreatedAtUtc.ToString("u")</time>
+                @update.Message
+            </li>
+        }
+    </ul>
+}
+
 <p><a href="/Requests">Back to my requests</a></p>

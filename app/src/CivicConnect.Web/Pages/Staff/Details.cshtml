@@ -42,8 +42,19 @@
     </form>
 }
 
+@if (Model.Capabilities.CanAddNote)
+{
+    @* FR-013: a comment or action note, kept in the history (AC-013.1). *@
+    <form method="post" asp-page-handler="Note" class="stacked">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <label for="text">Add a note</label>
+        <textarea id="text" name="text" rows="3" maxlength="@CivicConnect.Application.Requests.NoteService.MaxLength"></textarea>
+        <button type="submit">Add note</button>
+    </form>
+}
+
 @{
-    var notes = Model.History.Where(h => h.Note is not null).ToList();
+    var notes = Model.History.Entries.Where(h => h.Note is not null).ToList();
 }
 @if (notes.Count > 0)
 {
@@ -54,6 +65,7 @@
             <li>
                 <time datetime="@entry.OccurredAtUtc.ToString("o")">@entry.OccurredAtUtc.ToString("u")</time>
                 @entry.Note
+                <span class="actor">by @Model.History.NameOf(entry.ActorUserId)</span>
             </li>
         }
     </ul>

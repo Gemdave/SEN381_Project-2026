@@ -31,6 +31,12 @@ internal static class TestData
             DateTimeOffset.UtcNow);
 
         db.AddRange(category, requester, staff, otherStaff, admin, request);
+
+        // FR-008: both staff members cover this category, so ownership rules,
+        // not the category scope, decide what each may do.
+        db.AddRange(
+            StaffCategoryScope.Create(staff.Id, category.Id),
+            StaffCategoryScope.Create(otherStaff.Id, category.Id));
         await db.SaveChangesAsync();
 
         return new Seeded(request.Id, requester.Id, staff.Id, otherStaff.Id, admin.Id);

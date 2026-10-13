@@ -107,6 +107,18 @@ public class ApiTests(TestDatabaseFixture fixture, ApiFactory factory)
         await AcceptAsync(mine.RequestId, mine.StaffId);
         await AcceptAsync(theirs.RequestId, theirs.StaffId);
 
+        // FR-008: the staff member covers all three categories, so ownership alone
+        // decides what the queue shows here.
+        await using (var setup = fixture.NewContext())
+        {
+            var categories = setup.Requests
+                .Where(r => r.Id == open.RequestId || r.Id == theirs.RequestId)
+                .Select(r => r.CategoryId)
+                .ToList();
+            setup.StaffCategoryScopes.AddRange(categories.Select(c => StaffCategoryScope.Create(mine.StaffId, c)));
+            await setup.SaveChangesAsync();
+        }
+
         var client = factory.CreateClient();
 
         var visible = await QueueIdsAsync(client, "?q=" + token + "&user=" + mine.StaffId);
@@ -148,10 +160,12 @@ public class ApiTests(TestDatabaseFixture fixture, ApiFactory factory)
 
         await using (var setup = fixture.NewContext())
         {
+            var category = setup.Requests.Where(r => r.Id == data.RequestId).Select(r => r.CategoryId).Single();
             for (var i = 0; i < 8; i++)
             {
                 var staff = AppUser.Create("Racing staff " + i, UserRole.ServiceStaff);
                 setup.Add(staff);
+                setup.Add(StaffCategoryScope.Create(staff.Id, category));
                 staffIds.Add(staff.Id);
             }
 

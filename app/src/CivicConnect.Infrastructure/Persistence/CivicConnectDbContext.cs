@@ -98,6 +98,8 @@ public class CivicConnectDbContext(DbContextOptions<CivicConnectDbContext> optio
             // FR-008: the queue and the policy both look up (user, category).
             e.ToTable("staff_category_scopes");
             e.HasKey(x => new { x.UserId, x.CategoryId });
+            e.HasOne<AppUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<Category>().WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

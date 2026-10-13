@@ -88,14 +88,15 @@ public class RequestApiTests(WebAppFixture app)
         });
         var id = (await create.Content.ReadFromJsonAsync<Created>())!.Id;
         Assert.Equal(HttpStatusCode.OK, (await staffOne.PostAsync($"/api/v1/requests/{id}/assignment", null)).StatusCode);
-        Assert.Equal(HttpStatusCode.OK, (await staffOne.PatchAsJsonAsync(
+        Assert.Equal(HttpStatusCode.OK, (await staffOne.PostAsJsonAsync(
             $"/api/v1/requests/{id}/status", new { status = "InProgress" })).StatusCode);
         var historyBefore = await app.QueryAsync(db => db.RequestHistory.CountAsync(h => h.RequestId == id));
 
         // Act and assert: the requester and a staff member who does not own it are refused.
         foreach (var client in new[] { requester, staffTwo })
         {
-            var response = await client.PatchAsJsonAsync($"/api/v1/requests/{id}/status", new { status = "Resolved" });
+            var response = await client.PostAsJsonAsync(
+                $"/api/v1/requests/{id}/status", new { status = "Resolved", note = "Should be refused." });
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 

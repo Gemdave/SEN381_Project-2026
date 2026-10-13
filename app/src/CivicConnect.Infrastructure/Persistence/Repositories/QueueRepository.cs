@@ -19,10 +19,12 @@ public sealed class QueueRepository(CivicConnectDbContext db) : IQueueRepository
 
     public async Task<IReadOnlyList<QueueRow>> SearchAsync(Guid staffUserId, QueueFilter filter, CancellationToken ct)
     {
-        // FR-008: staff see unassigned requests and their own, nothing else.
+        // FR-008: staff see unassigned requests and their own, nothing else, and
+        // only in the categories they are scoped to (AC-008.1, AC-008.2).
         var requests = db.Requests
             .AsNoTracking()
-            .Where(r => r.AssignedToUserId == null || r.AssignedToUserId == staffUserId);
+            .Where(r => r.AssignedToUserId == null || r.AssignedToUserId == staffUserId)
+            .Where(r => db.StaffCategoryScopes.Any(s => s.UserId == staffUserId && s.CategoryId == r.CategoryId));
 
         // FR-009: filter.
         if (filter.Status is { } status)

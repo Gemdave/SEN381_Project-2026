@@ -64,7 +64,7 @@ public class DetailsModel(
         {
             TransitionOutcome.Changed => "Status changed.",
             TransitionOutcome.NotAllowed => "That status change is not allowed from the current status.",
-            TransitionOutcome.NoteTooLong => $"Please keep the note to {StatusTransitionService.NoteMax} characters or fewer.",
+            TransitionOutcome.NoteRequired => "Resolving a request needs a note saying how it was resolved.",
             TransitionOutcome.Conflicted => "The status changed while you were working. Reload and try again.",
             TransitionOutcome.Forbidden => "You are not permitted to change this request's status.",
             _ => "That request no longer exists."

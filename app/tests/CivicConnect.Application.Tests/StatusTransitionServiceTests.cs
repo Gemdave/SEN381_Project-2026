@@ -5,85 +5,101 @@ using Xunit;
 
 namespace CivicConnect.Application.Tests;
 
-/// <summary>
-/// FR-012 and FR-014 at component level (AC-012.1, AC-012.2, AC-014.1, AC-014.2).
-/// </summary>
+internal sealed class FakeFeedbackRepository : IFeedbackRepository
+{
+    public List<RequesterFeedback> Items { get; } = [];
+
+    public void Add(RequesterFeedback feedback) => Items.Add(feedback);
+
+    public Task<IReadOnlyList<RequesterFeedback>> ForRequestAsync(Guid requestId, CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<RequesterFeedback>>(Items);
+}
+
+internal sealed class DenyActionPolicy(RequestAction denied) : IAuthorisationPolicy
+{
+    public Task<bool> MayAsync(Guid userId, RequestAction action, Guid requestId, CancellationToken ct)
+        => Task.FromResult(action != denied);
+}
+
 public class StatusTransitionServiceTests
 {
-    private static StatusTransitionService Build(
-        RequestStatus current, FakePolicy policy, FakeHistoryRepository history, int rowsAffected = 1)
-        => new(
-            new FakeRequestRepository(rowsAffected, new RequestOwnership(Guid.NewGuid(), Guid.NewGuid(), current)),
-            history,
-            policy,
-            new DirectUnitOfWork(),
-            new FixedClock());
+    private static readonly Guid Staff = Guid.NewGuid();
+    private static readonly Guid Requester = Guid.NewGuid();
 
-    [Fact]
-    [Trait("TestCase", "UT-04")]
-    public async Task Closing_is_checked_as_its_own_action()
+    private static (StatusTransitionService Service, FakeHistoryRepository History, FakeFeedbackRepository Feedback) Build(
+        RequestStatus current, int rows = 1, IAuthorisationPolicy? policy = null)
     {
-        var policy = new FakePolicy(permitted: true);
-        var service = Build(RequestStatus.Resolved, policy, new FakeHistoryRepository());
-
-        await service.MoveAsync(Guid.NewGuid(), Guid.NewGuid(), RequestStatus.Closed, null, CancellationToken.None);
-
-        Assert.Equal(new[] { RequestAction.Close }, policy.Asked);
+        var ownership = new RequestOwnership(Guid.NewGuid(), Staff, current, Requester);
+        var history = new FakeHistoryRepository();
+        var feedback = new FakeFeedbackRepository();
+        var service = new StatusTransitionService(
+            new FakeRequestRepository(rows, ownership),
+            history,
+            policy ?? new FakePolicy(true),
+            new DirectUnitOfWork(),
+            new FixedClock(),
+            feedback);
+        return (service, history, feedback);
     }
 
     [Fact]
-    [Trait("TestCase", "UT-04")]
-    public async Task A_refused_close_changes_nothing()
+    public async Task An_invalid_transition_is_refused_and_nothing_is_recorded()
     {
-        var history = new FakeHistoryRepository();
-        var service = Build(RequestStatus.Resolved, new FakePolicy(permitted: false), history);
+        var (service, history, feedback) = Build(RequestStatus.Received);
 
-        var outcome = await service.MoveAsync(Guid.NewGuid(), Guid.NewGuid(), RequestStatus.Closed, null, CancellationToken.None);
+        var outcome = await service.MoveAsync(Guid.NewGuid(), Staff, RequestStatus.Closed, null, CancellationToken.None);
+
+        Assert.Equal(TransitionOutcome.NotAllowed, outcome);
+        Assert.Empty(history.Entries);
+        Assert.Empty(feedback.Items);
+    }
+
+    [Fact]
+    public async Task Closing_needs_the_close_permission()
+    {
+        var (service, history, _) = Build(RequestStatus.Resolved, policy: new DenyActionPolicy(RequestAction.Close));
+
+        var outcome = await service.MoveAsync(Guid.NewGuid(), Staff, RequestStatus.Closed, null, CancellationToken.None);
 
         Assert.Equal(TransitionOutcome.Forbidden, outcome);
         Assert.Empty(history.Entries);
     }
 
     [Fact]
-    [Trait("TestCase", "UT-01")]
-    public async Task An_invalid_jump_is_refused_and_writes_no_history()
+    public async Task Resolving_needs_a_note()
     {
-        var history = new FakeHistoryRepository();
-        var service = Build(RequestStatus.Received, new FakePolicy(permitted: true), history);
+        var (service, history, _) = Build(RequestStatus.InProgress);
 
-        var outcome = await service.MoveAsync(Guid.NewGuid(), Guid.NewGuid(), RequestStatus.Closed, null, CancellationToken.None);
+        var outcome = await service.MoveAsync(Guid.NewGuid(), Staff, RequestStatus.Resolved, "   ", CancellationToken.None);
 
-        Assert.Equal(TransitionOutcome.NotAllowed, outcome);
+        Assert.Equal(TransitionOutcome.NoteRequired, outcome);
         Assert.Empty(history.Entries);
     }
 
     [Fact]
-    [Trait("TestCase", "UT-01")]
-    public async Task A_resolution_note_is_recorded_with_the_status_change()
+    public async Task A_valid_move_records_the_change_the_note_and_a_message_for_the_requester()
     {
-        var history = new FakeHistoryRepository();
-        var service = Build(RequestStatus.InProgress, new FakePolicy(permitted: true), history);
+        var (service, history, feedback) = Build(RequestStatus.InProgress);
 
         var outcome = await service.MoveAsync(
-            Guid.NewGuid(), Guid.NewGuid(), RequestStatus.Resolved, "  Replaced the bulb.  ", CancellationToken.None);
+            Guid.NewGuid(), Staff, RequestStatus.Resolved, "Replaced the part.", CancellationToken.None);
 
         Assert.Equal(TransitionOutcome.Changed, outcome);
-        var entry = Assert.Single(history.Entries);
-        Assert.Equal(nameof(RequestStatus.Resolved), entry.NewValue);
-        Assert.Equal("Replaced the bulb.", entry.Note);
+        Assert.Equal(new[] { "StatusChanged", "NoteAdded" }, history.Entries.Select(e => e.Action));
+        var message = Assert.Single(feedback.Items);
+        Assert.Equal(Requester, message.RequesterId);
+        Assert.Contains("Replaced the part.", message.Message);
     }
 
     [Fact]
-    public async Task An_overlong_note_is_refused_before_anything_is_written()
+    public async Task Losing_the_race_is_reported_and_nothing_is_recorded()
     {
-        var history = new FakeHistoryRepository();
-        var service = Build(RequestStatus.InProgress, new FakePolicy(permitted: true), history);
+        var (service, history, feedback) = Build(RequestStatus.Assigned, rows: 0);
 
-        var outcome = await service.MoveAsync(
-            Guid.NewGuid(), Guid.NewGuid(), RequestStatus.Resolved,
-            new string('a', StatusTransitionService.NoteMax + 1), CancellationToken.None);
+        var outcome = await service.MoveAsync(Guid.NewGuid(), Staff, RequestStatus.InProgress, null, CancellationToken.None);
 
-        Assert.Equal(TransitionOutcome.NoteTooLong, outcome);
+        Assert.Equal(TransitionOutcome.Conflicted, outcome);
         Assert.Empty(history.Entries);
+        Assert.Empty(feedback.Items);
     }
 }

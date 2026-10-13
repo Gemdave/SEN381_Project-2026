@@ -15,9 +15,9 @@ public class RequesterPrivacyTests(WebAppFixture app)
     [Trait("TestCase", "BB-05")]
     public async Task A_requester_never_sees_another_requesters_requests()
     {
-        var one = await app.ClientForAsync(Seeded.RequesterOne);
-        var two = await app.ClientForAsync(Seeded.RequesterTwo);
-        var twoId = await app.UserIdAsync(Seeded.RequesterTwo);
+        var one = await app.ClientForAsync(DevUsers.RequesterOne);
+        var two = await app.ClientForAsync(DevUsers.RequesterTwo);
+        var twoId = await app.UserIdAsync(DevUsers.RequesterTwo);
         var theirs = await app.QueryAsync(db => db.Requests
             .Where(r => r.RequesterId == twoId)
             .Select(r => new { r.Id, r.Reference })

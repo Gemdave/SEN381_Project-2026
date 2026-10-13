@@ -21,8 +21,8 @@ public class RequestApiTests(WebAppFixture app)
     [Trait("TestCase", "IT-01")]
     public async Task A_valid_request_returns_201_and_is_stored_as_Received_for_the_requester()
     {
-        var requester = await app.ClientForAsync(Seeded.RequesterOne);
-        var requesterId = await app.UserIdAsync(Seeded.RequesterOne);
+        var requester = await app.ClientForAsync(DevUsers.RequesterOne);
+        var requesterId = await app.UserIdAsync(DevUsers.RequesterOne);
         var fault = await app.CategoryIdAsync("Fault");
 
         var response = await requester.PostAsJsonAsync("/api/v1/requests", new
@@ -52,7 +52,7 @@ public class RequestApiTests(WebAppFixture app)
     [Trait("TestCase", "IT-01")]
     public async Task An_empty_request_returns_400_with_an_error_for_each_field_and_stores_nothing()
     {
-        var requester = await app.ClientForAsync(Seeded.RequesterOne);
+        var requester = await app.ClientForAsync(DevUsers.RequesterOne);
         var before = await app.QueryAsync(db => db.Requests.CountAsync());
 
         var response = await requester.PostAsJsonAsync("/api/v1/requests", new
@@ -74,9 +74,9 @@ public class RequestApiTests(WebAppFixture app)
     [Trait("TestCase", "IT-03")]
     public async Task Only_the_owning_staff_member_may_change_the_status_through_the_API()
     {
-        var requester = await app.ClientForAsync(Seeded.RequesterOne);
-        var staffOne = await app.ClientForAsync(Seeded.StaffOne);
-        var staffTwo = await app.ClientForAsync(Seeded.StaffTwo);
+        var requester = await app.ClientForAsync(DevUsers.RequesterOne);
+        var staffOne = await app.ClientForAsync(DevUsers.StaffOne);
+        var staffTwo = await app.ClientForAsync(DevUsers.StaffTwo);
 
         // Arrange: a Fault request owned by Staff One and in progress.
         var create = await requester.PostAsJsonAsync("/api/v1/requests", new

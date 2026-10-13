@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CivicConnect.Infrastructure.Migrations
 {
     [DbContext(typeof(CivicConnectDbContext))]
-    [Migration("20261012160817_InitialCreate")]
+    [Migration("20261012132916_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -44,19 +44,6 @@ namespace CivicConnect.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("users", (string)null);
-                });
-
-            modelBuilder.Entity("CivicConnect.Domain.Access.StaffCategoryScope", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("UserId", "CategoryId");
-
-                    b.ToTable("staff_category_scopes", (string)null);
                 });
 
             modelBuilder.Entity("CivicConnect.Domain.ReferenceData.Category", b =>
@@ -123,6 +110,10 @@ namespace CivicConnect.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AssignedToUserId");
+
+                    b.HasIndex("CategoryId");
+
                     b.HasIndex("Reference")
                         .IsUnique();
 
@@ -130,7 +121,12 @@ namespace CivicConnect.Infrastructure.Migrations
 
                     b.HasIndex("Status", "CategoryId", "AssignedToUserId");
 
-                    b.ToTable("requests", (string)null);
+                    b.ToTable("requests", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_requests_owner_matches_status", "(\"Status\" = 'Received' AND \"AssignedToUserId\" IS NULL) OR (\"Status\" <> 'Received' AND \"AssignedToUserId\" IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_requests_status", "\"Status\" IN ('Received', 'Assigned', 'InProgress', 'Resolved', 'Closed')");
+                        });
                 });
 
             modelBuilder.Entity("CivicConnect.Domain.Requests.RequestHistoryEntry", b =>
@@ -164,9 +160,89 @@ namespace CivicConnect.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ActorUserId");
+
                     b.HasIndex("RequestId");
 
                     b.ToTable("request_history", (string)null);
+                });
+
+            modelBuilder.Entity("CivicConnect.Domain.Requests.RequesterFeedback", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RequesterId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequestId");
+
+                    b.HasIndex("RequesterId");
+
+                    b.ToTable("requester_feedback", (string)null);
+                });
+
+            modelBuilder.Entity("CivicConnect.Domain.Requests.Request", b =>
+                {
+                    b.HasOne("CivicConnect.Domain.Access.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("AssignedToUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("CivicConnect.Domain.ReferenceData.Category", null)
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CivicConnect.Domain.Access.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("RequesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CivicConnect.Domain.Requests.RequestHistoryEntry", b =>
+                {
+                    b.HasOne("CivicConnect.Domain.Access.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("ActorUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CivicConnect.Domain.Requests.Request", null)
+                        .WithMany()
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CivicConnect.Domain.Requests.RequesterFeedback", b =>
+                {
+                    b.HasOne("CivicConnect.Domain.Requests.Request", null)
+                        .WithMany()
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CivicConnect.Domain.Access.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("RequesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

@@ -26,21 +26,24 @@ public class Request
     public DateTimeOffset? AssignedAtUtc { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; private set; } = DateTimeOffset.UtcNow;
 
-    /// <summary>FR-001. AC-001.2 requires every missing required field to be reported.</summary>
+    /// <summary>
+    /// FR-001. AC-001.2 requires every missing required field to be reported.
+    /// Location is last and optional so existing callers still compile;
+    /// SubmissionService requires it for every request a requester submits.
+    /// </summary>
     public static Request Submit(
         string reference,
         string title,
         string description,
-        string location,
         Guid categoryId,
         Guid requesterId,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        string? location = null)
     {
         var missing = new List<string>();
         if (string.IsNullOrWhiteSpace(reference)) missing.Add(nameof(reference));
         if (string.IsNullOrWhiteSpace(title)) missing.Add(nameof(title));
         if (string.IsNullOrWhiteSpace(description)) missing.Add(nameof(description));
-        if (string.IsNullOrWhiteSpace(location)) missing.Add(nameof(location));
         if (categoryId == Guid.Empty) missing.Add(nameof(categoryId));
         if (requesterId == Guid.Empty) missing.Add(nameof(requesterId));
 
@@ -54,7 +57,7 @@ public class Request
             Reference = reference,
             Title = title,
             Description = description,
-            Location = location,
+            Location = location?.Trim() ?? string.Empty,
             CategoryId = categoryId,
             RequesterId = requesterId,
             Status = RequestStatus.Received,

@@ -2,7 +2,7 @@ using CivicConnect.Domain.Requests;
 
 namespace CivicConnect.Application.Abstractions;
 
-public sealed record CategoryOption(Guid Id, string Name);
+// CategoryOption is declared with IQueueRepository.
 
 public sealed record RequestListItem(
     Guid Id, string Reference, string Title, string CategoryName, RequestStatus Status, DateTimeOffset CreatedAtUtc);

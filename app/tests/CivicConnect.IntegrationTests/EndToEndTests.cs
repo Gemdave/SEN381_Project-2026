@@ -18,7 +18,7 @@ public class EndToEndTests(WebAppFixture app)
     [Trait("TestCase", "E2E-01")]
     public async Task A_requester_submits_a_request_and_finds_it_in_their_history_as_Received()
     {
-        var requester = await app.ClientForAsync(Seeded.RequesterOne);
+        var requester = await app.ClientForAsync(DevUsers.RequesterOne);
 
         var (_, reference, confirmation) = await SubmitAsync(requester, "Leaking tap", "Staff kitchen");
 
@@ -31,8 +31,8 @@ public class EndToEndTests(WebAppFixture app)
     [Trait("TestCase", "E2E-02")]
     public async Task A_request_moves_from_submission_to_closed_and_the_requester_sees_each_status()
     {
-        var requester = await app.ClientForAsync(Seeded.RequesterOne);
-        var staff = await app.ClientForAsync(Seeded.StaffOne);
+        var requester = await app.ClientForAsync(DevUsers.RequesterOne);
+        var staff = await app.ClientForAsync(DevUsers.StaffOne);
         var (id, reference, _) = await SubmitAsync(requester, "Flickering light", "Corridor B");
 
         Assert.Contains(reference, await staff.GetStringAsync("/Staff/Queue"));
@@ -59,14 +59,23 @@ public class EndToEndTests(WebAppFixture app)
         }
 
         // Every change is on record with its actor and time (AC-012.1), and the
-        // resolution note is kept (AC-014.1). FR-007 feedback is not built, so
-        // it is not checked here.
+        // resolution note is kept as its own entry (AC-014.1).
         var history = await app.QueryAsync(db => db.RequestHistory.AsNoTracking()
-            .Where(h => h.RequestId == id).OrderBy(h => h.OccurredAtUtc).ToListAsync());
-        Assert.Equal(new[] { "Submitted", "Assigned", "StatusChanged", "StatusChanged", "StatusChanged" },
-            history.Select(h => h.Action));
+            .Where(h => h.RequestId == id).ToListAsync());
+        Assert.Single(history, h => h.Action == "Submitted");
+        Assert.Single(history, h => h.Action == "Assigned");
+        Assert.Equal(3, history.Count(h => h.Action == "StatusChanged"));
+        Assert.Contains(history, h => h.Action == "StatusChanged" && h.NewValue == nameof(RequestStatus.Resolved));
+        Assert.Equal("Replaced the starter.", Assert.Single(history, h => h.Action == "NoteAdded").Note);
         Assert.All(history, h => Assert.NotEqual(Guid.Empty, h.ActorUserId));
-        Assert.Equal("Replaced the starter.", history.Single(h => h.NewValue == nameof(RequestStatus.Resolved)).Note);
+
+        // FR-007 (AC-007.1): the requester gets a timestamped message for the
+        // accept and for each status change, and the resolution says how.
+        var feedback = await app.QueryAsync(db => db.Feedback.AsNoTracking()
+            .Where(f => f.RequestId == id).ToListAsync());
+        Assert.Equal(4, feedback.Count);
+        Assert.All(feedback, f => Assert.NotEqual(default, f.CreatedAtUtc));
+        Assert.Contains(feedback, f => f.Message.Contains("Replaced the starter."));
     }
 
     private static async Task<(Guid Id, string Reference, string Confirmation)> SubmitAsync(

@@ -36,8 +36,8 @@
                 <option value="@status">@status</option>
             }
         </select>
-        <label for="note">Resolution or note (optional)</label>
-        <textarea id="note" name="note" rows="3" maxlength="@CivicConnect.Application.Requests.StatusTransitionService.NoteMax"></textarea>
+        <label for="note">Note (required when resolving, AC-014.1)</label>
+        <textarea id="note" name="note" rows="3" maxlength="@CivicConnect.Application.Requests.NoteService.MaxLength"></textarea>
         <button type="submit">Update status</button>
     </form>
 }
@@ -53,7 +53,7 @@
         {
             <li>
                 <time datetime="@entry.OccurredAtUtc.ToString("o")">@entry.OccurredAtUtc.ToString("u")</time>
-                <span class="change">@entry.NewValue</span>: @entry.Note
+                @entry.Note
             </li>
         }
     </ul>

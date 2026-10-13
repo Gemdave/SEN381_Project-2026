@@ -65,20 +65,26 @@ public static class DevelopmentSeed
     /// <summary>
     /// BB-05 and NFR-003 need a second requester with requests of their own.
     /// This runs on its own, so a database seeded before it existed gets the
-    /// requester too.
+    /// requester too. A database without the development seed (for example the
+    /// integration test database) is left alone.
     /// </summary>
     private static async Task EnsureSecondRequesterAsync(CivicConnectDbContext db, CancellationToken ct)
     {
-        if (await db.Users.AnyAsync(u => u.DisplayName == SecondRequester, ct))
+        if (await db.Users.AnyAsync(u => u.DisplayName == SecondRequester, ct)
+            || !await db.Users.AnyAsync(u => u.DisplayName == "Dev Requester", ct))
+        {
+            return;
+        }
+
+        var fault = await db.Categories.FirstOrDefaultAsync(c => c.Name == "Fault", ct);
+        var it = await db.Categories.FirstOrDefaultAsync(c => c.Name == "IT", ct);
+        if (fault is null || it is null)
         {
             return;
         }
 
         var requester = AppUser.Create(SecondRequester, UserRole.Requester);
         db.Users.Add(requester);
-
-        var fault = await db.Categories.SingleAsync(c => c.Name == "Fault", ct);
-        var it = await db.Categories.SingleAsync(c => c.Name == "IT", ct);
         var now = DateTimeOffset.UtcNow;
 
         db.Requests.Add(Request.Submit(

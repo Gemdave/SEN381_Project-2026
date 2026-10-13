@@ -17,7 +17,7 @@ public sealed class WebAppCollection : ICollectionFixture<WebAppFixture>
 }
 
 /// <summary>Display names of the development seed users (CR-003 stand-in, RSK-012).</summary>
-public static class Seeded
+public static class DevUsers
 {
     public const string RequesterOne = "Dev Requester";
     public const string RequesterTwo = DevelopmentSeed.SecondRequester;

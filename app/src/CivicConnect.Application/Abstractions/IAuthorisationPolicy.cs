@@ -17,6 +17,10 @@ public interface IAuthorisationPolicy
 {
     Task<bool> MayAsync(Guid userId, RequestAction action, Guid requestId, CancellationToken ct);
 
-    /// <summary>FR-001. Submitting has no request yet, so it is decided on the user alone.</summary>
-    Task<bool> MaySubmitAsync(Guid userId, CancellationToken ct);
+    /// <summary>
+    /// FR-001. Submitting has no request yet, so it is decided on the user alone.
+    /// Refused unless the implementation says otherwise, so a policy that does not
+    /// answer it fails closed.
+    /// </summary>
+    Task<bool> MaySubmitAsync(Guid userId, CancellationToken ct) => Task.FromResult(false);
 }

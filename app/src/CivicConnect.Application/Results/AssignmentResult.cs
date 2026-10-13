@@ -5,7 +5,8 @@ public enum AssignmentOutcome
     Assigned,
     AlreadyOwned,
     NotFound,
-    Forbidden
+    Forbidden,
+    NotAvailable
 }
 
 /// <summary>
@@ -22,4 +23,6 @@ public sealed record AssignmentResult(AssignmentOutcome Outcome, Guid? OwnerId)
     public static AssignmentResult NotFound() => new(AssignmentOutcome.NotFound, null);
 
     public static AssignmentResult Forbidden() => new(AssignmentOutcome.Forbidden, null);
+
+    public static AssignmentResult NotAvailable() => new(AssignmentOutcome.NotAvailable, null);
 }

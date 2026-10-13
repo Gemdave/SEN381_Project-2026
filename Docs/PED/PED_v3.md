@@ -23,16 +23,19 @@
    - [ Administrator](#4-administrator)
    - [ Sponsor](#5-sponsor)
 5. [Non-Functional Requirements & Open Items](#non-functional-requirements--open-items)
-6. [CivicConnect: Requirements Traceability Matrix (RTM)](#civicconnect-requirements-traceability-matrix-rtm)
+6. [Architecturally Significant Requirements (ASRs)](#architecturally-significant-requirements-asrs)
 7. [CI & Automated Verification](#ci--automated-verification)
-8. [Technical Constraints and Assumptions](#technical-constraints-and-assumptions)
-   - [Initial Architecture Strategy](#initial-architecture-strategy)
-   - [Engineering Decision Log](#engineering-decision-log)
-   - [Technical Constraints](#technical-constraints)
-9. [Verification Strategy and Test Plan](#verification-and-test-plan)
-10. [Risk Register](#risk-register)
-11. [Baseline Sign-Off](#baseline-sign-off)
-12. [References](#references)
+8. [CivicConnect: Requirements Traceability Matrix (RTM)](#civicconnect-requirements-traceability-matrix-rtm)
+9. [Controlled Changes to the Baseline](#controlled-changes-to-the-baseline)
+10. [Verification Strategy and Test Plan](#verification-and-test-plan)
+11. [Technical Constraints and Assumptions](#technical-constraints-and-assumptions)
+    - [Initial Architecture Strategy](#initial-architecture-strategy)
+    - [Engineering Decision Log](#engineering-decision-log)
+    - [Technical Constraints](#technical-constraints)
+12. [Engineering Decisions and Comparisons](#engineering-decisions-and-comparisons)
+13. [Risk Register](#risk-register)
+14. [Baseline Sign-Off](#baseline-sign-off)
+15. [References](#references)
 
 ---
 
@@ -46,7 +49,7 @@ CivicConnect currently manages community service requests through an uncoordinat
 
 Recent empirical research in public sector digital transformation highlights that replacing fragmented, message-based administrative processes with centralized, controlled request management platforms is critical for establishing operational transparency, resolving service bottlenecks, and rebuilding stakeholder trust (Gong, 2020; Mergel, 2019).
 
-Thus, the underlying business need is not merely "a website to log requests," but a single, controlled record of the request lifecycle. This platform must grant requesters real-time visibility, provide operational staff with an accountable queue, and supply management with auditable, reportable performance data—all achieved without introducing unsustainable cost, complexity, or technical risk.
+Thus, the underlying business need is not merely "a website to log requests," but a single, controlled record of the request lifecycle. This platform must grant requesters real-time visibility, provide operational staff with an accountable queue, and supply management with auditable, reportable performance data, all achieved without introducing unsustainable cost, complexity, or technical risk.
 
 ---
 
@@ -70,6 +73,7 @@ Thus, the underlying business need is not merely "a website to log requests," bu
 | **C-2** | Low-friction submit vs. enough detail to action | Requester – Service Staff | Balance required vs. optional fields (FR-001). |
 | **C-3** | Free-text vs. reportable structured data | Requester – Management | Choosing between a controlled category list or free text (FR-002). |
 | **C-4** | Rich notifications vs. sustainable cost/scope | Requester – Sponsor | In-app feedback baselined (FR-007); email/SMS deferred to future scope. |
+| **C-5** | Future growth vs. keeping cost and scope small today (added by CR-011) | Sponsor / project constraints | No FRs added; growth is met through the architecture (NFR-010, ASR-07), while features and hosting stay at the baseline (NFR-009). |
 
 ---
 
@@ -104,6 +108,7 @@ The baseline scope defines what CivicConnect will deliver as part of the M1 requ
 | **In-Scope** | FR-001–FR-005, FR-007 and acceptance criteria; controlled category list; read-only status model. | What M1 commits to build and what later evidence (design, test, release) must trace to. |
 | **Out-of-Scope** | Architecture, technology, schema, UI/API/CI implementation; ST-2/ST-3/ST-4 detailed FRs; authentication mechanism. | What is not assessed as an M1 deliverable and must not be prematurely implemented. |
 | **Deferred** | Notification channels beyond in-app feedback; FR-006 attachment handling; full Administrator RBAC. | What is preserved as a future option pending evidence, not silently dropped. |
+| **Growth readiness (CR-010, CR-011)** | An architecture able to grow later (NFR-010, ASR-07). The move to microservices changes how the system is built, not what it does; functional scope is unchanged. | Growth readiness must be shown without adding features. Only the services current requirements need are built, and a new feature still needs its own CR. |
 
 ### Defense of a Deliberate Deferment
 The team deliberately defers email/SMS notifications beyond the baselined in-app feedback (FR-007). Conflict C-4 identifies a direct tension between the Requester's preference for rich, multi-channel notifications and the Sponsor's (ST-5) need for a sustainable cost/scope footprint. Committing to email/SMS at M1 would introduce third-party integration, delivery, and privacy considerations before the team has evidence of actual demand or budget approval. In-app feedback satisfies the *Must*-priority need for the requester to know a request's outcome (AC-007.1, AC-007.2) without that added risk. This deferment is recorded as a formal decision, with owner and trigger for re-scoping, in the Engineering Decision Log rather than left as an implicit gap.
@@ -151,7 +156,7 @@ The team deliberately defers email/SMS notifications beyond the baselined in-app
 | :--- | :--- | :--- | :--- | :--- |
 | **FR-019** | Manage user accounts. | ST-4 | Must | **AC-019.1:** Given an administrator, when they create or deactivate a user, then the account's access reflects the change (a deactivated user cannot sign in). |
 | **FR-020** | Manage roles and permissions (Role-Based Access Control). | ST-4 | Must | **AC-020.1:** Given an administrator, when they assign a role to a user, then that user's permitted actions match the role (e.g. only staff can update status; only managers see oversight).<br>**AC-020.2:** Given a non-administrator, when they attempt to change roles or permissions, then the action is blocked. |
-| **FR-021** | Maintain the controlled category list. | ST-4 | Must | **AC-021.1:** Given an administrator, when they add, edit or retire a category, then the requester submission form reflects the current list with no code change (supports FR-002/AC-002.3). |
+| **FR-021** | Maintain the controlled category list. | ST-4 | Must | **AC-021.1:** Given an administrator, when they add, edit or retire a category, then the requester submission form reflects the current list with no code change (supports FR-002/AC-002.1; previously cited as AC-002.3, see EC-001). |
 | **FR-022** | Access an audit trail of key controlled actions. | ST-4 | Should | **AC-022.1:** Given an administrator, when they view the audit trail, then key controlled actions (status changes, assignments, role and category changes) are recorded with actor + timestamp. |
 
 ### 5. Sponsor
@@ -174,16 +179,36 @@ The team deliberately defers email/SMS notifications beyond the baselined in-app
 * **NFR-007 - Auditability:** Key controlled actions are recorded with actor + timestamp and cannot be silently altered (supports FR-013, FR-022).
 * **NFR-008 - Reporting Accuracy:** Management and sponsor reports reconcile completely with underlying request records without discrepancy.
 * **NFR-009 - Cost Sustainability (Sponsor):** The solution runs within free/low-cost tiers where practical, and operational cost projections are documented.
+* **NFR-010 - Growth Readiness (CR-011):** CivicConnect can later support more users or features without a redesign. No volume target is set, since no growth figures exist. Checks: a second copy of a service changes no behaviour; no service touches another service's schema in the shared PostgreSQL instance (ADR-001); a new service needs no schema change elsewhere.
 
 ### Open Items to Confirm in Later Milestones
-1. Authentication model assumed; final selection deferred to M2.
-2. Formal confirmation of the initial controlled category list options.
-3. Decision on FR-006 (Attachments): file types, size limits, and storage policy.
-4. Definition of 'overdue' logic: Target response time fields required. SLA automation is deferred; agree on a simple target mechanism in the Engineering Decision Log (affects FR-016).
-5. Reassignment rules: Establish permissions regarding who can reassign an already-owned request (affects FR-011).
-6. Reporting export scope: Decide whether reporting is view-only or exportable (affects FR-018).
-7. Sponsor access model: Confirm whether the sponsor receives a dedicated view or utilizes management views (affects FR-023).
-8. RBAC role definitions: Finalize specific role permissions in M2 (affects FR-020 and security ACs).
+1. Authentication model assumed; final selection deferred to M2. **Status:** Open under CR-003. Authorisation is covered by ADR-005, but the sign-in mechanism has not been chosen.
+2. Formal confirmation of the initial controlled category list options. **Status:** Open under CR-008.
+3. Decision on FR-006 (Attachments): file types, size limits, and storage policy. **Status:** Remains deferred at *Could* priority. CR-010 does not bring it back into scope.
+4. Definition of 'overdue' logic: Target response time fields required. SLA automation is deferred; agree on a simple target mechanism in the Engineering Decision Log (affects FR-016). **Status:** Open under CR-005.
+5. Reassignment rules: Establish permissions regarding who can reassign an already-owned request (affects FR-011). **Status:** Open under CR-004.
+6. Reporting export scope: Decide whether reporting is view-only or exportable (affects FR-018). **Status:** Open under CR-006.
+7. Sponsor access model: Confirm whether the sponsor receives a dedicated view or utilizes management views (affects FR-023). **Status:** Open under CR-007.
+8. RBAC role definitions: Finalize specific role permissions in M2 (affects FR-020 and security ACs). **Status:** Open under CR-003, with ADR-005.
+9. *(Added after the M2 review.)* Growth figures: none are available, so NFR-010 has no volume target. If the Sponsor supplies figures, a change request will add one.
+
+---
+
+## Architecturally Significant Requirements (ASRs)
+
+Full register, sources and open targets: `Docs/Requirements/ASR_Register.md` (owner M. Malope). After the M2 review moved to microservices (CR-010), CR-011 restated ASR-05 and added ASR-07; the other expectations are unchanged.
+
+| ASR | Driver and measurable expectation | Consequence for the service split | ADR |
+| :--- | :--- | :--- | :--- |
+| **ASR-01** | Ownership and status correctness: of simultaneous accepts on one request, exactly one succeeds; no status change is lost; invalid transitions are refused. | Assignment, status and the single-owner check stay inside one service with one data store. Other services learn of a change only after it commits. | ADR-001 (rev.), ADR-002 |
+| **ASR-02** | Authorisation and privacy: every read and write is authorised on the server; another requester's reference is refused. | Each service checks identity and role for its own data; role rules keep one source of truth. | ADR-005, ADR-001 (rev.) |
+| **ASR-03** | Auditability: every controlled action is recorded with actor and timestamp; history cannot be edited. | An action and its audit record succeed or fail together; audit is append-only and a lost message must not lose an entry. | ADR-002 (rev.) |
+| **ASR-04** | Oversight views within 3 s at 1,000 requests; reports match the records exactly. | Reporting reads request data through the Requests service and keeps no copy, so NFR-008 stands as written. | ADR-001 (rev.), ADR-002 |
+| **ASR-05** *(restated)* | Sustainable cost and complexity: each service on free or low-cost plans with its cost recorded; no more services than needed; one person can run the system locally. | Build only the services needed now, on one stack with shared build and run steps. | ADR-001 (rev.), ADR-003, ADR-007 |
+| **ASR-06** | Requester self-service: submit in ≤ 5 steps and ≤ 5 min; a staff status change is visible within 15 s. | Short guided flow with read-only status; the 15 s check covers the whole path across services. | ADR-004, ADR-003 |
+| **ASR-07** *(new)* | Growth readiness: the three NFR-010 checks pass; no volume target until growth figures exist. | Services hold no in-memory state, own their schema in the shared instance, and are split only along boundaries the current requirements show. | ADR-001 (rev.), ADR-006, ADR-007 |
+
+Superseded by CR-011: ASR-05 previously favoured "one deployable unit over a distributed design", and ASR-04 held that reporting "does not justify a separate reporting database"; the full earlier wording is kept in the register. Failure isolation, independent deployability and a fixed volume target were considered but not adopted, because no stakeholder evidence or growth figures support them yet.
 
 ---
 ## CI & Automated Verification
@@ -243,35 +268,27 @@ cannot be merged unless the Quality Gate passes.
 | **NFR-007** | ST-4 | Auditability: key actions recorded and tamper-evident. | Actor + timestamp, not silently altered (supports FR-013/022). | Must | Candidate |
 | **NFR-008** | ST-3, ST-5 | Reporting accuracy: reports reconcile with underlying records. | Zero discrepancy between reporting and data layer. | Should | Candidate |
 | **NFR-009** | ST-5 | Cost sustainability: run within free/low-cost tiers where practical. | Operates in free/low-cost tiers; cost documented. | Should | Candidate |
+| **NFR-010** | ST-5 | Growth readiness: able to expand in future without a redesign (added through CR-011). | Scale-out, data ownership and extension checks all pass (NFR-010). | Must | Candidate (CR-011) |
+
+**Demonstration trace.** FR-011 (AC-011.2) -> ASR-01 -> the Requests service, the only service allowed to assign (ADR-001) -> a conditional update in the requests schema that succeeds only while the request is unassigned, with the history row in the same transaction (ADR-002) -> `POST /api/v1/requests/{id}/assignment` through the API entry point (ADR-006) -> `app/` code: `AssignmentService`, `RequestRepository` and `AssignmentEndpoints` -> `AssignmentServiceTests` (run in CI) and `ConcurrentAcceptTests` (skipped in CI until a test database is provided).
+
+**Verification evidence.** CI builds and tests only the `app/` tree. `StatusTransitionTests` and `AssignmentServiceTests` run in the Quality Gate, while `ConcurrentAcceptTests` is skipped until CI provides a test database. RTM rows that cite `Backend/` tests are marked "Not in CI" and do not count as verified.
 
 ---
 
-## Technical Constraints and Assumptions
+## Controlled Changes to the Baseline
 
-* **Achievability:** Technical implementation must fit within team skills and schedule limitations.
-* **Layer Separation:** User interface, backend API, and persistence layers must remain distinct.
-* **Business Logic Centralization:** Backend layer must handle validation, rules, and security enforcement.
-* **Privacy by Design:** System architecture must guarantee requesters cannot view data belonging to other users.
+Each change is recorded here before the affected section changes, and the original wording is kept. Working copy: `Docs/Risks/RTM/CivicConnect-Change-Register.xlsx`.
 
-### Initial Architecture Strategy
-The initial architecture utilizes a backend API layer situated between the frontend UI and data persistence layer. This provides a central point for validation, business rules, and authorization enforcement while decoupling domain logic from UI components. Backend framework, database choice, API standard, authentication scheme, and deployment details are directional for M1 and will be finalized in M2.
+| ID | Affects | Change | Status | Owner |
+| :--- | :--- | :--- | :--- | :--- |
+| **CR-001 to CR-008** | NFR-002, NFR-004 and Open Items 1, 2, 4 to 8 | Clarifications carried from the first M2 pass; each is shown against its open item above, with full wording in the workbook. | Open | M. Malope (CR-003: G. Enright) |
+| **CR-009** | FR-007, FR-012 | Add Rejected as a terminal status, reachable only from Received and always with a reason (`Data_Model.md`, section 8). | Proposed | K. Marota proposes, M. Malope records |
+| **CR-010** | ADR-001 (superseded, D-005); RTM architecture and data columns; ADR-002, ADR-004 to ADR-007 | Move from the modular monolith to four services (Requests, Access, ReferenceData, Reporting) behind one API entry point, with a schema per service in one PostgreSQL instance, so the system can grow without a redesign (M2 review). Functional scope unchanged. | Approved through the revised ADR-001 (D-005) | K. Marota, M. Malope |
+| **CR-011** | NFR-010, ASR-05, ASR-07, C-5 | Add NFR-010 Growth Readiness (three checks, no volume target), restate ASR-05, add ASR-07 and C-5. | Open | M. Malope |
+| **EC-001** | FR-021 (AC-021.1) | Editorial: cited AC-002.3, which does not exist; now AC-002.1. No change in meaning. | Applied | M. Malope |
 
-### Engineering Decision Log
-
-| ID | Decision | Reason | Status |
-| :--- | :--- | :--- | :--- |
-| **D-001** | Separate UI, backend/API, and data persistence layers. | Supports maintainability, clean separation of concerns, and modular testing. | Initial |
-| **D-002** | Use a central backend/API layer for application operations. | Provides a consistent location for validation, business rules, and access control. | Initial |
-| **D-003** | Defer final backend framework and database selection to M2. | Tech selection requires structured evaluation and proof-of-concept testing. | Open |
-| **D-004** | Treat authentication and authorization as M2 decisions. | Specific security architecture depends on stack selection and RBAC refinement. | Open |
-
-### Technical Constraints
-
-| Constraint | Consideration |
-| :--- | :--- |
-| **Schedule** | Target frameworks must allow rapid development within strict milestone timelines. |
-| **Stack Compatibility** | Selected libraries and tools must integrate seamlessly across the application stack. |
-| **Learning Curve** | Priority is given to frameworks familiar to the team to minimize execution risk. |
+All open CRs need approval before baseline sign-off. One more may follow once ADR-005 is revised: AC-019.1, if a deactivated user's session can stay valid for a time. NFR-008 needs no change, because reporting keeps no copy of the data (ADR-001).
 
 ---
 ## Verification and Test Plan
@@ -291,6 +308,87 @@ The initial architecture utilizes a backend API layer situated between the front
 **Evidence:** [Test plan and evidence record](/Test/Docs/Test_Plan_v1.md) | [CI run for release candidate] | [Test results artifact] | [RTM test columns]
 
 **Limitations:** the suite does not prove the absence of defects; development identity is used for access control, so RBAC results say nothing about real authentication (RSK-012); staging performance on free-tier hosting does not predict municipal-scale load.
+
+---
+## Technical Constraints and Assumptions
+
+* **Achievability:** Technical implementation must fit within team skills and schedule limitations.
+* **Layer Separation:** User interface, backend API, and persistence layers must remain distinct.
+* **Business Logic Centralization:** Backend layer must handle validation, rules, and security enforcement.
+* **Privacy by Design:** System architecture must guarantee requesters cannot view data belonging to other users.
+
+### Initial Architecture Strategy
+The initial architecture utilizes a backend API layer situated between the frontend UI and data persistence layer. This provides a central point for validation, business rules, and authorization enforcement while decoupling domain logic from UI components. Backend framework, database choice, API standard, authentication scheme, and deployment details are directional for M1 and will be finalized in M2.
+
+### Architecture Update (ADR-001, D-005)
+The first M2 version of ADR-001 chose a layered modular monolith. The team has since decided to move to microservices, so ADR-001 was rewritten and the change is recorded as D-005. The backend/API layer from D-001 and D-002 is kept, but it is now delivered as four services behind one API entry point:
+
+| Deployable | Responsibility |
+| :--- | :--- |
+| **Requests service** | Creating requests, ownership, status changes and the history record for each change. |
+| **Access service** | Users, roles, permissions and the RBAC policy (ADR-005). |
+| **ReferenceData service** | Categories and other lookup data. |
+| **Reporting service** | Management and oversight figures, built from request data. |
+| **Web frontend (`CivicConnect.Web`)** | Razor Pages UI, run and deployed separately. It has no database access and no business rules, and gets all data through the API (ADR-006). |
+
+Rules that keep this safe: only the Requests service can assign a request or change its status, so the single-owner rule (NFR-005) stays inside one transaction; services do not read each other's tables; the services share one managed PostgreSQL instance with a separate schema per service to stay within free-tier limits (NFR-009); and every service applies the ADR-005 policy rather than trusting the caller.
+
+Main costs: more hosting units and deployment work (NFR-009, RSK-014), cross-service calls that can fail or be slow, no single transaction across services, and harder testing. The team's limited experience with the stack remains the main risk (RSK-001), so a small two-service proof of concept should come before the full split. ADR-002, ADR-005, ADR-006 and ADR-007 still describe a single application and need matching updates.
+
+### Engineering Decision Log
+
+| ID | Decision | Reason | Status |
+| :--- | :--- | :--- | :--- |
+| **D-001** | Separate UI, backend/API, and data persistence layers. | Supports maintainability, clean separation of concerns, and modular testing. | Carried forward into ADR-001 |
+| **D-002** | Use a central backend/API layer for application operations. | Provides a consistent location for validation, business rules, and access control. | Carried forward into ADR-001 |
+| **D-003** | Defer final backend framework and database selection to M2. | Tech selection requires structured evaluation and proof-of-concept testing. | Open |
+| **D-004** | Treat authentication and authorization as M2 decisions. | Specific security architecture depends on stack selection and RBAC refinement. | Open |
+| **D-005** | Build CivicConnect as independently deployable services (Requests, Access, ReferenceData, Reporting) behind one API entry point, with the web frontend deployed separately. Replaces the layered modular monolith. | Services can be built, deployed and changed on their own, and ownership and history stay inside Requests so NFR-005 still holds. Accepted trade-offs: more hosting and deployment work, cross-service failures, harder testing. | Approved – recorded in ADR-001 (PR #23) |
+
+### Technical Constraints
+
+| Constraint | Consideration |
+| :--- | :--- |
+| **Schedule** | Target frameworks must allow rapid development within strict milestone timelines. |
+| **Stack Compatibility** | Selected libraries and tools must integrate seamlessly across the application stack. |
+| **Learning Curve** | Priority is given to frameworks familiar to the team to minimize execution risk. |
+
+---
+## Engineering Decisions and Comparisons
+
+Every decision is compared here against CivicConnect's own drivers, including those researched in Assignment 2 or 3; full records stay in `Docs/Decisions/`. Each option is rated Strong, Fair or Weak per criterion; criteria come from the ASRs, requirements or risks named in them and are listed in priority order (the first three are equally important in Part 1, the first two in Part 2). Still to be added by their owners: ADR-001, ADR-002 and ADR-006 (K. Marota); ADR-003, ADR-005 and ADR-007 (G. Enright).
+
+### ADR-004: Role-Based View Composition (Design Decision 1)
+
+**Status:** Proposed, revision 2 (08/10/2026), to align with the revised ADR-001, ADR-005 and ADR-006. **Owner:** M. Malope. **Research:** A2 Task 1 (Naghdipour, 2023; Silva, 2021). **Full record:** `Docs/Decisions/ADR-004-role-based-view-composition.md`. **Problem:** Four roles use the same request data with different fields and actions, and a requester must never get a status control or see another requester's data (AC-003.2, NFR-003). With services, one screen draws on several services, so there are two questions: where screens get their data (Part 1, new) and how each role's pages are built (Part 2, from revision 1).
+
+**Part 1: where the screens get their data**
+
+| Criterion (priority order) | A. Browser calls services | B. Gateway merges | C. One frontend service | D. Frontend per role | E. Micro-frontends |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **ASR-02** Privacy | **Weak** Every service exposed to the browser | **Fair** Role shaping in shared infrastructure | **Strong** Services hidden; controls set server-side | **Strong** Smallest exposure per role | **Fair** Many exposed pieces |
+| **ASR-06** Consistent screens | **Fair** Status logic repeated in browser code | **Fair** Consistent only if the gateway shapes data alike | **Strong** One shared status partial | **Fair** Shared partials copied or packaged per service | **Weak** Pieces can look and behave differently |
+| **ASR-05** Cost for a team of three | **Weak** Screens rewritten client-side | **Fair** Custom merge code in the gateway | **Strong** One extra deployable reusing existing pages | **Weak** Three or four deployables, each with its own pipeline, configuration, secrets and hosting slot (NFR-009) | **Weak** Most build and deployment work |
+| **ASR-07** Growth | **Fair** Screens change when services split | **Fair** Every screen change passes the gateway | **Fair** Runs as copies; splits per role later | **Strong** Each role scales and releases alone | **Strong** Each piece scales and releases alone |
+| **ASR-04** Oversight speed | **Weak** Many browser round trips | **Strong** One call per screen | **Fair** Several server-side calls | **Strong** Tailored per role | **Fair** Pieces load separately |
+| **Overall** | No Strong, 3 Weak | 1 Strong, no Weak | **3 Strong, no Weak** | 3 Strong, Weak on cost | 1 Strong, 2 Weak |
+
+**Part 2: how each role's pages are built.** Build effort ranks lower here than in Part 1, because these options differ only in coding effort inside one service, not in services to build, host and pay for.
+
+| Criterion (priority order) | P1. Page per role | P2. Role conditions in markup | P3. Partials, page models, capability object | P4. Per-role strategy |
+| :--- | :--- | :--- | :--- | :--- |
+| **ASR-06** Status the same for all roles | **Weak** Four copies drift | **Fair** Branches multiply | **Strong** One partial per status piece | **Fair** Rendering split across strategies |
+| **ASR-02** No role logic in markup | **Fair** Loading rules repeated | **Weak** Role checks spread through views | **Strong** Server-built capability object; handlers re-check | **Fair** Logic in strategies |
+| **ASR-05** Build effort | **Fair** Every change made four times | **Strong** Fastest | **Fair** Capability object to build and pass | **Weak** Extra layer against Razor conventions |
+| **Changeability**, from FR-023 and RSK-016 | **Weak** Copy everything | **Weak** New branches affect all roles | **Strong** New page folder on existing partials | **Fair** New strategy plus wiring |
+| **Testability**, from RTM verification evidence | **Fair** Each page tested four times | **Weak** Every branch per role | **Fair** Page tests with a seeded user | **Strong** Strategies tested alone |
+| **Overall** | No Strong, 2 Weak | 1 Strong, 3 Weak | **3 Strong, no Weak** | 1 Strong, 1 Weak |
+
+**Decision.** Option C with P3 inside it. One web frontend service serves every role from role-separated page folders over shared partials, and the browser talks only to it. The capability object only decides which controls appear; its values come from the owning service, which re-checks every action. The frontend keeps no in-memory session state, so it can run as several copies. C and D both have three Strong ratings, but D is Weak on cost, one of the three top-priority criteria, because it adds three or four deployables now, while C's page folders are where D can be split out later. **Costs and triggers:** one more deployable and network hop per screen, and a frontend defect can affect every role. Split per role (D) only if measurement shows one role holding the others back; simplify P3 if the sponsor view (FR-023) cannot reuse the partials.
+
+---
+
+## Risk Register
 
 ---
 ## Risk Register
@@ -332,6 +430,7 @@ The initial architecture utilizes a backend API layer situated between the front
 | **Baseline Type** | Milestone 3 (M3) |
 | **Version** | v3.0 |
 | **Date** | 14/10/2026 |
+| **Architecture Decision Recorded** | ADR-001 microservices (D-005); change under review in PR #23 |
 | **Scope Reviewed** | Pending |
 | **Requirements / Traceability Checked** | Pending |
 | **Risk Review Completed** | Pending |

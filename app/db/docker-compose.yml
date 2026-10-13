@@ -1,0 +1,14 @@
+   # Local test database for the integration tests.
+   # The password and port come from app/db/.env, which is not committed.
+   services:
+     testdb:
+       image: postgres:17
+       container_name: civicconnect-testdb
+       environment:
+         POSTGRES_DB: civicconnect_test
+         POSTGRES_USER: postgres
+         POSTGRES_PASSWORD: ${TESTDB_PASSWORD:?Create app/db/.env from .env.example}
+       ports:
+         - "${TESTDB_PORT:?Create app/db/.env from .env.example}:5432"
+       tmpfs:
+         - /var/lib/postgresql/data

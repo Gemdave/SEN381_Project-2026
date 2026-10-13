@@ -86,3 +86,4 @@ yarn-error.log*
 ~$*.doc
 ~$*.xlsx
 ~$*.pptx
+app/db/.env

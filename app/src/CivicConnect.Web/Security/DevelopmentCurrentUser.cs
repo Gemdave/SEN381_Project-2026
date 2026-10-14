@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore;
 namespace CivicConnect.Web.Security;
 
 /// <summary>
-/// Stands in for authentication while CR-003 is open (RSK-012). It reads a user
-/// id from the query string and refuses to work outside Development, so it
-/// cannot survive a deployment by accident. The choice is kept in a cookie, so
-/// links and form posts without ?user= stay with the same user. A deactivated
-/// user cannot be chosen, and a browser already signed in as one is left with
-/// no identity at all, so the policy refuses everything it asks (AC-019.1).
+/// Stands in for authentication while CR-003 is open (RSK-012). The user is
+/// chosen on the sign-in page at the site root (or with ?user= in a link, which
+/// the tests use) and kept in a cookie. It refuses to work outside Development,
+/// so it cannot survive a deployment by accident. A browser that has chosen
+/// nobody has no identity, and so does one signed in as a user who has since
+/// been deactivated: the policy refuses everything either asks (AC-019.1).
 /// </summary>
 public sealed class DevelopmentCurrentUser : ICurrentUser
 {
@@ -32,30 +32,26 @@ public sealed class DevelopmentCurrentUser : ICurrentUser
         if (Guid.TryParse(http?.Request.Query["user"].ToString(), out var chosen)
             && db.Users.Any(u => u.Id == chosen && u.IsActive))
         {
-            http!.Response.Cookies.Append(CookieName, chosen.ToString(),
-                new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.Lax });
+            SignIn(http!.Response, chosen);
             id = chosen;
             return;
         }
 
-        // An unknown id (for example after the database was recreated) is ignored.
-        if (Guid.TryParse(http?.Request.Cookies[CookieName], out var remembered))
+        // An unknown id (for example after the database was recreated) or a
+        // deactivated user leaves the browser with no identity, never someone else's.
+        if (Guid.TryParse(http?.Request.Cookies[CookieName], out var remembered)
+            && db.Users.Any(u => u.Id == remembered && u.IsActive))
         {
-            var active = db.Users.Where(u => u.Id == remembered).Select(u => (bool?)u.IsActive).FirstOrDefault();
-            if (active is not null)
-            {
-                // Deactivated since signing in: no identity, not someone else's.
-                id = active.Value ? remembered : Guid.Empty;
-                return;
-            }
+            id = remembered;
         }
-
-        // Fall back to the first active seeded staff member so the pages are usable.
-        id = db.Users
-            .Where(u => u.Role == CivicConnect.Domain.Access.UserRole.ServiceStaff && u.IsActive)
-            .Select(u => u.Id)
-            .FirstOrDefault();
     }
 
     public Guid Id => id;
+
+    /// <summary>Remembers the chosen user for this browser. The caller has checked they are active.</summary>
+    public static void SignIn(HttpResponse response, Guid userId)
+        => response.Cookies.Append(CookieName, userId.ToString(),
+            new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.Lax });
+
+    public static void SignOut(HttpResponse response) => response.Cookies.Delete(CookieName);
 }

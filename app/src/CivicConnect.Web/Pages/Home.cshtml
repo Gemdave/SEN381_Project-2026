@@ -1,0 +1,74 @@
+@page
+@model CivicConnect.Web.Pages.HomeModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<h1>CivicConnect</h1>
+<p class="lead">Report a problem, follow it through to a fix, and see how the service is performing.</p>
+
+@if (!Model.SignedIn)
+{
+    @* AC-019.1: no identity, so no actions. *@
+    <p class="empty-state">You are not signed in. <a href="/">Choose who to sign in as</a>.</p>
+}
+else
+{
+    <p>Signed in as <strong class="signed-in">@Model.Name</strong> (@CivicConnect.Web.Pages.Admin.UsersModel.RoleText(Model.Role)).</p>
+
+    @* ADR-004: only the actions this role is allowed. Each page checks again. *@
+    <div class="cards">
+        @if (Model.CanSubmit)
+        {
+            <a class="card" href="/Requests/Submit">
+                <strong>Submit a request</strong>
+                <span>Report a fault, damage or anything else that needs attention.</span>
+            </a>
+            <a class="card" href="/Requests">
+                <strong>My requests</strong>
+                <span>@Model.OpenRequests @HomeModel.Plural(Model.OpenRequests, "request is", "requests are") still open.</span>
+            </a>
+        }
+
+        @if (Model.IsStaff)
+        {
+            var waiting = Model.WaitingInQueue >= HomeModel.QueueCountLimit ? HomeModel.QueueCountLimit + "+" : Model.WaitingInQueue.ToString();
+            <a class="card" href="/Staff/Queue">
+                <strong>Staff queue</strong>
+                <span>@waiting @HomeModel.Plural(Model.WaitingInQueue, "request is", "requests are") waiting in your categories.</span>
+            </a>
+        }
+
+        @if (Model.CanOversee)
+        {
+            <a class="card" href="/Oversight">
+                <strong>Oversight</strong>
+                <span>@Model.Figures!.Open open, of which @Model.Figures.Overdue @HomeModel.Plural(Model.Figures.Overdue, "is", "are") overdue.</span>
+            </a>
+        }
+
+        @if (Model.CanSeeSummary)
+        {
+            <a class="card" href="/Reports/Summary">
+                <strong>Service summary</strong>
+                <span>Headline performance figures: @Model.Figures!.Total requests received, @Model.Figures.Resolved resolved.</span>
+            </a>
+        }
+
+        @if (Model.CanAdminister)
+        {
+            <a class="card" href="/Admin/Users">
+                <strong>Users and roles</strong>
+                <span>Create and deactivate accounts, change roles and staff categories.</span>
+            </a>
+            <a class="card" href="/Admin/Categories">
+                <strong>Categories</strong>
+                <span>Maintain the category list and each category's response target.</span>
+            </a>
+            <a class="card" href="/Admin/Audit">
+                <strong>Audit trail</strong>
+                <span>Every controlled action, with who did it and when.</span>
+            </a>
+        }
+    </div>
+}

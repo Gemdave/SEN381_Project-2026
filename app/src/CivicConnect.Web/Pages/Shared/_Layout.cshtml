@@ -1,3 +1,4 @@
+@using CivicConnect.Domain.Access
 @using CivicConnect.Infrastructure.Persistence
 @using CivicConnect.Web.Security
 @using Microsoft.EntityFrameworkCore
@@ -7,9 +8,17 @@
 @inject CivicConnect.Application.Abstractions.IAuthorisationPolicy Policy
 @{
     // ADR-004: links appear only for roles the policy allows; each page checks again.
+    var canSubmit = await Policy.MaySubmitAsync(CurrentUser.Id, default);
     var canOversee = await Policy.MayViewOversightAsync(CurrentUser.Id, default);
     var canAdminister = await Policy.MayAdministerAsync(CurrentUser.Id, default);
     var canSeeSummary = await Policy.MayViewSummaryAsync(CurrentUser.Id, default);
+
+    // The identity only ever names an active user (DevelopmentCurrentUser).
+    var me = await Db.Users.AsNoTracking()
+        .Where(u => u.Id == CurrentUser.Id && u.IsActive)
+        .Select(u => new { u.DisplayName, u.Role })
+        .FirstOrDefaultAsync();
+    var isStaff = me?.Role == UserRole.ServiceStaff;
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -21,11 +30,17 @@
 </head>
 <body>
     <header>
-        <strong>CivicConnect</strong>
+        <a href="@(me is null ? "/" : "/Home")" class="brand"><strong>CivicConnect</strong></a>
         <nav>
-            <a href="/Requests/Submit">Submit a request</a>
-            <a href="/Requests">My requests</a>
-            <a href="/Staff/Queue">Staff queue</a>
+            @if (canSubmit)
+            {
+                <a href="/Requests/Submit">Submit a request</a>
+                <a href="/Requests">My requests</a>
+            }
+            @if (isStaff)
+            {
+                <a href="/Staff/Queue">Staff queue</a>
+            }
             @if (canOversee)
             {
                 <a href="/Oversight">Oversight</a>
@@ -41,36 +56,22 @@
                 <a href="/Admin/Audit">Audit trail</a>
             }
         </nav>
-        @* Development only: the CR-003 stand-in for sign-in (RSK-012). Deactivated
-           users are not offered, because they cannot sign in (AC-019.1). *@
+        @* Development only: the CR-003 stand-in for sign-in (RSK-012). Who to be
+           is chosen on the sign-in page at the site root. *@
         @if (HostEnvironment.IsDevelopment())
         {
-            var users = await Db.Users.AsNoTracking()
-                .Where(u => u.IsActive)
-                .OrderBy(u => u.Role).ThenBy(u => u.DisplayName)
-                .Select(u => new { u.Id, u.DisplayName, u.Role })
-                .ToListAsync();
-            <nav class="dev-users" aria-label="Development user switcher">
-                Viewing as:
-                @foreach (var u in users)
+            <div class="signed-in-as">
+                @if (me is null)
                 {
-                    if (u.Id == CurrentUser.Id)
-                    {
-                        <strong>@u.DisplayName (@u.Role)</strong>
-                    }
-                    else
-                    {
-                        var home = u.Role switch
-                        {
-                            CivicConnect.Domain.Access.UserRole.Requester => "/Requests",
-                            CivicConnect.Domain.Access.UserRole.ServiceStaff => "/Staff/Queue",
-                            CivicConnect.Domain.Access.UserRole.Sponsor => "/Reports/Summary",
-                            _ => "/Oversight"
-                        };
-                        <a href="@(home)?user=@u.Id">@u.DisplayName</a>
-                    }
+                    <span>Not signed in</span>
+                    <a href="/">Choose a user</a>
                 }
-            </nav>
+                else
+                {
+                    <span><strong class="current-user">@me.DisplayName</strong> (@CivicConnect.Web.Pages.Admin.UsersModel.RoleText(me.Role))</span>
+                    <a href="/">Switch user</a>
+                }
+            </div>
         }
     </header>
     <main>

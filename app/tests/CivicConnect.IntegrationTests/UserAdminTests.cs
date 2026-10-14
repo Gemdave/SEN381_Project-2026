@@ -64,7 +64,7 @@ public class UserAdminTests(WebAppFixture app)
         await PostUsersAsync(admin, "Scopes", token, new() { ["id"] = id.ToString(), ["categoryIds"] = (await app.CategoryIdAsync("Fault")).ToString() });
 
         var staff = await app.ClientForAsync(name);
-        Assert.Contains($"<strong>{name} (ServiceStaff)</strong>", await staff.GetStringAsync("/Staff/Queue"));
+        Assert.Contains($"<strong class=\"current-user\">{name}</strong>", await staff.GetStringAsync("/Staff/Queue"));
 
         var deactivated = await PostUsersAsync(admin, "Deactivate", token, new() { ["id"] = id.ToString() });
         Assert.StartsWith("User deactivated.", Html.Message(await deactivated.Content.ReadAsStringAsync()));
@@ -74,11 +74,12 @@ public class UserAdminTests(WebAppFixture app)
         var accept = await staff.PostAsync($"/api/v1/requests/{created.Id}/assignment", null);
         Assert.Equal(HttpStatusCode.Forbidden, accept.StatusCode);
 
-        // A fresh sign-in as them does not take, and the switcher no longer offers them.
+        // A fresh sign-in as them does not take, and the sign-in page no longer offers them.
         var fresh = await app.ClientForAsync(DevUsers.RequesterOne);
         var page = await fresh.GetStringAsync("/Requests?user=" + id);
-        Assert.DoesNotContain($"<strong>{name} (ServiceStaff)</strong>", page);
-        Assert.DoesNotContain(">" + name + "</a>", page);
+        Assert.DoesNotContain($"<strong class=\"current-user\">{name}</strong>", page);
+        await fresh.GetAsync("/");
+        Assert.DoesNotContain(name, await fresh.GetStringAsync("/"));
 
         Assert.False(await app.QueryAsync(db => db.Users.Where(u => u.Id == id).Select(u => u.IsActive).SingleAsync()));
     }

@@ -8,7 +8,7 @@ header { display: flex; gap: 1rem; align-items: baseline; border-bottom: 1px sol
 .history li { border-bottom: 1px solid var(--line); padding: .4rem 0; font-size: .9rem; }
 .message { background: #f3f4f6; padding: .5rem .75rem; border-left: 3px solid var(--ink); }
 header nav { display: flex; gap: .75rem; }
-.dev-users { margin-left: auto; font-size: .85rem; }
+.signed-in-as { margin-left: auto; display: flex; gap: .6rem; font-size: .85rem; white-space: nowrap; }
 .stacked { display: grid; gap: .35rem; max-width: 32rem; margin: 1rem 0; }
 .stacked input, .stacked textarea, .stacked select { font: inherit; padding: .35rem; }
 .stacked button { justify-self: start; margin-top: .5rem; }
@@ -30,3 +30,16 @@ header nav { display: flex; gap: .75rem; }
 .admin-list .inactive { color: #6b7280; }
 .scopes { display: flex; flex-wrap: wrap; gap: .25rem .75rem; }
 .scopes .inline-check { display: flex; gap: .3rem; align-items: center; font-size: .85rem; }
+.brand { color: inherit; text-decoration: none; }
+.lead { color: #4b5563; margin-top: -.5rem; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: .75rem; margin: 1rem 0; }
+.card { display: grid; gap: .3rem; padding: .9rem 1rem; border: 1px solid var(--line); border-radius: .5rem; color: inherit; text-decoration: none; }
+.card:hover, .card:focus { border-color: var(--ink); }
+.card span { color: #4b5563; font-size: .9rem; }
+.roles { display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: 1rem; margin: 1rem 0; }
+.role { border: 1px solid var(--line); border-radius: .5rem; padding: .75rem 1rem; }
+.role h2 { font-size: 1.1rem; margin: 0; }
+.role .hint { margin: .25rem 0 .75rem; font-size: .85rem; }
+.choose button { display: grid; gap: .15rem; width: 100%; text-align: left; font: inherit; padding: .5rem .75rem; margin-bottom: .4rem; background: #fff; border: 1px solid var(--line); border-radius: .4rem; cursor: pointer; }
+.choose button:hover, .choose button:focus { border-color: var(--ink); }
+.choose button span { color: #6b7280; font-size: .8rem; }

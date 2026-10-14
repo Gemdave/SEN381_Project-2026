@@ -1,6 +1,5 @@
 @page
 @model CivicConnect.Web.Pages.Reports.SummaryModel
-@using CivicConnect.Web.Pages.Oversight
 @{
     ViewData["Title"] = "Service summary";
 }
@@ -23,7 +22,7 @@ else
         <dt>Resolved within target</dt>
         <dd class="within-target">@(Model.WithinTargetPercent is { } percent ? percent + "%" : "None resolved yet")</dd>
         <dt>Average time to resolve</dt>
-        <dd>@(s.AverageHoursToResolve is null ? "None resolved yet" : IndexModel.Hours(s.AverageHoursToResolve) + " hours")</dd>
+        <dd>@(s.AverageHoursToResolve is null ? "None resolved yet" : CivicConnect.Web.Pages.Oversight.IndexModel.Hours(s.AverageHoursToResolve) + " hours")</dd>
     </dl>
 
     <table>

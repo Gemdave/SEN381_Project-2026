@@ -1,5 +1,3 @@
-
-
 |Team member|AI Tool/ Use|Purpose|Output used?|How independently verified|What was changed/ rejected|
 |-|-|-|-|-|-|
 |Gerald Enright|Gemini|To summarize my part into bullet points for milestone 1.|yes|Compared the list that was provided with what is expected in the provided project breakdowns.|The examples provided were irrelevant thus got rejected.|
@@ -26,6 +24,3 @@
 |Mogau Malope|claude|asked to find gaps in the rtm, file structuring and achitecture that don't match the requirements or deliverables|yes|read through the suggestions to try and find any actual gaps in the rtm|the rtm was changed with added columns and records for the changes from milestone 2|
 |Keletso Marota|Claude|Reviewed the M2 backend against the ASR register, PED requirements and Data\_Model.md, then drafted and implemented the M3 backend work and code.|yes|Ran dotnet build and dotnet test: 44 tests pass against a local PostgreSQL 17 container.|Rejected the AI-written changes to the Razor pages and reverted them, because the UI is not my area. |
 |Keletso Marota|Claude|Drafted M3 documentation: the API contract as-built section and the data model corrections. |yes|Compared each statement with the code, the migrations, and the test results before using it.|Rejected recommendations that are not implemented in code.|
-
-
-

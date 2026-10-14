@@ -188,3 +188,22 @@ At the volumes in the PED (thousands of requests, roughly five to ten history ro
 | Admin action audit table | M3 (FR-022) | `audit_log` mirroring the history table pattern |
 
 **Why CR-009.** FR-007 says a requester is told when a request is *rejected*, with a reason (AC-007.2). FR-012 lists the lifecycle as Received, Assigned, In Progress, Resolved, Closed, and says Received to Closed is invalid (AC-012.2). Rejection therefore has no place in the baselined lifecycle. The backend treats it as a separate terminal status reachable only from Received, with a mandatory reason. That is a small change to the M1 lifecycle, so it should go through change control before the baseline is signed.
+
+## 9. As built at M3 (corrections)
+
+The schema built in `app/` uses these names. Section 8 should also be read with the Rejected note below.
+
+| Above | As built |
+| :-- | :-- |
+| `app_user`, `category`, `request` | `users`, `categories`, `requests` |
+| `request_status_history` | `request_history` |
+| `request_note` table | No separate table. A note is a `request_history` row with action `NoteAdded`. |
+| `feedback_item` with `read_at` | `requester_feedback`, no `read_at` yet |
+| `ck_request_status` | `ck_requests_status`. It does **not** allow `Rejected`, so adding Rejected needs a migration. |
+| `ck_request_owner_vs_status` | `ck_requests_owner_matches_status` (only `Received` has no owner) |
+| `ck_request_title / description / location`, `ck_request_owner_pair` | Not built. There is no location column. |
+| Append-only triggers in `003_assignment.sql` | Trigger `request_history_insert_only`, created by the EF migration `AddHistoryTrigger` |
+| Migrations in `src/CivicConnect.Data/Migrations/` as SQL | EF Core migrations in `app/src/CivicConnect.Infrastructure/Migrations/` |
+| Foreign keys | Built: requests to categories and users, history and messages to requests and users, all `ON DELETE RESTRICT` |
+
+**Open question for D-005 (microservices):** the foreign keys from requests to users and categories assume one database. If those tables move to other services, the keys have to go, and the checks that depend on them need another home.

@@ -4,6 +4,12 @@
 @inject IWebHostEnvironment HostEnvironment
 @inject CivicConnectDbContext Db
 @inject ICurrentUser CurrentUser
+@inject CivicConnect.Application.Abstractions.IAuthorisationPolicy Policy
+@{
+    // ADR-004: links appear only for roles the policy allows; each page checks again.
+    var canOversee = await Policy.MayViewOversightAsync(CurrentUser.Id, default);
+    var canAdminister = await Policy.MayAdministerAsync(CurrentUser.Id, default);
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,6 +25,15 @@
             <a href="/Requests/Submit">Submit a request</a>
             <a href="/Requests">My requests</a>
             <a href="/Staff/Queue">Staff queue</a>
+            @if (canOversee)
+            {
+                <a href="/Oversight">Oversight</a>
+            }
+            @if (canAdminister)
+            {
+                <a href="/Admin/Categories">Categories</a>
+                <a href="/Admin/Audit">Audit trail</a>
+            }
         </nav>
         @* Development only: the CR-003 stand-in for sign-in (RSK-012). *@
         @if (HostEnvironment.IsDevelopment())
@@ -37,7 +52,12 @@
                     }
                     else
                     {
-                        var home = u.Role == CivicConnect.Domain.Access.UserRole.Requester ? "/Requests" : "/Staff/Queue";
+                        var home = u.Role switch
+                        {
+                            CivicConnect.Domain.Access.UserRole.Requester => "/Requests",
+                            CivicConnect.Domain.Access.UserRole.ServiceStaff => "/Staff/Queue",
+                            _ => "/Oversight"
+                        };
                         <a href="@(home)?user=@u.Id">@u.DisplayName</a>
                     }
                 }

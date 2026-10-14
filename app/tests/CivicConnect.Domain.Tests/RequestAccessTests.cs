@@ -26,4 +26,20 @@ public class RequestAccessTests
     [InlineData(UserRole.Administrator, false, true)]
     public void Only_staff_are_limited_to_their_category_scope(UserRole role, bool inScope, bool expected)
         => Assert.Equal(expected, RequestAccess.WithinScope(role, inScope));
+
+    [Theory]
+    [InlineData(UserRole.Requester, false)]
+    [InlineData(UserRole.ServiceStaff, false)]
+    [InlineData(UserRole.Management, true)]
+    [InlineData(UserRole.Administrator, true)]
+    public void Only_managers_and_administrators_see_oversight(UserRole role, bool expected)
+        => Assert.Equal(expected, RequestAccess.MayViewOversight(role));
+
+    [Theory]
+    [InlineData(UserRole.Requester, false)]
+    [InlineData(UserRole.ServiceStaff, false)]
+    [InlineData(UserRole.Management, false)]
+    [InlineData(UserRole.Administrator, true)]
+    public void Only_administrators_administer(UserRole role, bool expected)
+        => Assert.Equal(expected, RequestAccess.MayAdminister(role));
 }

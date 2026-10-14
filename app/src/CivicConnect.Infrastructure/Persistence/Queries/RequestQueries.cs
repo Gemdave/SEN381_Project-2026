@@ -1,4 +1,5 @@
 using CivicConnect.Application.Abstractions;
+using CivicConnect.Domain.Requests;
 using Microsoft.EntityFrameworkCore;
 
 namespace CivicConnect.Infrastructure.Persistence.Queries;
@@ -19,11 +20,12 @@ public sealed class RequestQueries(CivicConnectDbContext db) : IRequestQueries
     public Task<bool> IsActiveCategoryAsync(Guid categoryId, CancellationToken ct)
         => db.Categories.AnyAsync(c => c.Id == categoryId && !c.IsRetired, ct);
 
-    public async Task<IReadOnlyList<RequestListItem>> ListForRequesterAsync(Guid requesterId, CancellationToken ct)
+    public async Task<IReadOnlyList<RequestListItem>> ListForRequesterAsync(
+        Guid requesterId, RequestStatus? status, CancellationToken ct)
         => await (
             from r in db.Requests.AsNoTracking()
             join c in db.Categories on r.CategoryId equals c.Id
-            where r.RequesterId == requesterId
+            where r.RequesterId == requesterId && (status == null || r.Status == status)
             orderby r.CreatedAtUtc descending, r.Reference descending
             select new RequestListItem(r.Id, r.Reference, r.Title, c.Name, r.Status, r.CreatedAtUtc))
             .Take(50)

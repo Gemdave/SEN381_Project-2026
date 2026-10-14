@@ -1,0 +1,55 @@
+@page
+@model CivicConnect.Web.Pages.Admin.AuditModel
+@using CivicConnect.Application.Abstractions
+@{
+    ViewData["Title"] = "Audit trail";
+}
+
+<h1>Audit trail</h1>
+
+@if (!Model.Allowed)
+{
+    <partial name="_EmptyState" model="@("The audit trail is for administrators.")" />
+}
+else
+{
+    <form method="get" class="filters">
+        <label>
+            Show
+            <select name="kind">
+                <option value="@AuditKind.All" selected="@(Model.Kind == AuditKind.All)">All actions</option>
+                <option value="@AuditKind.Requests" selected="@(Model.Kind == AuditKind.Requests)">Request actions</option>
+                <option value="@AuditKind.Categories" selected="@(Model.Kind == AuditKind.Categories)">Category changes</option>
+            </select>
+        </label>
+        <button type="submit">Apply</button>
+    </form>
+
+    @if (Model.Items.Count == 0)
+    {
+        <partial name="_EmptyState" model="@("No actions recorded yet.")" />
+    }
+    else
+    {
+        <p class="hint">The @Model.Items.Count most recent actions, newest first.</p>
+        <ul class="history">
+            @foreach (var item in Model.Items)
+            {
+                <li>
+                    <time datetime="@item.OccurredAtUtc.ToString("o")">@item.OccurredAtUtc.ToString("u")</time>
+                    <span class="action">@CivicConnect.Web.Pages.Admin.AuditModel.Label(item.Action)</span>
+                    <strong>@item.Subject</strong>
+                    @if (item.OldValue is not null || item.NewValue is not null)
+                    {
+                        <span class="change">@(item.OldValue is null ? "" : Model.People.ValueText(item.OldValue) + " ")to @Model.People.ValueText(item.NewValue)</span>
+                    }
+                    @if (item.Detail is not null)
+                    {
+                        <span class="change">@item.Detail</span>
+                    }
+                    <span class="actor">by @Model.People.NameOf(item.ActorUserId)</span>
+                </li>
+            }
+        </ul>
+    }
+}

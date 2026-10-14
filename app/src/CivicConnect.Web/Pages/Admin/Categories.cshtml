@@ -1,0 +1,51 @@
+@page
+@model CivicConnect.Web.Pages.Admin.CategoriesModel
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<h1>Categories</h1>
+
+@if (Model.Message is not null)
+{
+    <p class="message">@Model.Message</p>
+}
+
+@if (!Model.Allowed)
+{
+    <partial name="_EmptyState" model="@("Category maintenance is for administrators.")" />
+}
+else
+{
+    <form method="post" asp-page-handler="Add" class="filters">
+        <label>
+            New category
+            <input name="name" maxlength="@CivicConnect.Application.ReferenceData.CategoryService.NameMax" />
+        </label>
+        <button type="submit">Add</button>
+    </form>
+
+    <table class="admin-list">
+        <tr><th>Name</th><th>State</th><th>Rename</th><th></th></tr>
+        @foreach (var category in Model.Items)
+        {
+            <tr>
+                <td>@category.Name</td>
+                <td>@(category.IsRetired ? "Retired" : "Active")</td>
+                <td>
+                    <form method="post" asp-page-handler="Rename" class="inline">
+                        <input type="hidden" name="id" value="@category.Id" />
+                        <input name="name" value="@category.Name" maxlength="@CivicConnect.Application.ReferenceData.CategoryService.NameMax" aria-label="New name for @category.Name" />
+                        <button type="submit">Rename</button>
+                    </form>
+                </td>
+                <td>
+                    <form method="post" asp-page-handler="@(category.IsRetired ? "Restore" : "Retire")" class="inline">
+                        <input type="hidden" name="id" value="@category.Id" />
+                        <button type="submit">@(category.IsRetired ? "Restore" : "Retire")</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </table>
+}

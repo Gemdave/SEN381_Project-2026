@@ -30,8 +30,11 @@ public interface IRequestQueries
 
     Task<bool> IsActiveCategoryAsync(Guid categoryId, CancellationToken ct);
 
-    /// <summary>FR-004. Filtered on the requester inside the query, so other rows are never loaded (NFR-003).</summary>
-    Task<IReadOnlyList<RequestListItem>> ListForRequesterAsync(Guid requesterId, CancellationToken ct);
+    /// <summary>
+    /// FR-004 and FR-005. Filtered on the requester inside the query, so other rows
+    /// are never loaded (NFR-003); an optional status narrows it (AC-005.1).
+    /// </summary>
+    Task<IReadOnlyList<RequestListItem>> ListForRequesterAsync(Guid requesterId, RequestStatus? status, CancellationToken ct);
 
     /// <summary>FR-003 and FR-010 (AC-010.1).</summary>
     Task<RequestDetail?> GetDetailAsync(Guid requestId, CancellationToken ct);

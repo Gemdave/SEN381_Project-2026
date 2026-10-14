@@ -1,4 +1,5 @@
 using CivicConnect.Domain.Access;
+using CivicConnect.Domain.Audit;
 using CivicConnect.Domain.ReferenceData;
 using CivicConnect.Domain.Requests;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,7 @@ public class CivicConnectDbContext(DbContextOptions<CivicConnectDbContext> optio
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<AppUser> Users => Set<AppUser>();
     public DbSet<StaffCategoryScope> StaffCategoryScopes => Set<StaffCategoryScope>();
+    public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
 
     /// <summary>FR-001. Numbers for request references (REQ-001000 and up).</summary>
     public const string ReferenceSequence = "request_reference_seq";
@@ -100,6 +102,17 @@ public class CivicConnectDbContext(DbContextOptions<CivicConnectDbContext> optio
             e.HasKey(x => new { x.UserId, x.CategoryId });
             e.HasOne<AppUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne<Category>().WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        b.Entity<AuditEntry>(e =>
+        {
+            // FR-022, NFR-007: insert only, enforced by a trigger in the migration.
+            e.ToTable("audit_entries");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Action).HasMaxLength(40).IsRequired();
+            e.Property(x => x.Subject).HasMaxLength(200).IsRequired();
+            e.HasIndex(x => x.OccurredAtUtc);
+            e.HasOne<AppUser>().WithMany().HasForeignKey(x => x.ActorUserId).OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

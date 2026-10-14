@@ -23,4 +23,10 @@ public interface IAuthorisationPolicy
     /// answer it fails closed.
     /// </summary>
     Task<bool> MaySubmitAsync(Guid userId, CancellationToken ct) => Task.FromResult(false);
+
+    /// <summary>FR-015 and FR-017: managers and administrators. Refused by default.</summary>
+    Task<bool> MayViewOversightAsync(Guid userId, CancellationToken ct) => Task.FromResult(false);
+
+    /// <summary>FR-021 and FR-022: administrators only. Refused by default.</summary>
+    Task<bool> MayAdministerAsync(Guid userId, CancellationToken ct) => Task.FromResult(false);
 }

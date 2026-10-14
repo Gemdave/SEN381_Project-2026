@@ -61,6 +61,40 @@ namespace CivicConnect.Infrastructure.Migrations
                     b.ToTable("staff_category_scopes", (string)null);
                 });
 
+            modelBuilder.Entity("CivicConnect.Domain.Audit.AuditEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Detail")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("OccurredAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActorUserId");
+
+                    b.HasIndex("OccurredAtUtc");
+
+                    b.ToTable("audit_entries", (string)null);
+                });
+
             modelBuilder.Entity("CivicConnect.Domain.ReferenceData.Category", b =>
                 {
                     b.Property<Guid>("Id")
@@ -226,6 +260,15 @@ namespace CivicConnect.Infrastructure.Migrations
                     b.HasOne("CivicConnect.Domain.Access.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CivicConnect.Domain.Audit.AuditEntry", b =>
+                {
+                    b.HasOne("CivicConnect.Domain.Access.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("ActorUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

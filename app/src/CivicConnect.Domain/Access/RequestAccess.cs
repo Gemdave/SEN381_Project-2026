@@ -14,4 +14,10 @@ public static class RequestAccess
     /// categories. Other roles are not limited by category; their own rules apply.
     /// </summary>
     public static bool WithinScope(UserRole role, bool inScope) => role != UserRole.ServiceStaff || inScope;
+
+    /// <summary>FR-015 and FR-017 (AC-020.1). The oversight view is for managers and administrators.</summary>
+    public static bool MayViewOversight(UserRole role) => role is UserRole.Management or UserRole.Administrator;
+
+    /// <summary>FR-021 and FR-022. Reference data and the audit trail are for administrators.</summary>
+    public static bool MayAdminister(UserRole role) => role == UserRole.Administrator;
 }

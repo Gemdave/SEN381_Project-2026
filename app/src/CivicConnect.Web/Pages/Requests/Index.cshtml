@@ -7,9 +7,28 @@
 <h1>My requests</h1>
 <p><a href="/Requests/Submit">Submit a new request</a></p>
 
+@* FR-005, AC-005.1: filter your own requests by status. *@
+<form method="get" class="filters">
+    <label>
+        Status
+        <select name="status">
+            <option value="">Any</option>
+            @foreach (var status in Enum.GetValues<RequestStatus>())
+            {
+                <option value="@status" selected="@(Model.Status == status)">@(status == RequestStatus.InProgress ? "In progress" : status.ToString())</option>
+            }
+        </select>
+    </label>
+    <button type="submit">Filter</button>
+    @if (Model.Status is not null)
+    {
+        <a href="/Requests">Show all</a>
+    }
+</form>
+
 @if (Model.Items.Count == 0)
 {
-    <partial name="_EmptyState" model="@("You have not submitted any requests yet.")" />
+    <partial name="_EmptyState" model="@(Model.Status is null ? "You have not submitted any requests yet." : "No requests match this filter.")" />
 }
 else
 {

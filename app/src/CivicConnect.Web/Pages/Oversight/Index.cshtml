@@ -1,0 +1,81 @@
+@page
+@model CivicConnect.Web.Pages.Oversight.IndexModel
+@{
+    ViewData["Title"] = "Oversight";
+}
+
+<h1>Oversight</h1>
+
+@if (!Model.Allowed)
+{
+    <partial name="_EmptyState" model="@("The oversight view is for managers and administrators.")" />
+}
+else
+{
+    @* FR-017, AC-017.1: narrowing by status or category updates every figure below. *@
+    <form method="get" class="filters">
+        <label>
+            Status
+            <select name="status">
+                <option value="">Any</option>
+                @foreach (var status in Enum.GetValues<RequestStatus>())
+                {
+                    <option value="@status" selected="@(Model.Status == status)">@(status == RequestStatus.InProgress ? "In progress" : status.ToString())</option>
+                }
+            </select>
+        </label>
+        <label>
+            Category
+            <select name="categoryId">
+                <option value="">Any</option>
+                @foreach (var category in Model.Categories)
+                {
+                    <option value="@category.Id" selected="@(Model.CategoryId == category.Id)">@category.Name</option>
+                }
+            </select>
+        </label>
+        <button type="submit">Apply</button>
+        @if (Model.Filtered)
+        {
+            <a href="/Oversight">Clear filters</a>
+        }
+    </form>
+
+    <p><strong>Total requests: <span class="total">@Model.Summary!.Total</span></strong></p>
+
+    <div class="counts">
+        <table>
+            <caption>By status</caption>
+            @foreach (var row in Model.Summary.ByStatus)
+            {
+                <tr><th><status-badge status="@row.Status"></status-badge></th><td>@row.Count</td></tr>
+            }
+        </table>
+        <table>
+            <caption>By category</caption>
+            @foreach (var row in Model.Summary.ByCategory)
+            {
+                <tr><th>@row.Category</th><td>@row.Count</td></tr>
+            }
+        </table>
+    </div>
+
+    <h3>Most recent</h3>
+    @if (Model.Summary.Recent.Count == 0)
+    {
+        <partial name="_EmptyState" model="@("No requests match these filters.")" />
+    }
+    else
+    {
+        foreach (var item in Model.Summary.Recent)
+        {
+            <article class="request-summary">
+                <a href="/Staff/Details?id=@item.Id">@item.Reference</a>
+                <h3>@item.Title</h3>
+                <status-badge status="@item.Status"></status-badge>
+                <span class="category">@item.Category</span>
+                <time datetime="@item.CreatedAtUtc.ToString("o")">@item.CreatedAtUtc.ToString("u")</time>
+            </article>
+        }
+    }
+}

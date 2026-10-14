@@ -72,4 +72,16 @@ public sealed class AuthorisationPolicy(CivicConnectDbContext db) : IAuthorisati
 
         return role is { } known && RequestAccess.MaySubmit(known);
     }
+
+    public async Task<bool> MayViewOversightAsync(Guid userId, CancellationToken ct)
+        => await RoleOfAsync(userId, ct) is { } role && RequestAccess.MayViewOversight(role);
+
+    public async Task<bool> MayAdministerAsync(Guid userId, CancellationToken ct)
+        => await RoleOfAsync(userId, ct) is { } role && RequestAccess.MayAdminister(role);
+
+    private Task<UserRole?> RoleOfAsync(Guid userId, CancellationToken ct)
+        => db.Users.AsNoTracking()
+            .Where(u => u.Id == userId)
+            .Select(u => (UserRole?)u.Role)
+            .FirstOrDefaultAsync(ct);
 }

@@ -19,4 +19,13 @@ public class Category
             : new Category { Name = name };
 
     public void Retire() => IsRetired = true;
+
+    /// <summary>FR-021. Retired categories can come back without losing their requests.</summary>
+    public void Restore() => IsRetired = false;
+
+    /// <summary>FR-021 (AC-021.1). Requests keep their category id, so they follow the new name.</summary>
+    public void Rename(string name)
+        => Name = string.IsNullOrWhiteSpace(name)
+            ? throw new ArgumentException("A category needs a name.", nameof(name))
+            : name.Trim();
 }

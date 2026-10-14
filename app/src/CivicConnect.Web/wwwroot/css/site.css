@@ -23,3 +23,10 @@ header nav { display: flex; gap: .75rem; }
 .filters input, .filters select, .filters button { font: inherit; padding: .3rem; }
 .paging { display: flex; gap: 1rem; margin-top: 1rem; font-size: .9rem; }
 .actor { color: #6b7280; }
+.overdue { font-size: .8rem; padding: .1rem .5rem; border-radius: 1rem; background: #fef3f2; color: #b42318; border: 1px solid #fda29b; }
+.performance { border-collapse: collapse; margin: 1rem 0; font-size: .9rem; }
+.performance th, .performance td { border-bottom: 1px solid var(--line); padding: .3rem .6rem; text-align: left; }
+.exports { display: flex; gap: 1rem; font-size: .9rem; }
+.admin-list .inactive { color: #6b7280; }
+.scopes { display: flex; flex-wrap: wrap; gap: .25rem .75rem; }
+.scopes .inline-check { display: flex; gap: .3rem; align-items: center; font-size: .85rem; }

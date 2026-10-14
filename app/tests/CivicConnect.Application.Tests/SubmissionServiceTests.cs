@@ -24,6 +24,20 @@ public class SubmissionServiceTests
         return (service, requests, history);
     }
 
+    [Fact]
+    [Trait("TestCase", "FR-016")]
+    public async Task A_new_request_is_due_by_its_category_target()
+    {
+        var requests = new FakeRequestRepository(rowsAffected: 1, ownership: null);
+        var service = new SubmissionService(
+            requests, new FakeHistoryRepository(), new FakeQueries(Category) { TargetHours = 8 },
+            new FakePolicy(true), new DirectUnitOfWork(), new FixedClock());
+
+        await service.SubmitAsync(Requester, Valid(), CancellationToken.None);
+
+        Assert.Equal(new FixedClock().UtcNow.AddHours(8), Assert.Single(requests.Added).TargetResponseAtUtc);
+    }
+
     private static NewRequest Valid()
         => new("Broken corridor light", "The light outside room 12 flickers.", "Block B, floor 2", Category);
 

@@ -1,4 +1,5 @@
 using CivicConnect.Application.Abstractions;
+using CivicConnect.Application.Access;
 using CivicConnect.Application.ReferenceData;
 using CivicConnect.Application.Requests;
 using CivicConnect.Infrastructure.Persistence;
@@ -43,6 +44,10 @@ builder.Services.AddScoped<IOversightQueries, OversightQueries>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IAuditRepository, AuditRepository>();
 builder.Services.AddScoped<CategoryService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<IAttachmentRepository, AttachmentRepository>();
+builder.Services.AddScoped<AttachmentService>();
 // While CR-003 is open there is no authentication, so the development stand in
 // is registered only in Development. Anywhere else the application refuses to
 // start rather than running with no identity (RSK-012).
@@ -85,6 +90,7 @@ app.MapRequestEndpoints();
 app.MapAssignmentEndpoints();
 app.MapStatusEndpoints();
 app.MapQueueEndpoints();
+app.MapAttachmentEndpoints();
 
 app.Run();
 

@@ -1,3 +1,5 @@
+using CivicConnect.Domain.Requests;
+
 namespace CivicConnect.Domain.ReferenceData;
 
 /// <summary>
@@ -13,10 +15,19 @@ public class Category
     public string Name { get; private set; } = string.Empty;
     public bool IsRetired { get; private set; }
 
+    /// <summary>FR-016 (CR-005). How long staff have to respond to a request in this category.</summary>
+    public int TargetResponseHours { get; private set; } = ResponseTarget.DefaultHours;
+
     public static Category Create(string name)
         => string.IsNullOrWhiteSpace(name)
             ? throw new ArgumentException("A category needs a name.", nameof(name))
             : new Category { Name = name };
+
+    /// <summary>FR-016 and FR-021. Applies to requests submitted from now on.</summary>
+    public void SetTarget(int hours)
+        => TargetResponseHours = ResponseTarget.IsValidHours(hours)
+            ? hours
+            : throw new ArgumentOutOfRangeException(nameof(hours));
 
     public void Retire() => IsRetired = true;
 

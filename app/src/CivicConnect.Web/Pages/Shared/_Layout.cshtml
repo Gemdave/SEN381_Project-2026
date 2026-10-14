@@ -9,6 +9,7 @@
     // ADR-004: links appear only for roles the policy allows; each page checks again.
     var canOversee = await Policy.MayViewOversightAsync(CurrentUser.Id, default);
     var canAdminister = await Policy.MayAdministerAsync(CurrentUser.Id, default);
+    var canSeeSummary = await Policy.MayViewSummaryAsync(CurrentUser.Id, default);
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -29,16 +30,23 @@
             {
                 <a href="/Oversight">Oversight</a>
             }
+            @if (canSeeSummary)
+            {
+                <a href="/Reports/Summary">Summary</a>
+            }
             @if (canAdminister)
             {
+                <a href="/Admin/Users">Users</a>
                 <a href="/Admin/Categories">Categories</a>
                 <a href="/Admin/Audit">Audit trail</a>
             }
         </nav>
-        @* Development only: the CR-003 stand-in for sign-in (RSK-012). *@
+        @* Development only: the CR-003 stand-in for sign-in (RSK-012). Deactivated
+           users are not offered, because they cannot sign in (AC-019.1). *@
         @if (HostEnvironment.IsDevelopment())
         {
             var users = await Db.Users.AsNoTracking()
+                .Where(u => u.IsActive)
                 .OrderBy(u => u.Role).ThenBy(u => u.DisplayName)
                 .Select(u => new { u.Id, u.DisplayName, u.Role })
                 .ToListAsync();
@@ -56,6 +64,7 @@
                         {
                             CivicConnect.Domain.Access.UserRole.Requester => "/Requests",
                             CivicConnect.Domain.Access.UserRole.ServiceStaff => "/Staff/Queue",
+                            CivicConnect.Domain.Access.UserRole.Sponsor => "/Reports/Summary",
                             _ => "/Oversight"
                         };
                         <a href="@(home)?user=@u.Id">@u.DisplayName</a>

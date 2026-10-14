@@ -14,5 +14,7 @@ public sealed class CapabilityFactory(IAuthorisationPolicy policy)
             CanAccept: await policy.MayAsync(userId, RequestAction.Assign, requestId, ct),
             CanTransition: await policy.MayAsync(userId, RequestAction.Transition, requestId, ct),
             CanAddNote: await policy.MayAsync(userId, RequestAction.AddNote, requestId, ct),
-            CanClose: await policy.MayAsync(userId, RequestAction.Close, requestId, ct));
+            CanClose: await policy.MayAsync(userId, RequestAction.Close, requestId, ct),
+            CanReject: await policy.MayAsync(userId, RequestAction.Reject, requestId, ct),
+            CanAttach: await policy.MayAsync(userId, RequestAction.Attach, requestId, ct));
 }

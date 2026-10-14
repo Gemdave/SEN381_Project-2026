@@ -30,6 +30,9 @@ public interface IRequestQueries
 
     Task<bool> IsActiveCategoryAsync(Guid categoryId, CancellationToken ct);
 
+    /// <summary>FR-016 (CR-005). The category's target response time, read when a request is submitted.</summary>
+    Task<int> TargetHoursAsync(Guid categoryId, CancellationToken ct);
+
     /// <summary>
     /// FR-004 and FR-005. Filtered on the requester inside the query, so other rows
     /// are never loaded (NFR-003); an optional status narrows it (AC-005.1).

@@ -9,28 +9,25 @@
     <p class="message">Saved. Your reference is <strong>@Model.Detail!.Reference</strong>.</p>
 }
 
+@if (Model.Message is not null)
+{
+    <p class="message">@Model.Message</p>
+}
+
 <h1>@Model.Detail!.Title</h1>
 
 @* AC-003.2: fields only. There is no status control here for a requester to use. *@
 <partial name="_RequestFields" model="Model.Detail" />
 
-@* FR-007, AC-007.1: one timestamped update for each change made by staff. *@
-<h3>Updates</h3>
-@if (Model.Updates.Count == 0)
-{
-    <partial name="_EmptyState" model="@("No updates yet. You will see one here each time staff work on your request.")" />
-}
-else
-{
-    <ul class="history updates">
-        @foreach (var update in Model.Updates.OrderByDescending(u => u.CreatedAtUtc))
-        {
-            <li>
-                <time datetime="@update.CreatedAtUtc.ToString("o")">@update.CreatedAtUtc.ToString("u")</time>
-                @update.Message
-            </li>
-        }
-    </ul>
-}
+@* NFR-002: refreshed every few seconds, so a staff change shows without a reload. *@
+<section data-status-poll="/Requests/Details?id=@Model.Id&amp;handler=Updates" aria-live="polite">
+    <partial name="_RequestUpdates" model="Model" />
+</section>
+
+<partial name="_Attachments" model="Model.Attachments" />
 
 <p><a href="/Requests">Back to my requests</a></p>
+
+@section Scripts {
+    <script src="~/js/status-poll.js"></script>
+}

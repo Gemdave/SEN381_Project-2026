@@ -1,0 +1,34 @@
+@*
+    FR-006 (AC-006.1). The attachments on one request, with an upload form only
+    for someone the policy lets attach. The handler on the page checks again.
+*@
+@model CivicConnect.Web.Models.AttachmentsView
+
+<h3>Attachments</h3>
+@if (Model.Items.Count == 0)
+{
+    <partial name="_EmptyState" model="@("No files attached.")" />
+}
+else
+{
+    <ul class="history attachments">
+        @foreach (var file in Model.Items)
+        {
+            <li>
+                <a href="/api/v1/requests/@Model.RequestId/attachments/@file.Id">@file.FileName</a>
+                <span class="actor">@CivicConnect.Web.Models.AttachmentsView.Size(file.SizeBytes)</span>
+                <time datetime="@file.UploadedAtUtc.ToString("o")">@file.UploadedAtUtc.ToString("u")</time>
+            </li>
+        }
+    </ul>
+}
+
+@if (Model.CanAttach)
+{
+    <form method="post" asp-page-handler="Attach" enctype="multipart/form-data" class="stacked">
+        <input type="hidden" name="id" value="@Model.RequestId" />
+        <label for="file">Attach a photo or document (JPG, PNG or PDF, up to 5 MB)</label>
+        <input id="file" name="file" type="file" accept="@CivicConnect.Web.Models.AttachmentsView.Accept" />
+        <button type="submit">Attach file</button>
+    </form>
+}

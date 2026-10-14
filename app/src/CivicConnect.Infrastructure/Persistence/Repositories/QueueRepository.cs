@@ -1,5 +1,6 @@
 using CivicConnect.Application.Abstractions;
 using CivicConnect.Domain.Access;
+using CivicConnect.Domain.Requests;
 using Microsoft.EntityFrameworkCore;
 
 namespace CivicConnect.Infrastructure.Persistence.Repositories;
@@ -26,10 +27,15 @@ public sealed class QueueRepository(CivicConnectDbContext db) : IQueueRepository
             .Where(r => r.AssignedToUserId == null || r.AssignedToUserId == staffUserId)
             .Where(r => db.StaffCategoryScopes.Any(s => s.UserId == staffUserId && s.CategoryId == r.CategoryId));
 
-        // FR-009: filter.
+        // FR-009: filter. A rejected request needs no more work (CR-009), so it
+        // leaves the queue unless staff ask for rejected requests by name.
         if (filter.Status is { } status)
         {
             requests = requests.Where(r => r.Status == status);
+        }
+        else
+        {
+            requests = requests.Where(r => r.Status != RequestStatus.Rejected);
         }
 
         if (filter.CategoryId is { } categoryId)

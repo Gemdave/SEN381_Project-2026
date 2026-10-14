@@ -35,6 +35,7 @@ public sealed record HistoryView(IReadOnlyList<RequestHistoryEntry> Entries, IRe
     {
         "StatusChanged" => "Status changed",
         "NoteAdded" => "Note added",
+        "AttachmentAdded" => "Attachment added",
         _ => action
     };
 

@@ -11,14 +11,17 @@ namespace CivicConnect.Web.Pages.Staff;
 
 /// <summary>
 /// FR-010 for the view, FR-011 for the accept handler, FR-012 and FR-014 for
-/// the status handler, FR-013 for the note handler. This page is the user
-/// facing end of the M2 demonstration trace.
+/// the status handler, FR-013 for the note handler, CR-009 for the reject
+/// handler and FR-006 for attachments. This page is the user facing end of the
+/// M2 demonstration trace.
 /// </summary>
+[RequestFormLimits(MultipartBodyLengthLimit = RequestAttachment.MaxBytes + 64 * 1024)]
 public class DetailsModel(
     IRequestQueries queries,
     AssignmentService assignment,
     StatusTransitionService transitions,
     NoteService notes,
+    AttachmentService attachments,
     IRequestHistoryRepository historyRepository,
     IAuthorisationPolicy policy,
     CapabilityFactory capabilities,
@@ -31,6 +34,7 @@ public class DetailsModel(
     public RequestCapabilities Capabilities { get; private set; } = RequestCapabilities.None;
     public IReadOnlyList<RequestStatus> NextStatuses { get; private set; } = [];
     public HistoryView History { get; private set; } = new([], new Dictionary<Guid, string>());
+    public AttachmentsView Attachments { get; private set; } = AttachmentsView.None(Guid.Empty);
     public string? Message { get; private set; }
 
     public async Task<IActionResult> OnGetAsync(CancellationToken ct)
@@ -79,6 +83,39 @@ public class DetailsModel(
         return Page();
     }
 
+    public async Task<IActionResult> OnPostRejectAsync(string? reason, CancellationToken ct)
+    {
+        // CR-009 (AC-007.2): the reason is required and goes to the requester.
+        var outcome = await transitions.RejectAsync(Id, currentUser.Id, reason, ct);
+
+        Message = outcome switch
+        {
+            TransitionOutcome.Changed => "Request rejected. The requester has been told why.",
+            TransitionOutcome.NoteRequired => "Rejecting a request needs a reason for the requester.",
+            TransitionOutcome.NotAllowed => "Only a request that has just been received can be rejected.",
+            TransitionOutcome.Conflicted => "The request changed while you were working. Reload and try again.",
+            TransitionOutcome.Forbidden => "You are not permitted to reject this request.",
+            _ => "That request no longer exists."
+        };
+
+        if (outcome == TransitionOutcome.NotFound || !await LoadAsync(ct))
+        {
+            return NotFound();
+        }
+
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostAttachAsync(IFormFile? file, CancellationToken ct)
+    {
+        var outcome = file is null
+            ? AttachmentOutcome.Empty
+            : await attachments.AddAsync(Id, currentUser.Id, file.FileName, file.OpenReadStream(), file.Length, ct);
+
+        Message = AttachmentsView.MessageFor(outcome);
+        return await LoadAsync(ct) ? Page() : NotFound();
+    }
+
     public async Task<IActionResult> OnPostNoteAsync(string? text, CancellationToken ct)
     {
         // FR-013 (AC-013.1): saved to the history with author and time, never edited.
@@ -113,10 +150,16 @@ public class DetailsModel(
         Capabilities = await capabilities.ForAsync(currentUser.Id, Id, ct);
 
         // Only moves the domain allows (AC-012.1), and closing only with the
-        // close capability (AC-014.2).
+        // close capability (AC-014.2). Rejecting has its own form (CR-009).
         NextStatuses = StatusTransition.NextFrom(Detail.Status)
+            .Where(s => s != RequestStatus.Rejected)
             .Where(s => s == RequestStatus.Closed ? Capabilities.CanClose : Capabilities.CanTransition)
             .ToList();
+
+        Attachments = new AttachmentsView(
+            Id,
+            await attachments.ListAsync(Id, currentUser.Id, ct),
+            ResponseTarget.IsOpen(Detail.Status) && Capabilities.CanAttach);
 
         var entries = await historyRepository.ForRequestAsync(Id, ct);
         History = new HistoryView(entries, await queries.DisplayNamesAsync(HistoryView.PeopleIn(entries), ct));

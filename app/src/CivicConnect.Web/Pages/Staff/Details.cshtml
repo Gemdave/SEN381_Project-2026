@@ -25,6 +25,17 @@
     </form>
 }
 
+@if (Model.Capabilities.CanReject && Model.Detail!.Status == RequestStatus.Received)
+{
+    @* CR-009, AC-007.2: the reason is shown to the requester. *@
+    <form method="post" asp-page-handler="Reject" class="stacked">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <label for="reason">Reason for rejecting (the requester will see this)</label>
+        <textarea id="reason" name="reason" rows="2" maxlength="@CivicConnect.Application.Requests.NoteService.MaxLength"></textarea>
+        <button type="submit">Reject this request</button>
+    </form>
+}
+
 @if (Model.NextStatuses.Count > 0)
 {
     <form method="post" asp-page-handler="Transition" class="stacked">
@@ -70,6 +81,8 @@
         }
     </ul>
 }
+
+<partial name="_Attachments" model="Model.Attachments" />
 
 <h3>Action history</h3>
 <partial name="_HistoryList" model="Model.History" />

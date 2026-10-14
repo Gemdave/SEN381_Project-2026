@@ -26,10 +26,13 @@ public class Request
     public DateTimeOffset? AssignedAtUtc { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; private set; } = DateTimeOffset.UtcNow;
 
+    /// <summary>FR-016 (CR-005). When the category's target response time runs out.</summary>
+    public DateTimeOffset TargetResponseAtUtc { get; private set; }
+
     /// <summary>
     /// FR-001. AC-001.2 requires every missing required field to be reported.
-    /// Location is last and optional so existing callers still compile;
-    /// SubmissionService requires it for every request a requester submits.
+    /// Location and the target are last and optional so existing callers still
+    /// compile; SubmissionService passes both for every request a requester submits.
     /// </summary>
     public static Request Submit(
         string reference,
@@ -38,7 +41,8 @@ public class Request
         Guid categoryId,
         Guid requesterId,
         DateTimeOffset now,
-        string? location = null)
+        string? location = null,
+        int targetResponseHours = ResponseTarget.DefaultHours)
     {
         var missing = new List<string>();
         if (string.IsNullOrWhiteSpace(reference)) missing.Add(nameof(reference));
@@ -52,6 +56,11 @@ public class Request
             throw new ArgumentException("Required fields are missing: " + string.Join(", ", missing));
         }
 
+        if (!ResponseTarget.IsValidHours(targetResponseHours))
+        {
+            throw new ArgumentOutOfRangeException(nameof(targetResponseHours));
+        }
+
         return new Request
         {
             Reference = reference,
@@ -61,7 +70,8 @@ public class Request
             CategoryId = categoryId,
             RequesterId = requesterId,
             Status = RequestStatus.Received,
-            CreatedAtUtc = now
+            CreatedAtUtc = now,
+            TargetResponseAtUtc = ResponseTarget.DueAt(now, targetResponseHours)
         };
     }
 }

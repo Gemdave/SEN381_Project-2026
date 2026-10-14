@@ -1,6 +1,7 @@
 using CivicConnect.Application.Abstractions;
 using CivicConnect.Domain.Audit;
 using CivicConnect.Domain.ReferenceData;
+using CivicConnect.Domain.Requests;
 
 namespace CivicConnect.Application.ReferenceData;
 
@@ -57,6 +58,33 @@ public sealed class CategoryService(
         var oldName = category.Name;
         category.Rename(name!);
         return await SaveAsync(adminId, "CategoryRenamed", category.Name, "was " + oldName, ct);
+    }
+
+    /// <summary>
+    /// FR-016 (CR-005). The target response time for new requests in this
+    /// category; requests already submitted keep the due time they were given.
+    /// </summary>
+    public async Task<CategoryOutcome> SetTargetAsync(Guid adminId, Guid categoryId, int hours, CancellationToken ct)
+    {
+        if (!await policy.MayAdministerAsync(adminId, ct))
+        {
+            return CategoryOutcome.Forbidden;
+        }
+
+        if (!ResponseTarget.IsValidHours(hours))
+        {
+            return CategoryOutcome.Invalid;
+        }
+
+        var category = await categories.FindAsync(categoryId, ct);
+        if (category is null)
+        {
+            return CategoryOutcome.NotFound;
+        }
+
+        var oldHours = category.TargetResponseHours;
+        category.SetTarget(hours);
+        return await SaveAsync(adminId, "CategoryTargetChanged", category.Name, $"{oldHours} to {hours} hours", ct);
     }
 
     public Task<CategoryOutcome> RetireAsync(Guid adminId, Guid categoryId, CancellationToken ct)

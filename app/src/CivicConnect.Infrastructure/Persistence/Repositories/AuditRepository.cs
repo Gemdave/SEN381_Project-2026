@@ -23,9 +23,20 @@ public sealed class AuditRepository(CivicConnectDbContext db) : IAuditRepository
                 .ToListAsync(ct));
         }
 
-        if (kind is AuditKind.All or AuditKind.Categories)
+        if (kind is AuditKind.All or AuditKind.Categories or AuditKind.Users)
         {
-            items.AddRange(await db.AuditEntries.AsNoTracking()
+            // Audit entry actions are named for what they change: Category... or User....
+            var entries = db.AuditEntries.AsNoTracking();
+            if (kind == AuditKind.Categories)
+            {
+                entries = entries.Where(a => a.Action.StartsWith("Category"));
+            }
+            else if (kind == AuditKind.Users)
+            {
+                entries = entries.Where(a => a.Action.StartsWith("User"));
+            }
+
+            items.AddRange(await entries
                 .OrderByDescending(a => a.OccurredAtUtc)
                 .Take(take)
                 .Select(a => new AuditItem(a.OccurredAtUtc, a.Action, a.Subject, null, null, a.Detail, a.ActorUserId))

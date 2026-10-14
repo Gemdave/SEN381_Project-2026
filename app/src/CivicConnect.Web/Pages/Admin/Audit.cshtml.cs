@@ -8,9 +8,9 @@ namespace CivicConnect.Web.Pages.Admin;
 
 /// <summary>
 /// FR-022 (AC-022.1). Key controlled actions with actor and time, newest first:
-/// status changes, assignments, notes and submissions from the request history,
-/// and category changes from the audit entries. Role changes join when FR-020
-/// is built.
+/// status changes, assignments, notes, attachments and submissions from the
+/// request history, and category, user and role changes from the audit entries
+/// (FR-019, FR-020, NFR-007).
 /// </summary>
 public class AuditModel(
     IAuditRepository audit,
@@ -48,6 +48,12 @@ public class AuditModel(
         "CategoryRenamed" => "Category renamed",
         "CategoryRetired" => "Category retired",
         "CategoryRestored" => "Category restored",
+        "CategoryTargetChanged" => "Category target changed",
+        "UserCreated" => "User created",
+        "UserRoleChanged" => "Role changed",
+        "UserDeactivated" => "User deactivated",
+        "UserReactivated" => "User reactivated",
+        "UserScopesChanged" => "Staff categories changed",
         _ => HistoryView.ActionText(action)
     };
 }

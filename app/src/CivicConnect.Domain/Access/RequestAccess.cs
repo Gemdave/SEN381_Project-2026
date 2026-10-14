@@ -18,6 +18,20 @@ public static class RequestAccess
     /// <summary>FR-015 and FR-017 (AC-020.1). The oversight view is for managers and administrators.</summary>
     public static bool MayViewOversight(UserRole role) => role is UserRole.Management or UserRole.Administrator;
 
-    /// <summary>FR-021 and FR-022. Reference data and the audit trail are for administrators.</summary>
+    /// <summary>
+    /// FR-019 to FR-022. Users, roles, reference data and the audit trail are for
+    /// administrators only (AC-020.2).
+    /// </summary>
     public static bool MayAdminister(UserRole role) => role == UserRole.Administrator;
+
+    /// <summary>FR-023 (CR-007). The high-level summary is for sponsors, managers and administrators.</summary>
+    public static bool MayViewSummary(UserRole role)
+        => role is UserRole.Sponsor or UserRole.Management or UserRole.Administrator;
+
+    /// <summary>
+    /// FR-006 (AC-006.1). The requester on their own request, or the staff member
+    /// who owns it, may attach supporting information.
+    /// </summary>
+    public static bool MayAttach(UserRole role, bool isRequester, bool isOwner)
+        => (role == UserRole.Requester && isRequester) || (role == UserRole.ServiceStaff && isOwner);
 }

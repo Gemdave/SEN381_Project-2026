@@ -10,6 +10,7 @@ public class StatusTransitionTests
     [InlineData(RequestStatus.Assigned, RequestStatus.InProgress)]
     [InlineData(RequestStatus.InProgress, RequestStatus.Resolved)]
     [InlineData(RequestStatus.Resolved, RequestStatus.Closed)]
+    [InlineData(RequestStatus.Received, RequestStatus.Rejected)]
     public void Allows_the_baselined_lifecycle(RequestStatus from, RequestStatus to)
         => Assert.True(StatusTransition.IsAllowed(from, to));
 
@@ -18,6 +19,10 @@ public class StatusTransitionTests
     [InlineData(RequestStatus.Received, RequestStatus.Resolved)]
     [InlineData(RequestStatus.Closed, RequestStatus.Assigned)]
     [InlineData(RequestStatus.Assigned, RequestStatus.Received)]
+    [InlineData(RequestStatus.Assigned, RequestStatus.Rejected)]
+    [InlineData(RequestStatus.InProgress, RequestStatus.Rejected)]
+    [InlineData(RequestStatus.Rejected, RequestStatus.Assigned)]
+    [InlineData(RequestStatus.Rejected, RequestStatus.Received)]
     public void Refuses_anything_outside_it(RequestStatus from, RequestStatus to)
         => Assert.False(StatusTransition.IsAllowed(from, to));
 }

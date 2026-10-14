@@ -7,7 +7,10 @@ public enum AuditKind
 {
     All,
     Requests,
-    Categories
+    Categories,
+
+    /// <summary>FR-019 and FR-020: accounts, roles and staff scopes.</summary>
+    Users
 }
 
 /// <summary>One line of the audit trail, from the request history or from an audit entry.</summary>
@@ -22,8 +25,8 @@ public sealed record AuditItem(
 
 /// <summary>
 /// FR-022 and NFR-007. Insert only: there is no update or delete. The trail
-/// combines request history (status changes, assignments, notes) with audit
-/// entries (category changes), newest first.
+/// combines request history (status changes, assignments, notes, attachments)
+/// with audit entries (category and user changes), newest first.
 /// </summary>
 public interface IAuditRepository
 {

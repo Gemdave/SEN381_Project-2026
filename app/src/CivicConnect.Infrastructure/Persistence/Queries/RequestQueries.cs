@@ -20,6 +20,12 @@ public sealed class RequestQueries(CivicConnectDbContext db) : IRequestQueries
     public Task<bool> IsActiveCategoryAsync(Guid categoryId, CancellationToken ct)
         => db.Categories.AnyAsync(c => c.Id == categoryId && !c.IsRetired, ct);
 
+    public async Task<int> TargetHoursAsync(Guid categoryId, CancellationToken ct)
+        => await db.Categories.AsNoTracking()
+            .Where(c => c.Id == categoryId)
+            .Select(c => (int?)c.TargetResponseHours)
+            .FirstOrDefaultAsync(ct) ?? ResponseTarget.DefaultHours;
+
     public async Task<IReadOnlyList<RequestListItem>> ListForRequesterAsync(
         Guid requesterId, RequestStatus? status, CancellationToken ct)
         => await (

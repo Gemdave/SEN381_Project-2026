@@ -44,6 +44,7 @@ public sealed class SubmissionService(
         {
             var now = clock.UtcNow;
             var number = await requests.NextReferenceNumberAsync(token);
+            var targetHours = await queries.TargetHoursAsync(input.CategoryId, token);
             var request = Request.Submit(
                 reference: "REQ-" + number.ToString("D6"),
                 title: title,
@@ -51,7 +52,8 @@ public sealed class SubmissionService(
                 location: location,
                 categoryId: input.CategoryId,
                 requesterId: requesterId,
-                now: now);
+                now: now,
+                targetResponseHours: targetHours);
 
             await requests.AddAsync(request, token);
             history.Add(RequestHistoryEntry.ForSubmission(request.Id, requesterId, now));

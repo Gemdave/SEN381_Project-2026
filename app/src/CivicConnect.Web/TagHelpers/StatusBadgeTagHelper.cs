@@ -26,6 +26,7 @@ public sealed class StatusBadgeTagHelper : TagHelper
         RequestStatus.InProgress => "In progress",
         RequestStatus.Resolved => "Resolved",
         RequestStatus.Closed => "Closed",
+        RequestStatus.Rejected => "Rejected",
         _ => "Unknown"
     };
 }

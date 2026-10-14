@@ -7,7 +7,9 @@ namespace CivicConnect.Web.Security;
 /// Stands in for authentication while CR-003 is open (RSK-012). It reads a user
 /// id from the query string and refuses to work outside Development, so it
 /// cannot survive a deployment by accident. The choice is kept in a cookie, so
-/// links and form posts without ?user= stay with the same user.
+/// links and form posts without ?user= stay with the same user. A deactivated
+/// user cannot be chosen, and a browser already signed in as one is left with
+/// no identity at all, so the policy refuses everything it asks (AC-019.1).
 /// </summary>
 public sealed class DevelopmentCurrentUser : ICurrentUser
 {
@@ -28,7 +30,7 @@ public sealed class DevelopmentCurrentUser : ICurrentUser
 
         var http = accessor.HttpContext;
         if (Guid.TryParse(http?.Request.Query["user"].ToString(), out var chosen)
-            && db.Users.Any(u => u.Id == chosen))
+            && db.Users.Any(u => u.Id == chosen && u.IsActive))
         {
             http!.Response.Cookies.Append(CookieName, chosen.ToString(),
                 new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.Lax });
@@ -37,16 +39,20 @@ public sealed class DevelopmentCurrentUser : ICurrentUser
         }
 
         // An unknown id (for example after the database was recreated) is ignored.
-        if (Guid.TryParse(http?.Request.Cookies[CookieName], out var remembered)
-            && db.Users.Any(u => u.Id == remembered))
+        if (Guid.TryParse(http?.Request.Cookies[CookieName], out var remembered))
         {
-            id = remembered;
-            return;
+            var active = db.Users.Where(u => u.Id == remembered).Select(u => (bool?)u.IsActive).FirstOrDefault();
+            if (active is not null)
+            {
+                // Deactivated since signing in: no identity, not someone else's.
+                id = active.Value ? remembered : Guid.Empty;
+                return;
+            }
         }
 
-        // Fall back to the first seeded staff member so the pages are usable.
+        // Fall back to the first active seeded staff member so the pages are usable.
         id = db.Users
-            .Where(u => u.Role == CivicConnect.Domain.Access.UserRole.ServiceStaff)
+            .Where(u => u.Role == CivicConnect.Domain.Access.UserRole.ServiceStaff && u.IsActive)
             .Select(u => u.Id)
             .FirstOrDefault();
     }

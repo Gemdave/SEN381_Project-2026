@@ -59,6 +59,10 @@ internal sealed class FakeQueries(params Guid[] activeCategories) : IRequestQuer
     public Task<bool> IsActiveCategoryAsync(Guid categoryId, CancellationToken ct)
         => Task.FromResult(activeCategories.Contains(categoryId));
 
+    public int TargetHours { get; init; } = ResponseTarget.DefaultHours;
+
+    public Task<int> TargetHoursAsync(Guid categoryId, CancellationToken ct) => Task.FromResult(TargetHours);
+
     public Task<IReadOnlyList<RequestListItem>> ListForRequesterAsync(
         Guid requesterId, RequestStatus? status, CancellationToken ct)
         => Task.FromResult<IReadOnlyList<RequestListItem>>([]);

@@ -56,6 +56,17 @@ public class RequestHistoryEntry
             OccurredAtUtc = now
         };
 
+    /// <summary>FR-006. The file name is the new value, so the history reads "Attachment added to photo.jpg".</summary>
+    public static RequestHistoryEntry ForAttachment(Guid requestId, Guid actorUserId, string fileName, DateTimeOffset now)
+        => new()
+        {
+            RequestId = requestId,
+            ActorUserId = actorUserId,
+            Action = "AttachmentAdded",
+            NewValue = fileName,
+            OccurredAtUtc = now
+        };
+
     public static RequestHistoryEntry ForNote(Guid requestId, Guid actorUserId, string note, DateTimeOffset now)
         => new()
         {

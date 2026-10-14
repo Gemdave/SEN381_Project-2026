@@ -1,5 +1,7 @@
 @page
 @model CivicConnect.Web.Pages.Oversight.IndexModel
+@using CivicConnect.Application.Abstractions
+@using CivicConnect.Web.Pages.Oversight
 @{
     ViewData["Title"] = "Oversight";
 }
@@ -12,7 +14,8 @@
 }
 else
 {
-    @* FR-017, AC-017.1: narrowing by status or category updates every figure below. *@
+    @* FR-016 and FR-017 (AC-016.1, AC-017.1): narrowing by status, category or
+       lifecycle state updates every figure below. *@
     <form method="get" class="filters">
         <label>
             Status
@@ -20,7 +23,7 @@ else
                 <option value="">Any</option>
                 @foreach (var status in Enum.GetValues<RequestStatus>())
                 {
-                    <option value="@status" selected="@(Model.Status == status)">@(status == RequestStatus.InProgress ? "In progress" : status.ToString())</option>
+                    <option value="@status" selected="@(Model.Status == status)">@IndexModel.StatusText(status)</option>
                 }
             </select>
         </label>
@@ -34,6 +37,14 @@ else
                 }
             </select>
         </label>
+        <label>
+            State
+            <select name="lifecycle">
+                <option value="">Any</option>
+                <option value="@Lifecycle.Open" selected="@(Model.Lifecycle == Lifecycle.Open)">Open</option>
+                <option value="@Lifecycle.Overdue" selected="@(Model.Lifecycle == Lifecycle.Overdue)">Overdue</option>
+            </select>
+        </label>
         <button type="submit">Apply</button>
         @if (Model.Filtered)
         {
@@ -41,7 +52,12 @@ else
         }
     </form>
 
-    <p><strong>Total requests: <span class="total">@Model.Summary!.Total</span></strong></p>
+    <p>
+        <strong>Total requests: <span class="total">@Model.Summary!.Total</span></strong>
+        Open: <span class="open">@Model.Summary.Open</span>
+        Overdue: <span class="overdue-count">@Model.Summary.Overdue</span>
+        Resolved: <span class="resolved">@Model.Summary.Resolved</span>
+    </p>
 
     <div class="counts">
         <table>
@@ -51,14 +67,34 @@ else
                 <tr><th><status-badge status="@row.Status"></status-badge></th><td>@row.Count</td></tr>
             }
         </table>
-        <table>
-            <caption>By category</caption>
-            @foreach (var row in Model.Summary.ByCategory)
-            {
-                <tr><th>@row.Category</th><td>@row.Count</td></tr>
-            }
-        </table>
     </div>
+
+    @* FR-018 (AC-018.1): volumes, open, overdue and resolved counts and time to resolve, by category. *@
+    <table class="performance">
+        <caption>Service performance by category</caption>
+        <tr>
+            @foreach (var column in IndexModel.FigureColumns)
+            {
+                <th>@column</th>
+            }
+        </tr>
+        @foreach (var row in IndexModel.FigureRows(Model.Summary))
+        {
+            <tr>
+                @foreach (var cell in row)
+                {
+                    <td>@cell</td>
+                }
+            </tr>
+        }
+    </table>
+
+    @* AC-018.2: the exports carry the same filters, so they match what is shown. *@
+    <p class="exports">
+        Export as CSV:
+        <a href="/Oversight?handler=ExportFigures&amp;@Model.FilterQuery">performance table</a>
+        <a href="/Oversight?handler=ExportRequests&amp;@Model.FilterQuery">all @Model.Summary.Total matching requests</a>
+    </p>
 
     <h3>Most recent</h3>
     @if (Model.Summary.Recent.Count == 0)
@@ -73,6 +109,11 @@ else
                 <a href="/Staff/Details?id=@item.Id">@item.Reference</a>
                 <h3>@item.Title</h3>
                 <status-badge status="@item.Status"></status-badge>
+                @if (item.Overdue)
+                {
+                    @* AC-016.2 *@
+                    <span class="overdue">Overdue</span>
+                }
                 <span class="category">@item.Category</span>
                 <time datetime="@item.CreatedAtUtc.ToString("o")">@item.CreatedAtUtc.ToString("u")</time>
             </article>

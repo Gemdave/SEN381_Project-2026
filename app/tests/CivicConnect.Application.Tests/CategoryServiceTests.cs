@@ -2,6 +2,7 @@ using CivicConnect.Application.Abstractions;
 using CivicConnect.Application.ReferenceData;
 using CivicConnect.Domain.Audit;
 using CivicConnect.Domain.ReferenceData;
+using CivicConnect.Domain.Requests;
 using Xunit;
 
 namespace CivicConnect.Application.Tests;
@@ -131,6 +132,42 @@ public class CategoryServiceTests
         Assert.Single(categories.Items);
         Assert.False(fault.IsRetired);
         Assert.Empty(audit.Entries);
+    }
+
+    [Fact]
+    [Trait("TestCase", "FR-016")]
+    public async Task An_administrator_sets_a_target_and_it_is_audited()
+    {
+        var (service, categories, audit) = Build();
+        var fault = categories.Items[0];
+
+        Assert.Equal(CategoryOutcome.Done, await service.SetTargetAsync(Admin, fault.Id, 24, CancellationToken.None));
+
+        Assert.Equal(24, fault.TargetResponseHours);
+        var entry = Assert.Single(audit.Entries);
+        Assert.Equal(("CategoryTargetChanged", "72 to 24 hours"), (entry.Action, entry.Detail));
+    }
+
+    [Theory]
+    [Trait("TestCase", "FR-016")]
+    [InlineData(0)]
+    [InlineData(ResponseTarget.MaxHours + 1)]
+    public async Task A_target_outside_the_range_is_refused(int hours)
+    {
+        var (service, categories, audit) = Build();
+
+        Assert.Equal(CategoryOutcome.Invalid, await service.SetTargetAsync(Admin, categories.Items[0].Id, hours, CancellationToken.None));
+        Assert.Equal(ResponseTarget.DefaultHours, categories.Items[0].TargetResponseHours);
+        Assert.Empty(audit.Entries);
+    }
+
+    [Fact]
+    public async Task Only_an_administrator_sets_a_target()
+    {
+        var (service, categories, _) = Build(isAdministrator: false);
+
+        Assert.Equal(CategoryOutcome.Forbidden, await service.SetTargetAsync(Admin, categories.Items[0].Id, 24, CancellationToken.None));
+        Assert.Equal(ResponseTarget.DefaultHours, categories.Items[0].TargetResponseHours);
     }
 
     [Fact]

@@ -26,7 +26,7 @@ else
     </form>
 
     <table class="admin-list">
-        <tr><th>Name</th><th>State</th><th>Rename</th><th></th></tr>
+        <tr><th>Name</th><th>State</th><th>Rename</th><th>Target response (hours)</th><th></th></tr>
         @foreach (var category in Model.Items)
         {
             <tr>
@@ -37,6 +37,16 @@ else
                         <input type="hidden" name="id" value="@category.Id" />
                         <input name="name" value="@category.Name" maxlength="@CivicConnect.Application.ReferenceData.CategoryService.NameMax" aria-label="New name for @category.Name" />
                         <button type="submit">Rename</button>
+                    </form>
+                </td>
+                <td>
+                    @* FR-016 (CR-005): applies to requests submitted after the change. *@
+                    <form method="post" asp-page-handler="Target" class="inline">
+                        <input type="hidden" name="id" value="@category.Id" />
+                        <input name="hours" type="number" value="@category.TargetResponseHours"
+                               min="@CivicConnect.Domain.Requests.ResponseTarget.MinHours" max="@CivicConnect.Domain.Requests.ResponseTarget.MaxHours"
+                               aria-label="Target hours for @category.Name" />
+                        <button type="submit">Set</button>
                     </form>
                 </td>
                 <td>

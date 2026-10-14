@@ -1,0 +1,26 @@
+@*
+    NFR-002. The part of the requester's page that refreshes on its own: the
+    current status and the updates (FR-007, AC-007.1). Rendered with the page,
+    and again on its own by the Updates handler for status-poll.js.
+*@
+@model CivicConnect.Web.Pages.Requests.DetailsModel
+
+<p>Current status: <status-badge status="@Model.Detail!.Status"></status-badge></p>
+
+<h3>Updates</h3>
+@if (Model.Updates.Count == 0)
+{
+    <partial name="_EmptyState" model="@("No updates yet. You will see one here each time staff work on your request.")" />
+}
+else
+{
+    <ul class="history updates">
+        @foreach (var update in Model.Updates.OrderByDescending(u => u.CreatedAtUtc))
+        {
+            <li>
+                <time datetime="@update.CreatedAtUtc.ToString("o")">@update.CreatedAtUtc.ToString("u")</time>
+                @update.Message
+            </li>
+        }
+    </ul>
+}

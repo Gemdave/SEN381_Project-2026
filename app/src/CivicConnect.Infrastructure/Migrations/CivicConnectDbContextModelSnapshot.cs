@@ -36,6 +36,9 @@ namespace CivicConnect.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -109,12 +112,18 @@ namespace CivicConnect.Infrastructure.Migrations
                         .HasMaxLength(60)
                         .HasColumnType("character varying(60)");
 
+                    b.Property<int>("TargetResponseHours")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("categories", (string)null);
+                    b.ToTable("categories", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_categories_target_hours", "\"TargetResponseHours\" BETWEEN 1 AND 2160");
+                        });
                 });
 
             modelBuilder.Entity("CivicConnect.Domain.Requests.Request", b =>
@@ -157,6 +166,9 @@ namespace CivicConnect.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<DateTimeOffset>("TargetResponseAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -173,13 +185,59 @@ namespace CivicConnect.Infrastructure.Migrations
 
                     b.HasIndex("RequesterId");
 
+                    b.HasIndex("Status", "TargetResponseAtUtc");
+
                     b.HasIndex("Status", "CategoryId", "AssignedToUserId");
 
                     b.ToTable("requests", null, t =>
                         {
-                            t.HasCheckConstraint("ck_requests_owner_matches_status", "(\"Status\" = 'Received' AND \"AssignedToUserId\" IS NULL) OR (\"Status\" <> 'Received' AND \"AssignedToUserId\" IS NOT NULL)");
+                            t.HasCheckConstraint("ck_requests_owner_matches_status", "(\"Status\" IN ('Received', 'Rejected') AND \"AssignedToUserId\" IS NULL) OR (\"Status\" NOT IN ('Received', 'Rejected') AND \"AssignedToUserId\" IS NOT NULL)");
 
-                            t.HasCheckConstraint("ck_requests_status", "\"Status\" IN ('Received', 'Assigned', 'InProgress', 'Resolved', 'Closed')");
+                            t.HasCheckConstraint("ck_requests_status", "\"Status\" IN ('Received', 'Assigned', 'InProgress', 'Resolved', 'Closed', 'Rejected')");
+                        });
+                });
+
+            modelBuilder.Entity("CivicConnect.Domain.Requests.RequestAttachment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("UploadedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UploadedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequestId");
+
+                    b.HasIndex("UploadedByUserId");
+
+                    b.ToTable("request_attachments", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_request_attachments_size", "\"SizeBytes\" BETWEEN 1 AND 5242880");
                         });
                 });
 
@@ -289,6 +347,21 @@ namespace CivicConnect.Infrastructure.Migrations
                     b.HasOne("CivicConnect.Domain.Access.AppUser", null)
                         .WithMany()
                         .HasForeignKey("RequesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CivicConnect.Domain.Requests.RequestAttachment", b =>
+                {
+                    b.HasOne("CivicConnect.Domain.Requests.Request", null)
+                        .WithMany()
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CivicConnect.Domain.Access.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UploadedByUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

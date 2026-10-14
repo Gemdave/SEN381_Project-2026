@@ -8,13 +8,15 @@ namespace CivicConnect.Infrastructure.Security;
 /// <summary>
 /// ADR-005. One decision point, refusing by default. Role rules and ownership
 /// rules are answered here together, because ownership cannot be decided from
-/// the role alone (NFR-003, AC-008.2).
+/// the role alone (NFR-003, AC-008.2). A deactivated user is refused every
+/// action, so deactivation takes effect on their next request (AC-019.1), and a
+/// role change does too, because the role is read on every call (AC-020.1).
 /// </summary>
 public sealed class AuthorisationPolicy(CivicConnectDbContext db) : IAuthorisationPolicy
 {
     public async Task<bool> MayAsync(Guid userId, RequestAction action, Guid requestId, CancellationToken ct)
     {
-        var user = await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId, ct);
+        var user = await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId && u.IsActive, ct);
         if (user is null)
         {
             return false;
@@ -51,6 +53,10 @@ public sealed class AuthorisationPolicy(CivicConnectDbContext db) : IAuthorisati
                 _ => false
             },
             RequestAction.Assign => user.Role == UserRole.ServiceStaff,
+            // CR-009: any staff member in scope may turn down a request that nobody owns yet.
+            RequestAction.Reject => user.Role == UserRole.ServiceStaff && request.AssignedToUserId == null,
+            RequestAction.Attach => RequestAccess.MayAttach(
+                user.Role, request.RequesterId == userId, request.AssignedToUserId == userId),
             RequestAction.Transition or RequestAction.AddNote =>
                 user.Role == UserRole.ServiceStaff && request.AssignedToUserId == userId,
             // Closing (AC-014.2): the staff member who owns it, or an administrator.
@@ -64,14 +70,7 @@ public sealed class AuthorisationPolicy(CivicConnectDbContext db) : IAuthorisati
     }
 
     public async Task<bool> MaySubmitAsync(Guid userId, CancellationToken ct)
-    {
-        var role = await db.Users.AsNoTracking()
-            .Where(u => u.Id == userId)
-            .Select(u => (UserRole?)u.Role)
-            .FirstOrDefaultAsync(ct);
-
-        return role is { } known && RequestAccess.MaySubmit(known);
-    }
+        => await RoleOfAsync(userId, ct) is { } role && RequestAccess.MaySubmit(role);
 
     public async Task<bool> MayViewOversightAsync(Guid userId, CancellationToken ct)
         => await RoleOfAsync(userId, ct) is { } role && RequestAccess.MayViewOversight(role);
@@ -79,9 +78,13 @@ public sealed class AuthorisationPolicy(CivicConnectDbContext db) : IAuthorisati
     public async Task<bool> MayAdministerAsync(Guid userId, CancellationToken ct)
         => await RoleOfAsync(userId, ct) is { } role && RequestAccess.MayAdminister(role);
 
+    public async Task<bool> MayViewSummaryAsync(Guid userId, CancellationToken ct)
+        => await RoleOfAsync(userId, ct) is { } role && RequestAccess.MayViewSummary(role);
+
+    /// <summary>Null for an unknown or deactivated user, so every role rule refuses them.</summary>
     private Task<UserRole?> RoleOfAsync(Guid userId, CancellationToken ct)
         => db.Users.AsNoTracking()
-            .Where(u => u.Id == userId)
+            .Where(u => u.Id == userId && u.IsActive)
             .Select(u => (UserRole?)u.Role)
             .FirstOrDefaultAsync(ct);
 }

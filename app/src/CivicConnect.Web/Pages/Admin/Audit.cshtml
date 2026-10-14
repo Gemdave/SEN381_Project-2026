@@ -20,6 +20,7 @@ else
                 <option value="@AuditKind.All" selected="@(Model.Kind == AuditKind.All)">All actions</option>
                 <option value="@AuditKind.Requests" selected="@(Model.Kind == AuditKind.Requests)">Request actions</option>
                 <option value="@AuditKind.Categories" selected="@(Model.Kind == AuditKind.Categories)">Category changes</option>
+                <option value="@AuditKind.Users" selected="@(Model.Kind == AuditKind.Users)">User and role changes</option>
             </select>
         </label>
         <button type="submit">Apply</button>

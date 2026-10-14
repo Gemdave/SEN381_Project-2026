@@ -14,6 +14,9 @@ namespace CivicConnect.Infrastructure.Seed;
 public static class DevelopmentSeed
 {
     public const string SecondRequester = "Dev Requester Two";
+    public const string Sponsor = "Dev Sponsor";
+    public const string FormerStaff = "Dev Former Staff";
+    public const string OverdueReference = "REQ-0008";
 
     public static async Task RunAsync(CivicConnectDbContext db, CancellationToken ct = default)
     {
@@ -23,6 +26,7 @@ public static class DevelopmentSeed
         }
 
         await EnsureSecondRequesterAsync(db, ct);
+        await EnsureReportingDataAsync(db, ct);
     }
 
     private static async Task SeedBaseAsync(CivicConnectDbContext db, CancellationToken ct)
@@ -106,6 +110,38 @@ public static class DevelopmentSeed
             categoryId: it.Id,
             requesterId: requester.Id,
             now: now));
+
+        await db.SaveChangesAsync(ct);
+    }
+
+    /// <summary>
+    /// FR-016, FR-019 and FR-023 need a sponsor, a deactivated account and a
+    /// request already past its target. Like the second requester, this tops up
+    /// a database seeded earlier and leaves a database without the seed alone.
+    /// </summary>
+    private static async Task EnsureReportingDataAsync(CivicConnectDbContext db, CancellationToken ct)
+    {
+        var requester = await db.Users.FirstOrDefaultAsync(u => u.DisplayName == "Dev Requester", ct);
+        var maintenance = await db.Categories.FirstOrDefaultAsync(c => c.Name == "Maintenance", ct);
+        if (requester is null || maintenance is null || await db.Users.AnyAsync(u => u.DisplayName == Sponsor, ct))
+        {
+            return;
+        }
+
+        var formerStaff = AppUser.Create(FormerStaff, UserRole.ServiceStaff);
+        formerStaff.Deactivate();
+        db.Users.AddRange(AppUser.Create(Sponsor, UserRole.Sponsor), formerStaff);
+
+        // Submitted four days ago against the default three-day target, so it is overdue.
+        db.Requests.Add(Request.Submit(
+            reference: OverdueReference,
+            title: "Sample request 8",
+            description: "Seeded for local development. Past its target response time.",
+            location: "Main building, room 108",
+            categoryId: maintenance.Id,
+            requesterId: requester.Id,
+            now: DateTimeOffset.UtcNow.AddDays(-4),
+            targetResponseHours: maintenance.TargetResponseHours));
 
         await db.SaveChangesAsync(ct);
     }

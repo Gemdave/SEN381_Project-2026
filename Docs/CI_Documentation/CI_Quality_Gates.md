@@ -58,18 +58,18 @@ Release candidates are tagged `vX.Y`. The tag push triggers the same pipeline, a
 ## 7. Run evidence
 | Item | Value |
 |---|---|
-| Release candidate tag | [fill in] |
-| Commit | [fill in: full SHA] |
-| Actions run | [fill in: run URL] |
-| Date | 14/10/2026 (test run); [fill in if a later run is the release candidate run] |
-| Build and Test | [fill in: pass/fail]; 44 of 44 executed cases passed, 0 failed, 0 skipped |
-| Static Analysis | [fill in] |
-| Dependency Vulnerabilities | [fill in] |
-| Secrets Scan | [fill in] |
-| Quality Gate | [fill in] |
-| Test results artifact | [fill in: artifact link] |
-| Coverage report | [fill in once `coverlet.collector` is installed, otherwise state "not produced"] |
-| Gate blocking a change | [fill in: failed run URL and the pull request that fixed it, or state that none occurred] |
+| Release candidate tag | v3.0 |
+| Commit | 6a85684 |
+| Actions run | https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178 |
+| Date | 14/10/2026 |
+| Build and Test | pass; 44 of 44 executed cases passed, 0 failed, 0 skipped |
+| Static Analysis | Pass |
+| Dependency Vulnerabilities | Pass |
+| Secrets Scan | Pass |
+| Quality Gate | Pass |
+| Test results artifact | Test\CI-Artifacts\test-results.trx |
+| Coverage report | not produced |
+| Gate blocking a change | none |
 
 ## 8. Known limitations
 

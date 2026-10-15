@@ -8,7 +8,7 @@ on:
     branches:
       - main
     tags:
-      - "v*"
+      - "v*"          # gets the release candidate tag e.g. v3.1
   workflow_dispatch:
 
 permissions:
@@ -21,12 +21,34 @@ concurrency:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # 1. Build + Tests
+  # 1. Build + Tests 
   # ---------------------------------------------------------------------------
   build-and-test:
     name: Build and Test
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+
+    # Disposable PostgreSQL for the integration tests. 
+    # It exists only for this job and is reachable only from this runner, so it uses trust authentication:
+    # there is no password in the repository to leak (RSK-005). 
+    # **This setup is never to be reused for a real database.**
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: civicconnect_test
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d civicconnect_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      CIVICCONNECT_TEST_DB: "Host=localhost;Port=5432;Database=civicconnect_test;Username=postgres"
 
     defaults:
       run:
@@ -47,14 +69,38 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      # NOTE: Testcontainers-based integration tests need Docker; ubuntu-latest provides it.
-      # Coverage needs the coverlet.collector package in the test project(s).
+      # Each test project gets its own result file so nothing is overwritten.
+      # Coverage needs the coverlet.collector package in each test project.
       - name: Run tests
-        run: >
-          dotnet test --no-build --configuration Release --verbosity normal
-          --logger "trx;LogFileName=test-results.trx"
-          --collect:"XPlat Code Coverage"
-          --results-directory "${{ github.workspace }}/TestResults"
+        run: |
+          status=0
+          for proj in tests/*/*.csproj; do
+            name=$(basename "$proj" .csproj)
+            dotnet test "$proj" --no-build --configuration Release --verbosity normal \
+              --logger "trx;LogFileName=${name}.trx" \
+              --collect:"XPlat Code Coverage" \
+              --results-directory "$GITHUB_WORKSPACE/TestResults/${name}" || status=1
+          done
+          exit $status
+
+      # The integration tests skip themselves when no database is configured, which would
+      # leave a green run that proves nothing. A skipped test fails the build.
+      - name: Verify no tests were skipped
+        if: always()
+        run: |
+          passed=$(grep -rho 'outcome="Passed"' "$GITHUB_WORKSPACE/TestResults" --include=*.trx | wc -l)
+          failed=$(grep -rho 'outcome="Failed"' "$GITHUB_WORKSPACE/TestResults" --include=*.trx | wc -l)
+          skipped=$(grep -rho 'outcome="NotExecuted"' "$GITHUB_WORKSPACE/TestResults" --include=*.trx | wc -l)
+          {
+            echo "### Test results"
+            echo "| Passed | Failed | Skipped |"
+            echo "|---|---|---|"
+            echo "| $passed | $failed | $skipped |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$skipped" -gt 0 ]; then
+            echo "::error::$skipped test(s) were skipped. The integration tests must run in CI."
+            exit 1
+          fi
 
       - name: Upload test results and coverage
         if: always()
@@ -98,7 +144,7 @@ jobs:
 
       # Formatting/style is a blocking check: fails if code does not match .editorconfig
       - name: Verify formatting
-        run: dotnet format --verify-no-changes --no-restore --verbosity diagnostic
+        run: dotnet format --verify-no-changes --no-restore --verbosity detailed
 
       - name: Summarize analyzer warnings
         if: always()

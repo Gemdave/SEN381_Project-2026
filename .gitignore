@@ -1,4 +1,4 @@
-#----- Secrets -----#
+#---------- Secrets ----------#
 *.env
 *.env.local
 *.env.*.local
@@ -15,7 +15,8 @@ id_ed25519
 secrets/
 config/secrets.*
 *.db-secret
-#----- OS & System Agnostic Temp Files -----#
+
+#---------- OS & System Agnostic Temp Files ----------#
 .DS_Store
 .AppleDouble
 .LSOverride
@@ -35,7 +36,8 @@ $RECYCLE.BIN/
 *~
 .fuse_hidden*
 .directory
-#----- IDEs & Code Editors -----#
+
+#---------- IDEs & Code Editors ----------#
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
@@ -51,7 +53,8 @@ $RECYCLE.BIN/
 *.userosmat
 *.suo
 *.sln.docstates
-#----- Dependencies & Packages -----#
+
+#---------- Dependencies & Packages ----------#
 node_modules/
 jspm_packages/
 .npm
@@ -70,7 +73,8 @@ obj/
 *.class
 *.jar
 *.war
-#----- Build Outputs, Logs & Temp Files -----#
+
+#---------- Build Outputs, Logs & Temp Files ----------#
 dist/
 build/
 out/
@@ -81,7 +85,9 @@ coverage/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-#----- Local Temp Files -----#
+TestResults/
+
+#---------- Local Temp Files ----------#
 ~$*.docx
 ~$*.doc
 ~$*.xlsx

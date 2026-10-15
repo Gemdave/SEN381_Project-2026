@@ -1,2 +1,3 @@
 *.cs text eol=crlf
 *.cshtml text eol=crlf
+*.yml text eol=lf

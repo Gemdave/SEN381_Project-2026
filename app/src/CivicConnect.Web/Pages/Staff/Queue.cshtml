@@ -99,8 +99,8 @@ else
                                 <span class="overdue">Overdue</span>
                             }
                         </td>
-                        <td><time datetime="@item.CreatedAtUtc.ToString("o")">@item.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm")</time></td>
-                        <td><time datetime="@item.TargetResponseAtUtc.ToString("o")">@item.TargetResponseAtUtc.ToString("yyyy-MM-dd HH:mm")</time></td>
+                        <td><time datetime="@item.CreatedAtUtc.ToString("o")">@DisplayTime.Show(item.CreatedAtUtc)</time></td>
+                        <td><time datetime="@item.TargetResponseAtUtc.ToString("o")">@DisplayTime.Show(item.TargetResponseAtUtc)</time></td>
                         <td class="actions">
                             @if (!item.IsAssigned && item.Status == RequestStatus.Received)
                             {

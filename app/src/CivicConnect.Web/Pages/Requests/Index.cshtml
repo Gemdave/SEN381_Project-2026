@@ -4,8 +4,10 @@
     ViewData["Title"] = "My requests";
 }
 
-<h1>My requests</h1>
-<p><a href="/Requests/Submit">Submit a new request</a></p>
+<div class="page-heading">
+    <h1>My requests</h1>
+    <a href="/Requests/Submit" class="button">Submit a new request</a>
+</div>
 
 @* FR-005, AC-005.1: filter your own requests by status. *@
 <form method="get" class="filters">
@@ -19,7 +21,7 @@
             }
         </select>
     </label>
-    <button type="submit">Filter</button>
+    <button type="submit" class="secondary">Filter</button>
     @if (Model.Status is not null)
     {
         <a href="/Requests">Show all</a>
@@ -32,14 +34,28 @@
 }
 else
 {
-    foreach (var item in Model.Items)
-    {
-        <article class="request-summary">
-            <a href="/Requests/Details?id=@item.Id">@item.Reference</a>
-            <h3>@item.Title</h3>
-            <status-badge status="@item.Status"></status-badge>
-            <span class="category">@item.CategoryName</span>
-            <time datetime="@item.CreatedAtUtc.ToString("o")">@item.CreatedAtUtc.ToString("u")</time>
-        </article>
-    }
+    @* FR-004: only this requester's own requests, newest first (NFR-003). *@
+    <table class="data">
+        <thead>
+            <tr>
+                <th>Reference</th>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Submitted</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td><a href="/Requests/Details?id=@item.Id">@item.Reference</a></td>
+                    <td>@item.Title</td>
+                    <td>@item.CategoryName</td>
+                    <td><status-badge status="@item.Status"></status-badge></td>
+                    <td><time datetime="@item.CreatedAtUtc.ToString("o")">@DisplayTime.Show(item.CreatedAtUtc)</time></td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }

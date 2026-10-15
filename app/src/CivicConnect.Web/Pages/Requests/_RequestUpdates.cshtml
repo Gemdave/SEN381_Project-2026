@@ -45,7 +45,7 @@ else
         @foreach (var update in Model.Updates.OrderByDescending(u => u.CreatedAtUtc))
         {
             <li>
-                <time datetime="@update.CreatedAtUtc.ToString("o")">@update.CreatedAtUtc.ToString("u")</time>
+                <time datetime="@update.CreatedAtUtc.ToString("o")">@DisplayTime.Show(update.CreatedAtUtc)</time>
                 @update.Message
             </li>
         }

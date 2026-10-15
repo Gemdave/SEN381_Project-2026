@@ -22,8 +22,12 @@
     10. Sign-in and home
     11. Submit a request
     12. Request details: progress tracker and updates
-    13. Staff queue
+    13. Staff queue and other request tables
     14. Oversight, summary and admin pages
+    15. Headline figures and the status bar chart
+    16. Staff request details: two columns and the action panel
+    17. Edit per row (admin tables)
+    18. Audit trail
 
    Layout is desktop-first for now; the mobile layout is deferred.
    ========================================================================== */
@@ -466,15 +470,18 @@ tbody tr:hover { background: var(--accent-soft); }
 .attachments a { font-weight: 600; }
 
 
-/* 13. Staff queue --------------------------------------------------------------
-   A table with the filter bar above it. Overdue rows are tinted, and a
-   request nobody owns can be accepted from its row. */
+/* 13. Staff queue and other request tables ------------------------------------
+   A table with the filter bar above it. Overdue rows are tinted wherever they
+   appear, and in the queue a request nobody owns can be accepted from its row. */
 
-.queue td.actions { text-align: right; white-space: nowrap; }
+td.actions { text-align: right; white-space: nowrap; }
 .queue .owned { color: var(--muted); font-size: var(--text-small); }
-.queue tr.is-overdue { background: var(--overdue-bg); }
-.queue tr.is-overdue:hover { background: #fde4e1; }
-.queue time { white-space: nowrap; }
+tr.is-overdue, tbody tr.is-overdue:nth-child(even) { background: var(--overdue-bg); }
+tbody tr.is-overdue:hover { background: #fde4e1; }
+td time { white-space: nowrap; }
+
+/* A heading with its main action beside it, such as My requests and Submit. */
+.page-heading { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-4); }
 
 .paging { display: flex; gap: var(--space-4); align-items: baseline; margin-top: var(--space-4); font-size: .9rem; }
 
@@ -485,3 +492,127 @@ tbody tr:hover { background: var(--accent-soft); }
 .exports { display: flex; gap: var(--space-4); font-size: .9rem; }
 .scopes { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); }
 .scopes .inline-check { display: flex; gap: var(--space-1); align-items: center; font-size: var(--text-small); }
+
+
+/* 15. Headline figures and the status bar chart -----------------------------------
+   FR-015, FR-018 and FR-023. A row of figures, then one bar per status, drawn
+   with plain HTML so no chart library is needed. Each bar carries its number,
+   so the chart never relies on bar length alone. */
+
+.stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-3); margin: var(--space-4) 0; padding: 0; }
+
+.stat {
+    margin: 0;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--ink-soft);
+    border-radius: var(--radius-large);
+}
+
+/* The label is small and muted; the figure under it is large. */
+.stat > .label, .stat > dt { display: block; color: var(--muted); font-size: var(--text-small); }
+.stat > :not(.label):not(dt) { display: block; margin: 0; font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stat.warn { border-top-color: var(--overdue-ink); }
+.stat.warn > :not(.label):not(dt) { color: var(--overdue-ink); }
+.stat.good { border-top-color: var(--resolved-ink); }
+
+.bars { list-style: none; padding: 0; margin: var(--space-3) 0 var(--space-5); max-width: 44rem; }
+.bars li { display: grid; grid-template-columns: 7rem 1fr 3rem; gap: var(--space-3); align-items: center; padding: var(--space-1) 0; }
+.bar { height: .8rem; background: var(--line-soft); border-radius: .4rem; overflow: hidden; }
+.bar-fill { display: block; height: 100%; border-radius: .4rem; }
+.bar-count { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+
+.fill-received   { background: var(--received-ink); }
+.fill-assigned   { background: var(--assigned-ink); }
+.fill-inprogress { background: var(--inprogress-ink); }
+.fill-resolved   { background: var(--resolved-ink); }
+.fill-closed     { background: var(--closed-ink); }
+.fill-rejected   { background: var(--rejected-ink); }
+
+
+/* 16. Staff request details --------------------------------------------------------
+   The request, its notes, files and history on the left; what this staff
+   member may do on the right. The panel stays in view while scrolling. */
+
+.detail-layout { display: grid; grid-template-columns: minmax(0, 1fr) 20rem; gap: var(--space-6); align-items: start; }
+
+.action-panel {
+    position: sticky;
+    top: var(--space-4);
+    padding: var(--space-4);
+    background: var(--page);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--accent);
+    border-radius: var(--radius-large);
+}
+
+.action-panel h2 { margin-top: 0; font-size: 1.05rem; }
+.action-panel h3 { margin: var(--space-4) 0 var(--space-2); font-size: .95rem; }
+.action-panel .stacked { margin: 0; max-width: none; }
+.action-panel textarea, .action-panel select { width: 100%; }
+.action-panel form + form, .action-panel section + section { border-top: 1px solid var(--line); margin-top: var(--space-4); padding-top: var(--space-2); }
+
+
+/* 17. Edit per row ------------------------------------------------------------------
+   Admin tables show each row's controls only when its Edit button is opened.
+   It uses the browser's own details element, so it needs no JavaScript. */
+
+td.edit-cell { position: relative; text-align: right; white-space: nowrap; }
+td.edit-cell > * { display: inline-block; vertical-align: middle; }
+td.edit-cell > * + * { margin-left: var(--space-2); }
+
+.row-edit > summary {
+    display: inline-block;
+    list-style: none;
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--text-small);
+    font-weight: 600;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+
+.row-edit > summary::-webkit-details-marker { display: none; }
+.row-edit > summary:hover, .row-edit[open] > summary { border-color: var(--accent); color: var(--accent); }
+
+/* The opened controls float under the button, over the rows below. */
+.row-edit-panel {
+    position: absolute;
+    right: 0;
+    z-index: 10;
+    display: grid;
+    gap: var(--space-3);
+    width: 24rem;
+    margin-top: var(--space-2);
+    padding: var(--space-4);
+    text-align: left;
+    white-space: normal;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-large);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+}
+
+.row-edit-panel form { display: grid; gap: var(--space-2); }
+.row-edit-panel label { font-size: var(--text-small); font-weight: 600; }
+.row-edit-panel button { justify-self: start; }
+
+/* A small card for a create form above a table. */
+.create { padding: var(--space-3) var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-large); background: var(--page); }
+.create h2 { margin: 0 0 var(--space-2); font-size: 1rem; }
+
+
+/* 18. Audit trail -------------------------------------------------------------------
+   One line per action: when, what kind, what it touched, the change, who. */
+
+.audit li { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-3); align-items: baseline; }
+.audit .action {
+    font-size: var(--text-tiny);
+    font-weight: 600;
+    padding: .05rem .5rem;
+    color: var(--accent-strong);
+    background: var(--accent-soft);
+    border-radius: 1rem;
+}
+.audit .change { color: var(--ink-soft); }
+.audit .actor { margin-left: auto; }

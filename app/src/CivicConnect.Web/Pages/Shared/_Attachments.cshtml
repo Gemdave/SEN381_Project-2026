@@ -17,7 +17,7 @@ else
             <li>
                 <a href="/api/v1/requests/@Model.RequestId/attachments/@file.Id">@file.FileName</a>
                 <span class="actor">@CivicConnect.Web.Models.AttachmentsView.Size(file.SizeBytes)</span>
-                <time datetime="@file.UploadedAtUtc.ToString("o")">@file.UploadedAtUtc.ToString("u")</time>
+                <time datetime="@file.UploadedAtUtc.ToString("o")">@DisplayTime.Show(file.UploadedAtUtc)</time>
             </li>
         }
     </ul>

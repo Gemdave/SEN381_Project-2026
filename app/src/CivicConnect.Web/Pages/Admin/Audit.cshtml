@@ -23,7 +23,7 @@ else
                 <option value="@AuditKind.Users" selected="@(Model.Kind == AuditKind.Users)">User and role changes</option>
             </select>
         </label>
-        <button type="submit">Apply</button>
+        <button type="submit" class="secondary">Apply</button>
     </form>
 
     @if (Model.Items.Count == 0)
@@ -33,11 +33,11 @@ else
     else
     {
         <p class="hint">The @Model.Items.Count most recent actions, newest first.</p>
-        <ul class="history">
+        <ul class="history audit">
             @foreach (var item in Model.Items)
             {
                 <li>
-                    <time datetime="@item.OccurredAtUtc.ToString("o")">@item.OccurredAtUtc.ToString("u")</time>
+                    <time datetime="@item.OccurredAtUtc.ToString("o")">@DisplayTime.Show(item.OccurredAtUtc)</time>
                     <span class="action">@CivicConnect.Web.Pages.Admin.AuditModel.Label(item.Action)</span>
                     <strong>@item.Subject</strong>
                     @if (item.OldValue is not null || item.NewValue is not null)

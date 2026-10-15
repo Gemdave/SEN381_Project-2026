@@ -10,7 +10,7 @@ else
         @foreach (var entry in Model.Entries)
         {
             <li>
-                <time datetime="@entry.OccurredAtUtc.ToString("o")">@entry.OccurredAtUtc.ToString("u")</time>
+                <time datetime="@entry.OccurredAtUtc.ToString("o")">@DisplayTime.Show(entry.OccurredAtUtc)</time>
                 <span class="action">@CivicConnect.Web.Models.HistoryView.ActionText(entry.Action)</span>
                 @if (entry.OldValue is not null || entry.NewValue is not null)
                 {

@@ -13,25 +13,18 @@
 else
 {
     var s = Model.Summary!;
+    <p class="lead">Headline service performance, counted from the request records when this page loads.</p>
+
     @* FR-023, AC-023.1: summary service performance and accountability figures. *@
-    <dl class="fields summary">
-        <dt>Requests received</dt><dd class="total">@s.Total</dd>
-        <dt>Still open</dt><dd class="open">@s.Open</dd>
-        <dt>Open and overdue</dt><dd class="overdue-count">@s.Overdue</dd>
-        <dt>Resolved</dt><dd class="resolved">@s.Resolved</dd>
-        <dt>Resolved within target</dt>
-        <dd class="within-target">@(Model.WithinTargetPercent is { } percent ? percent + "%" : "None resolved yet")</dd>
-        <dt>Average time to resolve</dt>
-        <dd>@(s.AverageHoursToResolve is null ? "None resolved yet" : CivicConnect.Web.Pages.Oversight.IndexModel.Hours(s.AverageHoursToResolve) + " hours")</dd>
+    <dl class="stats">
+        <div class="stat"><dt>Requests received</dt><dd class="total">@s.Total</dd></div>
+        <div class="stat"><dt>Still open</dt><dd class="open">@s.Open</dd></div>
+        <div class="stat warn"><dt>Open and overdue</dt><dd class="overdue-count">@s.Overdue</dd></div>
+        <div class="stat good"><dt>Resolved</dt><dd class="resolved">@s.Resolved</dd></div>
+        <div class="stat"><dt>Resolved within target</dt><dd class="within-target">@(Model.WithinTargetPercent is { } percent ? percent + "%" : "None yet")</dd></div>
+        <div class="stat"><dt>Average time to resolve</dt><dd>@(s.AverageHoursToResolve is null ? "None yet" : CivicConnect.Web.Pages.Oversight.IndexModel.Hours(s.AverageHoursToResolve) + " h")</dd></div>
     </dl>
 
-    <table>
-        <caption>Requests by status</caption>
-        @foreach (var row in s.ByStatus)
-        {
-            <tr><th><status-badge status="@row.Status"></status-badge></th><td>@row.Count</td></tr>
-        }
-    </table>
-
-    <p class="hint">Figures are counted from the request records when this page loads.</p>
+    <h2>Requests by status</h2>
+    <partial name="_StatusBars" model="s.ByStatus" />
 }

@@ -17,45 +17,54 @@
 }
 else
 {
-    <form method="post" asp-page-handler="Add" class="filters">
-        <label>
-            New category
-            <input name="name" maxlength="@CivicConnect.Application.ReferenceData.CategoryService.NameMax" />
-        </label>
-        <button type="submit">Add</button>
-    </form>
+    @* FR-021 (AC-021.1): the submit form reads this list, so no code change is needed. *@
+    <section class="create">
+        <h2>Add a category</h2>
+        <form method="post" asp-page-handler="Add" class="inline">
+            <input name="name" maxlength="@CivicConnect.Application.ReferenceData.CategoryService.NameMax" placeholder="Category name" aria-label="New category" />
+            <button type="submit">Add category</button>
+        </form>
+    </section>
 
     <table class="admin-list">
-        <tr><th>Name</th><th>State</th><th>Rename</th><th>Target response (hours)</th><th></th></tr>
-        @foreach (var category in Model.Items)
-        {
-            <tr>
-                <td>@category.Name</td>
-                <td>@(category.IsRetired ? "Retired" : "Active")</td>
-                <td>
-                    <form method="post" asp-page-handler="Rename" class="inline">
-                        <input type="hidden" name="id" value="@category.Id" />
-                        <input name="name" value="@category.Name" maxlength="@CivicConnect.Application.ReferenceData.CategoryService.NameMax" aria-label="New name for @category.Name" />
-                        <button type="submit">Rename</button>
-                    </form>
-                </td>
-                <td>
-                    @* FR-016 (CR-005): applies to requests submitted after the change. *@
-                    <form method="post" asp-page-handler="Target" class="inline">
-                        <input type="hidden" name="id" value="@category.Id" />
-                        <input name="hours" type="number" value="@category.TargetResponseHours"
-                               min="@CivicConnect.Domain.Requests.ResponseTarget.MinHours" max="@CivicConnect.Domain.Requests.ResponseTarget.MaxHours"
-                               aria-label="Target hours for @category.Name" />
-                        <button type="submit">Set</button>
-                    </form>
-                </td>
-                <td>
-                    <form method="post" asp-page-handler="@(category.IsRetired ? "Restore" : "Retire")" class="inline">
-                        <input type="hidden" name="id" value="@category.Id" />
-                        <button type="submit" class="@(category.IsRetired ? "secondary" : "danger")">@(category.IsRetired ? "Restore" : "Retire")</button>
-                    </form>
-                </td>
-            </tr>
-        }
+        <thead>
+            <tr><th>Name</th><th>State</th><th>Target response</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var category in Model.Items)
+            {
+                <tr class="@(category.IsRetired ? "inactive" : null)">
+                    <td>@category.Name</td>
+                    <td>@(category.IsRetired ? "Retired" : "Active")</td>
+                    <td>@category.TargetResponseHours hours</td>
+                    <td class="edit-cell">
+                        <details class="row-edit">
+                            <summary>Edit</summary>
+                            <div class="row-edit-panel">
+                                <form method="post" asp-page-handler="Rename">
+                                    <input type="hidden" name="id" value="@category.Id" />
+                                    <label for="name-@category.Id">Name</label>
+                                    <input id="name-@category.Id" name="name" value="@category.Name" maxlength="@CivicConnect.Application.ReferenceData.CategoryService.NameMax" />
+                                    <button type="submit" class="small">Rename</button>
+                                </form>
+
+                                @* FR-016 (CR-005): applies to requests submitted after the change. *@
+                                <form method="post" asp-page-handler="Target">
+                                    <input type="hidden" name="id" value="@category.Id" />
+                                    <label for="hours-@category.Id">Target response (hours, for new requests)</label>
+                                    <input id="hours-@category.Id" name="hours" type="number" value="@category.TargetResponseHours"
+                                           min="@CivicConnect.Domain.Requests.ResponseTarget.MinHours" max="@CivicConnect.Domain.Requests.ResponseTarget.MaxHours" />
+                                    <button type="submit" class="small">Set target</button>
+                                </form>
+                            </div>
+                        </details>
+                        <form method="post" asp-page-handler="@(category.IsRetired ? "Restore" : "Retire")" class="inline">
+                            <input type="hidden" name="id" value="@category.Id" />
+                            <button type="submit" class="small @(category.IsRetired ? "secondary" : "danger")">@(category.IsRetired ? "Restore" : "Retire")</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
     </table>
 }

@@ -4,6 +4,7 @@
 @{
     ViewData["Title"] = "Users";
     var roles = Enum.GetValues<UserRole>();
+    var categoryNames = Model.Categories.ToDictionary(c => c.Id, c => c.Name);
 }
 
 <h1>Users and roles</h1>
@@ -20,78 +21,97 @@
 else
 {
     @* FR-019: accounts are created here and never deleted. *@
-    <form method="post" asp-page-handler="Create" class="filters">
-        <label>
-            Name
-            <input name="name" maxlength="@AppUser.DisplayNameMax" />
-        </label>
-        <label>
-            Role
-            <select name="role">
+    <section class="create">
+        <h2>Create a user</h2>
+        <form method="post" asp-page-handler="Create" class="inline">
+            <input name="name" maxlength="@AppUser.DisplayNameMax" placeholder="Full name" aria-label="Name" />
+            <select name="role" aria-label="Role">
                 @foreach (var role in roles)
                 {
                     <option value="@role">@CivicConnect.Web.Pages.Admin.UsersModel.RoleText(role)</option>
                 }
             </select>
-        </label>
-        <button type="submit">Create user</button>
-    </form>
+            <button type="submit">Create user</button>
+        </form>
+    </section>
 
     <table class="admin-list">
-        <tr><th>Name</th><th>Role</th><th>State</th><th>Categories (staff only)</th><th></th></tr>
-        @foreach (var user in Model.Items)
-        {
-            var self = user.Id == Model.CurrentUserId;
-            <tr class="@(user.IsActive ? "" : "inactive")">
-                <td>@user.DisplayName@(self ? " (you)" : "")</td>
-                <td>
-                    @if (self)
-                    {
-                        @CivicConnect.Web.Pages.Admin.UsersModel.RoleText(user.Role)
-                    }
-                    else
-                    {
-                        @* FR-020, AC-020.1: what the user may do follows the role. *@
-                        <form method="post" asp-page-handler="Role" class="inline">
-                            <input type="hidden" name="id" value="@user.Id" />
-                            <select name="role" aria-label="Role for @user.DisplayName">
-                                @foreach (var role in roles)
-                                {
-                                    <option value="@role" selected="@(user.Role == role)">@CivicConnect.Web.Pages.Admin.UsersModel.RoleText(role)</option>
-                                }
-                            </select>
-                            <button type="submit">Change</button>
-                        </form>
-                    }
-                </td>
-                <td>@(user.IsActive ? "Active" : "Deactivated")</td>
-                <td>
-                    @if (user.Role == UserRole.ServiceStaff)
-                    {
-                        @* FR-008: staff see and work only the categories ticked here. *@
-                        <form method="post" asp-page-handler="Scopes" class="inline scopes">
-                            <input type="hidden" name="id" value="@user.Id" />
-                            @foreach (var category in Model.Categories.Where(c => !c.IsRetired || user.ScopedCategoryIds.Contains(c.Id)))
-                            {
-                                <label class="inline-check">
-                                    <input type="checkbox" name="categoryIds" value="@category.Id" checked="@user.ScopedCategoryIds.Contains(category.Id)" />
-                                    @category.Name
-                                </label>
-                            }
-                            <button type="submit">Save</button>
-                        </form>
-                    }
-                </td>
-                <td>
-                    @if (!self)
-                    {
-                        <form method="post" asp-page-handler="@(user.IsActive ? "Deactivate" : "Reactivate")" class="inline">
-                            <input type="hidden" name="id" value="@user.Id" />
-                            <button type="submit" class="@(user.IsActive ? "danger" : "secondary")">@(user.IsActive ? "Deactivate" : "Reactivate")</button>
-                        </form>
-                    }
-                </td>
-            </tr>
-        }
+        <thead>
+            <tr><th>Name</th><th>Role</th><th>State</th><th>Categories</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model.Items)
+            {
+                var self = user.Id == Model.CurrentUserId;
+                var isStaff = user.Role == UserRole.ServiceStaff;
+                var scoped = user.ScopedCategoryIds.Where(categoryNames.ContainsKey).Select(id => categoryNames[id]).Order().ToList();
+                <tr class="@(user.IsActive ? null : "inactive")">
+                    <td>@user.DisplayName@(self ? " (you)" : "")</td>
+                    <td>@CivicConnect.Web.Pages.Admin.UsersModel.RoleText(user.Role)</td>
+                    <td>@(user.IsActive ? "Active" : "Deactivated")</td>
+                    <td>
+                        @if (isStaff)
+                        {
+                            @(scoped.Count == 0 ? "None yet" : string.Join(", ", scoped))
+                        }
+                        else
+                        {
+                            <span class="hint">Staff only</span>
+                        }
+                    </td>
+                    <td class="edit-cell">
+                        @if (self)
+                        {
+                            <span class="hint">Your account</span>
+                        }
+                        else
+                        {
+                            <details class="row-edit">
+                                <summary>Edit</summary>
+                                <div class="row-edit-panel">
+                                    @* FR-020, AC-020.1: what the user may do follows the role. *@
+                                    <form method="post" asp-page-handler="Role">
+                                        <input type="hidden" name="id" value="@user.Id" />
+                                        <label for="role-@user.Id">Role</label>
+                                        <select id="role-@user.Id" name="role">
+                                            @foreach (var role in roles)
+                                            {
+                                                <option value="@role" selected="@(user.Role == role)">@CivicConnect.Web.Pages.Admin.UsersModel.RoleText(role)</option>
+                                            }
+                                        </select>
+                                        <button type="submit" class="small">Change role</button>
+                                    </form>
+
+                                    @if (isStaff)
+                                    {
+                                        @* FR-008: staff see and work only the categories ticked here. *@
+                                        <form method="post" asp-page-handler="Scopes">
+                                            <input type="hidden" name="id" value="@user.Id" />
+                                            <span class="hint">Categories this staff member handles</span>
+                                            <div class="scopes">
+                                                @foreach (var category in Model.Categories.Where(c => !c.IsRetired || user.ScopedCategoryIds.Contains(c.Id)))
+                                                {
+                                                    <label class="inline-check">
+                                                        <input type="checkbox" name="categoryIds" value="@category.Id" checked="@user.ScopedCategoryIds.Contains(category.Id)" />
+                                                        @category.Name
+                                                    </label>
+                                                }
+                                            </div>
+                                            <button type="submit" class="small">Save categories</button>
+                                        </form>
+                                    }
+
+                                    @* FR-019, AC-019.1: deactivated users cannot sign in or act. *@
+                                    <form method="post" asp-page-handler="@(user.IsActive ? "Deactivate" : "Reactivate")">
+                                        <input type="hidden" name="id" value="@user.Id" />
+                                        <button type="submit" class="small @(user.IsActive ? "danger" : "secondary")">@(user.IsActive ? "Deactivate" : "Reactivate")</button>
+                                    </form>
+                                </div>
+                            </details>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
     </table>
 }

@@ -202,7 +202,7 @@ jobs:
           fi
 
   # ---------------------------------------------------------------------------
-  # 4. Secrets scan (full history, so past commits are covered too)
+  # 4. Secrets scan
   # ---------------------------------------------------------------------------
   secrets-scan:
     name: Secrets Scan

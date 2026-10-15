@@ -16,7 +16,7 @@ Provide a clear, concise summary of the changes introduced in this PR:
 ---
 ## Responsible AI Usage
 - [ ] **AI Usage:** AI was used in generating or refining parts of this contribution.
-  * *If YES, confirm that an entry has been added to the live **AI Usage Register** (`/docs/ai_register.md`) with human verification details.*
+  * *If YES, confirm that an entry has been added to the live **AI Usage Register** (`/Docs/AI_Register/AI_Register.md`) with human verification details.*
 - [ ] **Human Verification:** All AI-assisted research, text, or code has been human-verified for technical correctness and alignment with project specs.
 ---
 ## Verification & Evidence

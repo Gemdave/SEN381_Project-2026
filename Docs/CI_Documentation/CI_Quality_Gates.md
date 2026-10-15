@@ -59,16 +59,16 @@ Release candidates are tagged `vX.Y`. The tag push triggers the same pipeline, a
 | Item | Value |
 |---|---|
 | Release candidate tag | v3.0 |
-| Commit | 6a85684 |
-| Actions run | https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178 |
-| Date | 14/10/2026 |
+| Commit | 8edd83d |
+| Actions run | https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38719210326 |
+| Date | 15/10/2026 |
 | Build and Test | pass; 44 of 44 executed cases passed, 0 failed, 0 skipped |
 | Static Analysis | Pass |
 | Dependency Vulnerabilities | Pass |
 | Secrets Scan | Pass |
 | Quality Gate | Pass |
-| Test results artifact | Test\CI-Artifacts\test-results.trx |
-| Coverage report | not produced |
+| Test results artifact | [Test/CI-Artifacts/](/Test/CI-Artifacts/) |
+| Coverage report | Coverage reports can be found in the [CI-Artifacts/](/Test/CI-Artifacts/) folder |
 | Gate blocking a change | none |
 
 ## 8. Known limitations

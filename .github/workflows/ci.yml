@@ -220,6 +220,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Upload Secrets Scan
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Secrets Scan
+          path: results.sarif
+          retention-days: 30
+
   # ---------------------------------------------------------------------------
   # 5. Quality gate - the single required status check for branch protection
   # ---------------------------------------------------------------------------

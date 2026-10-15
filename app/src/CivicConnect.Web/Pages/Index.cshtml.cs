@@ -1,5 +1,6 @@
 using CivicConnect.Application.Abstractions;
 using CivicConnect.Domain.Access;
+using CivicConnect.Web.Models;
 using CivicConnect.Web.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -24,7 +25,7 @@ public class IndexModel(
     public sealed record RoleGroup(UserRole Role, string Title, string Description, IReadOnlyList<Choice> Users);
 
     public IReadOnlyList<RoleGroup> Groups { get; private set; } = [];
-    public string? Message { get; private set; }
+    public PageMessage? Message { get; private set; }
 
     public static string Describe(UserRole role) => role switch
     {
@@ -65,7 +66,7 @@ public class IndexModel(
         var user = await users.FindAsync(userId, ct);
         if (user is not { IsActive: true })
         {
-            Message = "That user cannot sign in. Choose someone from the list.";
+            Message = PageMessage.Error("That user cannot sign in. Choose someone from the list.");
             await LoadAsync(ct);
             return Page();
         }

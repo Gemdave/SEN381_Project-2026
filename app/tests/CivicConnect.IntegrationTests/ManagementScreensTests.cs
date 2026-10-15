@@ -85,7 +85,7 @@ public class ManagementScreensTests(WebAppFixture app)
         var requester = await app.ClientForAsync(DevUsers.RequesterOne);
         var token = Html.Token(await admin.GetStringAsync("/Admin/Categories"));
         var name = "Parks " + Guid.NewGuid().ToString("N")[..6];
-        var option = ">" + name + "</option>";
+        var option = "<span>" + name + "</span>";
 
         var added = await Html.PostFormAsync(admin, "/Admin/Categories?handler=Add", token,
             new Dictionary<string, string> { ["name"] = name });

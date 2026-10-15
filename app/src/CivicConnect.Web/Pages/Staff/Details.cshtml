@@ -9,7 +9,7 @@
 
 @if (Model.Message is not null)
 {
-    <p class="message">@Model.Message</p>
+    <partial name="_Message" model="Model.Message" />
 }
 
 @* AC-010.1: requester, category, description and status, with history below. *@
@@ -32,7 +32,7 @@
         <input type="hidden" name="id" value="@Model.Id" />
         <label for="reason">Reason for rejecting (the requester will see this)</label>
         <textarea id="reason" name="reason" rows="2" maxlength="@CivicConnect.Application.Requests.NoteService.MaxLength"></textarea>
-        <button type="submit">Reject this request</button>
+        <button type="submit" class="danger">Reject this request</button>
     </form>
 }
 

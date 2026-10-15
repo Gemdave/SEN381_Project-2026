@@ -2,6 +2,7 @@ using CivicConnect.Application.Abstractions;
 using CivicConnect.Application.Access;
 using CivicConnect.Domain.Access;
 using CivicConnect.Domain.ReferenceData;
+using CivicConnect.Web.Models;
 using CivicConnect.Web.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -24,7 +25,7 @@ public class UsersModel(
     public bool Allowed { get; private set; }
     public IReadOnlyList<UserRow> Items { get; private set; } = [];
     public IReadOnlyList<Category> Categories { get; private set; } = [];
-    public string? Message { get; private set; }
+    public PageMessage? Message { get; private set; }
 
     public Guid CurrentUserId => currentUser.Id;
 
@@ -53,7 +54,7 @@ public class UsersModel(
 
     private async Task<IActionResult> AfterAsync(UserOutcome outcome, string done, CancellationToken ct)
     {
-        Message = outcome switch
+        Message = PageMessage.From(outcome == UserOutcome.Done, outcome switch
         {
             UserOutcome.Done => done,
             UserOutcome.Invalid => $"A user needs a name of at most {AppUser.DisplayNameMax} characters and a known role.",
@@ -61,7 +62,7 @@ public class UsersModel(
             UserOutcome.OwnAccount => "You cannot change your own role or deactivate yourself.",
             UserOutcome.NotStaff => "Only service staff have categories.",
             _ => "Only administrators can manage users and roles."
-        };
+        });
 
         await LoadAsync(ct);
         return Page();

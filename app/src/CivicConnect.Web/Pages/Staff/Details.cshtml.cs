@@ -35,7 +35,7 @@ public class DetailsModel(
     public IReadOnlyList<RequestStatus> NextStatuses { get; private set; } = [];
     public HistoryView History { get; private set; } = new([], new Dictionary<Guid, string>());
     public AttachmentsView Attachments { get; private set; } = AttachmentsView.None(Guid.Empty);
-    public string? Message { get; private set; }
+    public PageMessage? Message { get; private set; }
 
     public async Task<IActionResult> OnGetAsync(CancellationToken ct)
         => await LoadAsync(ct) ? Page() : NotFound();
@@ -44,13 +44,13 @@ public class DetailsModel(
     {
         var result = await assignment.AcceptAsync(Id, currentUser.Id, ct);
 
-        Message = result.Outcome switch
+        Message = PageMessage.From(result.Outcome == AssignmentOutcome.Assigned, result.Outcome switch
         {
             AssignmentOutcome.Assigned => "You now own this request.",
             AssignmentOutcome.AlreadyOwned => "Another staff member has already accepted this request.",
             AssignmentOutcome.Forbidden => "You are not permitted to accept this request.",
             _ => "That request no longer exists."
-        };
+        });
 
         if (result.Outcome == AssignmentOutcome.NotFound || !await LoadAsync(ct))
         {
@@ -65,7 +65,7 @@ public class DetailsModel(
         var outcome = await transitions.MoveAsync(Id, currentUser.Id, next, note, ct);
 
         // AC-012.2: a refused move is explained, and the status stays as it was.
-        Message = outcome switch
+        Message = PageMessage.From(outcome == TransitionOutcome.Changed, outcome switch
         {
             TransitionOutcome.Changed => "Status changed.",
             TransitionOutcome.NotAllowed => "That status change is not allowed from the current status.",
@@ -73,7 +73,7 @@ public class DetailsModel(
             TransitionOutcome.Conflicted => "The status changed while you were working. Reload and try again.",
             TransitionOutcome.Forbidden => "You are not permitted to change this request's status.",
             _ => "That request no longer exists."
-        };
+        });
 
         if (outcome == TransitionOutcome.NotFound || !await LoadAsync(ct))
         {
@@ -88,7 +88,7 @@ public class DetailsModel(
         // CR-009 (AC-007.2): the reason is required and goes to the requester.
         var outcome = await transitions.RejectAsync(Id, currentUser.Id, reason, ct);
 
-        Message = outcome switch
+        Message = PageMessage.From(outcome == TransitionOutcome.Changed, outcome switch
         {
             TransitionOutcome.Changed => "Request rejected. The requester has been told why.",
             TransitionOutcome.NoteRequired => "Rejecting a request needs a reason for the requester.",
@@ -96,7 +96,7 @@ public class DetailsModel(
             TransitionOutcome.Conflicted => "The request changed while you were working. Reload and try again.",
             TransitionOutcome.Forbidden => "You are not permitted to reject this request.",
             _ => "That request no longer exists."
-        };
+        });
 
         if (outcome == TransitionOutcome.NotFound || !await LoadAsync(ct))
         {
@@ -112,7 +112,7 @@ public class DetailsModel(
             ? AttachmentOutcome.Empty
             : await attachments.AddAsync(Id, currentUser.Id, file.FileName, file.OpenReadStream(), file.Length, ct);
 
-        Message = AttachmentsView.MessageFor(outcome);
+        Message = PageMessage.From(outcome == AttachmentOutcome.Added, AttachmentsView.MessageFor(outcome));
         return await LoadAsync(ct) ? Page() : NotFound();
     }
 
@@ -121,13 +121,13 @@ public class DetailsModel(
         // FR-013 (AC-013.1): saved to the history with author and time, never edited.
         var outcome = await notes.AddAsync(Id, currentUser.Id, text, ct);
 
-        Message = outcome switch
+        Message = PageMessage.From(outcome == NoteOutcome.Added, outcome switch
         {
             NoteOutcome.Added => "Note added.",
             NoteOutcome.Empty => "A note cannot be empty.",
             NoteOutcome.TooLong => $"A note can be {NoteService.MaxLength} characters at most.",
             _ => "You are not permitted to add notes to this request."
-        };
+        });
 
         return await LoadAsync(ct) ? Page() : NotFound();
     }

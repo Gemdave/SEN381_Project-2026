@@ -7,9 +7,14 @@
 
 <h1>Staff queue</h1>
 
+@if (Model.Message is not null)
+{
+    <partial name="_Message" model="Model.Message" />
+}
+
 @if (!Model.IsStaff)
 {
-    <partial name="_EmptyState" model="@("The staff queue is for service staff. Choose a staff member in the bar above.")" />
+    <partial name="_EmptyState" model="@("The staff queue is for service staff. Use Switch user at the top to sign in as one.")" />
 }
 else
 {
@@ -52,7 +57,7 @@ else
                 }
             </select>
         </label>
-        <button type="submit">Apply</button>
+        <button type="submit" class="secondary">Apply</button>
         @if (Model.Filtered)
         {
             <a href="/Staff/Queue">Clear filters</a>
@@ -66,10 +71,53 @@ else
     }
     else
     {
-        foreach (var item in Model.Items)
-        {
-            <partial name="_RequestSummary" model="item" />
-        }
+        @* FR-016: overdue rows are tinted and tagged. FR-011: a request nobody
+           owns can be accepted here; the handler authorises it again. *@
+        <table class="data queue">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Submitted</th>
+                    <th>Respond by</th>
+                    <th><span class="hint">Action</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr class="request-summary@(item.Overdue ? " is-overdue" : "")">
+                        <td><a href="/Staff/Details?id=@item.Id">@item.Reference</a></td>
+                        <td>@item.Title</td>
+                        <td>@item.Category</td>
+                        <td>
+                            <status-badge status="@item.Status"></status-badge>
+                            @if (item.Overdue)
+                            {
+                                <span class="overdue">Overdue</span>
+                            }
+                        </td>
+                        <td><time datetime="@item.CreatedAtUtc.ToString("o")">@item.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm")</time></td>
+                        <td><time datetime="@item.TargetResponseAtUtc.ToString("o")">@item.TargetResponseAtUtc.ToString("yyyy-MM-dd HH:mm")</time></td>
+                        <td class="actions">
+                            @if (!item.IsAssigned && item.Status == RequestStatus.Received)
+                            {
+                                <form method="post" asp-page="/Staff/Queue" asp-page-handler="Accept" asp-all-route-data="Model.RouteValues" class="inline">
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button type="submit" class="small">Accept</button>
+                                </form>
+                            }
+                            else if (item.IsAssigned)
+                            {
+                                <span class="owned">Yours</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     }
 
     <nav class="paging" aria-label="Queue pages">

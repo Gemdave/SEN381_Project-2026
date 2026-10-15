@@ -1,0 +1,7 @@
+@*
+    The result of an action, styled by tone. An error is announced straight
+    away by screen readers (role="alert"); a success politely (role="status").
+*@
+@model CivicConnect.Web.Models.PageMessage
+
+<p class="message message-@Model.Tone.ToString().ToLowerInvariant()" role="@(Model.Tone == MessageTone.Error ? "alert" : "status")">@Model.Text</p>

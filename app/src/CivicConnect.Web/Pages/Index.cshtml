@@ -9,7 +9,7 @@
 
 @if (Model.Message is not null)
 {
-    <p class="message">@Model.Message</p>
+    <partial name="_Message" model="Model.Message" />
 }
 
 @* Development only: the CR-003 stand-in for sign-in (RSK-012). *@

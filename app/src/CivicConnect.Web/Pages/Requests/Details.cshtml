@@ -6,12 +6,12 @@
 
 @if (Model.Submitted)
 {
-    <p class="message">Saved. Your reference is <strong>@Model.Detail!.Reference</strong>.</p>
+    <p class="message message-success" role="status">Saved. Your reference is <strong>@Model.Detail!.Reference</strong>.</p>
 }
 
 @if (Model.Message is not null)
 {
-    <p class="message">@Model.Message</p>
+    <partial name="_Message" model="Model.Message" />
 }
 
 <h1>@Model.Detail!.Title</h1>

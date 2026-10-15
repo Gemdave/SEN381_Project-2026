@@ -84,7 +84,8 @@ public sealed class QueueRepository(CivicConnectDbContext db) : IQueueRepository
                 x.Request.Status,
                 x.Category,
                 x.Request.CreatedAtUtc,
-                x.Request.AssignedToUserId != null))
+                x.Request.AssignedToUserId != null,
+                x.Request.TargetResponseAtUtc))
             .ToListAsync(ct);
     }
 }

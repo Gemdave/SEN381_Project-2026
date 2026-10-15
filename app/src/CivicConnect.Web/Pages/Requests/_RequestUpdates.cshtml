@@ -1,11 +1,38 @@
 @*
-    NFR-002. The part of the requester's page that refreshes on its own: the
-    current status and the updates (FR-007, AC-007.1). Rendered with the page,
-    and again on its own by the Updates handler for status-poll.js.
+    NFR-002. The part of the requester's page that refreshes on its own: where
+    the request is in its lifecycle (AC-003.1), the current status, and the
+    updates (FR-007, AC-007.1). Rendered with the page, and again on its own by
+    the Updates handler for status-poll.js.
 *@
 @model CivicConnect.Web.Pages.Requests.DetailsModel
+@{
+    var status = Model.Detail!.Status;
 
-<p>Current status: <status-badge status="@Model.Detail!.Status"></status-badge></p>
+    // A rejected request stops after Received (CR-009); every other request
+    // follows the one lifecycle (ADR-002).
+    RequestStatus[] path = status == RequestStatus.Rejected
+        ? [RequestStatus.Received, RequestStatus.Rejected]
+        : [RequestStatus.Received, RequestStatus.Assigned, RequestStatus.InProgress, RequestStatus.Resolved, RequestStatus.Closed];
+    var reached = Array.IndexOf(path, status);
+
+    // A finished request has nothing still to come, so its last step shows as done.
+    var finished = status is RequestStatus.Closed or RequestStatus.Rejected;
+
+    static string Label(RequestStatus s) => s == RequestStatus.InProgress ? "In progress" : s.ToString();
+}
+
+<ol class="tracker" aria-label="Progress of this request">
+    @for (var i = 0; i < path.Length; i++)
+    {
+        var state = path[i] == RequestStatus.Rejected ? "rejected"
+            : i < reached || (finished && i == reached) ? "done"
+            : i == reached ? "current"
+            : string.Empty;
+        <li class="tracker-step @state" aria-current="@(i == reached ? "step" : null)">@Label(path[i])</li>
+    }
+</ol>
+
+<p>Current status: <status-badge status="@status"></status-badge></p>
 
 <h3>Updates</h3>
 @if (Model.Updates.Count == 0)
@@ -14,7 +41,7 @@
 }
 else
 {
-    <ul class="history updates">
+    <ol class="timeline updates">
         @foreach (var update in Model.Updates.OrderByDescending(u => u.CreatedAtUtc))
         {
             <li>
@@ -22,5 +49,5 @@ else
                 @update.Message
             </li>
         }
-    </ul>
+    </ol>
 }

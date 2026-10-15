@@ -92,7 +92,7 @@ public class EndToEndTests(WebAppFixture app)
                 ["Input.Title"] = title,
                 ["Input.Description"] = title + ", reported in an end to end test.",
                 ["Input.Location"] = location,
-                ["Input.CategoryId"] = Html.OptionValue(form, "Fault")
+                ["Input.CategoryId"] = Html.TileValue(form, "Fault")
             });
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);

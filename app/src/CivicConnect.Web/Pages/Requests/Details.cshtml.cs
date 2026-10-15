@@ -36,7 +36,7 @@ public class DetailsModel(
 
     public AttachmentsView Attachments { get; private set; } = AttachmentsView.None(Guid.Empty);
 
-    public string? Message { get; private set; }
+    public PageMessage? Message { get; private set; }
 
     public async Task<IActionResult> OnGetAsync(CancellationToken ct)
         => await LoadAsync(ct) ? Page() : NotFound();
@@ -51,7 +51,7 @@ public class DetailsModel(
             ? AttachmentOutcome.Empty
             : await attachments.AddAsync(Id, currentUser.Id, file.FileName, file.OpenReadStream(), file.Length, ct);
 
-        Message = AttachmentsView.MessageFor(outcome);
+        Message = PageMessage.From(outcome == AttachmentOutcome.Added, AttachmentsView.MessageFor(outcome));
         return await LoadAsync(ct) ? Page() : NotFound();
     }
 

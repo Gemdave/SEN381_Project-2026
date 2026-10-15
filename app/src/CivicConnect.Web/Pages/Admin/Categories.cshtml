@@ -8,7 +8,7 @@
 
 @if (Model.Message is not null)
 {
-    <p class="message">@Model.Message</p>
+    <partial name="_Message" model="Model.Message" />
 }
 
 @if (!Model.Allowed)
@@ -52,7 +52,7 @@ else
                 <td>
                     <form method="post" asp-page-handler="@(category.IsRetired ? "Restore" : "Retire")" class="inline">
                         <input type="hidden" name="id" value="@category.Id" />
-                        <button type="submit">@(category.IsRetired ? "Restore" : "Retire")</button>
+                        <button type="submit" class="@(category.IsRetired ? "secondary" : "danger")">@(category.IsRetired ? "Restore" : "Retire")</button>
                     </form>
                 </td>
             </tr>

@@ -132,6 +132,10 @@ public static partial class Html
     public static string OptionValue(string html, string text)
         => Match(html, new Regex("<option value=\"([^\"]+)\">" + Regex.Escape(text) + "</option>"));
 
+    /// <summary>The value of a category tile on the submit page (a radio button with its name beside it).</summary>
+    public static string TileValue(string html, string text)
+        => Match(html, new Regex("value=\"([^\"]+)\"[^>]*/?>\\s*<span>" + Regex.Escape(text) + "</span>"));
+
     public static string Match(string html, Regex pattern)
     {
         var match = pattern.Match(html);
@@ -153,6 +157,6 @@ public static partial class Html
     [GeneratedRegex("class=\"status status-[a-z]+\">([^<]+)<")]
     private static partial Regex StatusPattern();
 
-    [GeneratedRegex("<p class=\"message\">([^<]*)</p>")]
+    [GeneratedRegex("<p class=\"message[^\"]*\"[^>]*>([^<]*)</p>")]
     private static partial Regex MessagePattern();
 }

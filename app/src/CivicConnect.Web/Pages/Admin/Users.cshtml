@@ -10,7 +10,7 @@
 
 @if (Model.Message is not null)
 {
-    <p class="message">@Model.Message</p>
+    <partial name="_Message" model="Model.Message" />
 }
 
 @if (!Model.Allowed)
@@ -87,7 +87,7 @@ else
                     {
                         <form method="post" asp-page-handler="@(user.IsActive ? "Deactivate" : "Reactivate")" class="inline">
                             <input type="hidden" name="id" value="@user.Id" />
-                            <button type="submit">@(user.IsActive ? "Deactivate" : "Reactivate")</button>
+                            <button type="submit" class="@(user.IsActive ? "danger" : "secondary")">@(user.IsActive ? "Deactivate" : "Reactivate")</button>
                         </form>
                     }
                 </td>

@@ -2,6 +2,7 @@ using CivicConnect.Application.Abstractions;
 using CivicConnect.Application.ReferenceData;
 using CivicConnect.Domain.ReferenceData;
 using CivicConnect.Domain.Requests;
+using CivicConnect.Web.Models;
 using CivicConnect.Web.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -22,7 +23,7 @@ public class CategoriesModel(
 {
     public bool Allowed { get; private set; }
     public IReadOnlyList<Category> Items { get; private set; } = [];
-    public string? Message { get; private set; }
+    public PageMessage? Message { get; private set; }
 
     public async Task OnGetAsync(CancellationToken ct) => await LoadAsync(ct);
 
@@ -48,14 +49,14 @@ public class CategoriesModel(
     private async Task<IActionResult> AfterAsync(
         CategoryOutcome outcome, string done, CancellationToken ct, string? invalid = null)
     {
-        Message = outcome switch
+        Message = PageMessage.From(outcome == CategoryOutcome.Done, outcome switch
         {
             CategoryOutcome.Done => done,
             CategoryOutcome.Invalid => invalid ?? $"A category needs a name of at most {CategoryService.NameMax} characters.",
             CategoryOutcome.Duplicate => "A category with that name already exists.",
             CategoryOutcome.NotFound => "That category no longer exists.",
             _ => "Only administrators can change categories."
-        };
+        });
 
         await LoadAsync(ct);
         return Page();

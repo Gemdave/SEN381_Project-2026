@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using CivicConnect.Infrastructure.Seed;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -107,5 +108,48 @@ public class StaffScreensTests(WebAppFixture app)
         Assert.Contains("by " + DevUsers.StaffOne, history);
         Assert.DoesNotContain(staffId.ToString(), history);
         Assert.DoesNotContain(requesterId.ToString(), history);
+    }
+
+    [RequiresDatabaseFact]
+    [Trait("TestCase", "FR-011")]
+    public async Task A_request_nobody_owns_can_be_accepted_from_its_queue_row()
+    {
+        var created = await SubmitFaultAsync("Cracked window");
+        var staff = await app.ClientForAsync(DevUsers.StaffOne);
+        var staffId = await app.UserIdAsync(DevUsers.StaffOne);
+
+        var queue = await staff.GetStringAsync("/Staff/Queue?q=" + created.Reference);
+        Assert.Contains("handler=Accept", queue);
+
+        var response = await Html.PostFormAsync(staff, $"/Staff/Queue?handler=Accept&q={created.Reference}", Html.Token(queue),
+            new Dictionary<string, string> { ["id"] = created.Id.ToString() });
+        var page = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal("You now own this request. It stays in your queue.", Html.Message(page));
+        Assert.Contains("message-success", page);
+        Assert.Contains("<span class=\"owned\">Yours</span>", Html.BodyOf(page));
+        Assert.Equal(staffId, await app.QueryAsync(db => db.Requests.Where(r => r.Id == created.Id).Select(r => r.AssignedToUserId).SingleAsync()));
+
+        // A second accept is refused and shown as an error (AC-011.2).
+        var other = await app.ClientForAsync(DevUsers.StaffTwo);
+        var otherQueue = await other.GetStringAsync("/Staff/Queue");
+        var again = await Html.PostFormAsync(other, "/Staff/Queue?handler=Accept", Html.Token(otherQueue),
+            new Dictionary<string, string> { ["id"] = created.Id.ToString() });
+        var refused = await again.Content.ReadAsStringAsync();
+        Assert.Contains("message-error", refused);
+    }
+
+    [RequiresDatabaseFact]
+    [Trait("TestCase", "AC-016.2")]
+    public async Task Overdue_requests_are_marked_in_the_queue()
+    {
+        // The seeded overdue request is in Maintenance, which Dev Staff Two handles.
+        var staff = await app.ClientForAsync(DevUsers.StaffTwo);
+
+        var page = Html.BodyOf(await staff.GetStringAsync("/Staff/Queue?q=" + DevelopmentSeed.OverdueReference));
+        var row = page[page.IndexOf("<tr class=\"request-summary", StringComparison.Ordinal)..];
+
+        Assert.StartsWith("<tr class=\"request-summary is-overdue\">", row);
+        Assert.Contains("<span class=\"overdue\">Overdue</span>", row);
     }
 }

@@ -19,6 +19,22 @@
         .Select(u => new { u.DisplayName, u.Role })
         .FirstOrDefaultAsync();
     var isStaff = me?.Role == UserRole.ServiceStaff;
+
+    // The nav link for the page being shown gets aria-current="page", which the
+    // stylesheet underlines. Details pages count as part of their list.
+    var path = Context.Request.Path.Value?.TrimEnd('/') ?? string.Empty;
+    string? CurrentFor(string href)
+    {
+        var current = href switch
+        {
+            "/Requests" => path.Equals("/Requests", StringComparison.OrdinalIgnoreCase)
+                || path.Equals("/Requests/Details", StringComparison.OrdinalIgnoreCase),
+            "/Staff/Queue" => path.Equals("/Staff/Queue", StringComparison.OrdinalIgnoreCase)
+                || path.Equals("/Staff/Details", StringComparison.OrdinalIgnoreCase),
+            _ => path.Equals(href, StringComparison.OrdinalIgnoreCase)
+        };
+        return current ? "page" : null;
+    }
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -30,30 +46,31 @@
 </head>
 <body>
     <header>
+      <div class="site-header"><div class="shell">
         <a href="@(me is null ? "/" : "/Home")" class="brand"><strong>CivicConnect</strong></a>
-        <nav>
+        <nav class="site-nav" aria-label="Main">
             @if (canSubmit)
             {
-                <a href="/Requests/Submit">Submit a request</a>
-                <a href="/Requests">My requests</a>
+                <a href="/Requests/Submit" aria-current="@CurrentFor("/Requests/Submit")">Submit a request</a>
+                <a href="/Requests" aria-current="@CurrentFor("/Requests")">My requests</a>
             }
             @if (isStaff)
             {
-                <a href="/Staff/Queue">Staff queue</a>
+                <a href="/Staff/Queue" aria-current="@CurrentFor("/Staff/Queue")">Staff queue</a>
             }
             @if (canOversee)
             {
-                <a href="/Oversight">Oversight</a>
+                <a href="/Oversight" aria-current="@CurrentFor("/Oversight")">Oversight</a>
             }
             @if (canSeeSummary)
             {
-                <a href="/Reports/Summary">Summary</a>
+                <a href="/Reports/Summary" aria-current="@CurrentFor("/Reports/Summary")">Summary</a>
             }
             @if (canAdminister)
             {
-                <a href="/Admin/Users">Users</a>
-                <a href="/Admin/Categories">Categories</a>
-                <a href="/Admin/Audit">Audit trail</a>
+                <a href="/Admin/Users" aria-current="@CurrentFor("/Admin/Users")">Users</a>
+                <a href="/Admin/Categories" aria-current="@CurrentFor("/Admin/Categories")">Categories</a>
+                <a href="/Admin/Audit" aria-current="@CurrentFor("/Admin/Audit")">Audit trail</a>
             }
         </nav>
         @* Development only: the CR-003 stand-in for sign-in (RSK-012). Who to be
@@ -73,9 +90,12 @@
                 }
             </div>
         }
+      </div></div>
     </header>
     <main>
-        @RenderBody()
+        <div class="shell page">
+            @RenderBody()
+        </div>
     </main>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

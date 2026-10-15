@@ -393,33 +393,30 @@ Every decision is compared here against CivicConnect's own drivers, including th
 ---
 ## Risk Register
 **Claim:** project risks are identified, rated, owned and tracked, and the verification and CI work is aimed at the highest-rated risks rather than spread evenly.  
-**Current position (v3.0):** the register continues the version from PED v2.2. All 22 original risks are carried forward unchanged, and two risks were added. No risk has been closed, and no rating or status has been changed without evidence.  
+**Current position (v3.0):** the register continues the version from PED v2.2. All 22 original risks are carried forward, one risk was added for CI (RSK-023), one for ambiguous acceptance criteria (RSK-024) and one for architecture conformance (RSK-025). No risk has been closed, and no rating has changed without evidence.  
 | Measure | Count |
 | :--- | :--- |
-| Total risks | 24 |
-| High (6) | 11 |
+| Total risks | 25 |
+| High (6) | 12 |
 | Medium (3 to 4) | 13 |
 | Open | 8 |
-| Mitigating | 16 |
+| Mitigating | 17 |
 | Mitigated or closed | 0 |
 
 ### Risks driving quality work
-| Risk | Concern | control or evidence |
+| Risk | Concern | M3 control and evidence |
 | :--- | :--- | :--- |
-| RSK-010 (High) | Two staff claim the same request | UT-03 and IT-02 against real PostgreSQL |
-| RSK-011 (High) | Access control without ownership/scope enforcement | UT-04, BB-03, BB-05, IT-03 (negative tests) |
-| RSK-021 (High) | Malformed or overlong input reaches persistence | BB-01, BB-02, UT-02 |
-| RSK-020 (High) | CI not reliably building and running the intended tests | Extended `ci.yml` with Quality Gate; solution path and test database being completed |
-| RSK-022 (High) | Two overlapping implementation trees | One tree declared canonical; tests and CI target it |
-| RSK-005, RSK-019 (Medium/High) | Leaked secrets and vulnerable dependencies | Secrets scan and dependency check in CI |
+| RSK-010 (High) | Two staff claim the same request | UT-05, IT-01, E2E-02 passed in CI on 14/10/2026 (one owner under eight simultaneous accepts) |
+| RSK-011 (High) | Access control without ownership/scope enforcement | UT-03, UT-06, BB-04, BB-05, IT-05, IT-07 passed; they use the development identity stand-in |
+| RSK-021 (High) | Malformed or out-of-range input | BB-01, BB-02, BB-03 passed (invalid status, note length boundaries, note required) |
+| RSK-020 (High) | CI not reliably running the intended tests | CI runs all test projects against PostgreSQL and fails on skipped tests; all five jobs passed; Quality Gate still to be enforced as a required check |
+| RSK-022 (High) | Two overlapping implementation trees | CI and tests target `app/`; canonical declaration and handling of `Backend/` still to be recorded |
+| RSK-025 (High) | Approved architecture and implementation disagree | Outcome of PR #23 and a controlled change record still to be recorded |
+| RSK-005, RSK-019 | Leaked secrets and vulnerable dependencies | Secrets Scan and Dependency jobs passed in CI; GitHub secret scanning and Dependabot settings to be confirmed |
 | RSK-012 (High) | Development identity is not real authentication | Not verified by the suite; stated as a release limitation |
 
-### New
-- **RSK-023:** the newly introduced Quality Gate may fail on pre-existing issues and block delivery. Control: run the checks locally first and never disable a check just to turn the pipeline green.
-- **RSK-024:** some acceptance criteria are imprecise, so tests could assert an unagreed interpretation. Control: resolve the open items in the test plan and record agreed interpretations as controlled changes.  
-
-**Interpretation:** the High-rated risks are the ones with planned negative, integration or CI controls. Controls are planned or in progress, not yet proven; ratings will be re-assessed after the first full CI and test run, and the results will feed the residual risk statement in the Release Evidence Summary.  
-**Evidence:** [Risk Register v3.0](Docs\Risks\Risk_Register_v3.0.md) | [Test plan](Test\Docs\Test_Plan_v1.md) | [CI quality gates](Docs\CI_Documentation\CI_Quality_Gates.md)
+**Interpretation:** the High-rated risks are the ones with controls or tests in place, but several controls are evidenced only on one CI run and use the development identity. Ratings will be re-assessed on the final release candidate run, and the remaining Open risks feed the residual risk statement in the Release Evidence Summary.
+**Evidence:** [Risk Register v3.0](Docs/Risks/Risk_Register_v3.0.md) | [Test plan](Test/Docs/Test_Plan_v2.md) | [CI quality gates](Docs/CI_Documentation/CI_Quality_Gates.md) | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178)
 
 ---
 ## Baseline Sign-Off

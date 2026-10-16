@@ -33,9 +33,13 @@
     - [Engineering Decision Log](#engineering-decision-log)
     - [Technical Constraints](#technical-constraints)
 12. [Engineering Decisions and Comparisons](#engineering-decisions-and-comparisons)
-13. [Risk Register](#risk-register)
-14. [Baseline Sign-Off](#baseline-sign-off)
-15. [References](#references)
+13. [M3 Overview](#m3-overview)
+14. [M2 Baseline Conformance (Requirements)](#m2-baseline-conformance-requirements)
+15. [Controlled Changes (M3)](#controlled-changes-m3)
+16. [Release Readiness (Requirements)](#release-readiness-requirements)
+17. [Risk Register](#risk-register)
+18. [Baseline Sign-Off](#baseline-sign-off)
+19. [References](#references)
 
 ---
 
@@ -385,6 +389,67 @@ Every decision is compared here against CivicConnect's own drivers, including th
 | **Overall** | No Strong, 2 Weak | 1 Strong, 3 Weak | **3 Strong, no Weak** | 1 Strong, 1 Weak |
 
 **Decision.** Option C with P3 inside it. One web frontend service serves every role from role-separated page folders over shared partials, and the browser talks only to it. The capability object only decides which controls appear; its values come from the owning service, which re-checks every action. The frontend keeps no in-memory session state, so it can run as several copies. C and D both have three Strong ratings, but D is Weak on cost, one of the three top-priority criteria, because it adds three or four deployables now, while C's page folders are where D can be split out later. **Costs and triggers:** one more deployable and network hop per screen, and a frontend defect can affect every role. Split per role (D) only if measurement shows one role holding the others back; simplify P3 if the sponsor view (FR-023) cannot reuse the partials.
+
+---
+
+## M3 Overview
+**Release candidate:** the merged build of `main` and `frontend-milestone-3-development`, with its scope frozen in `Docs/Scope freeze proposal/Scope_Freeze_Proposal_v2.0.md` and the post-freeze work brought in by CR-016.  
+**Implemented:** FR-001 to FR-023 and NFR-002 to NFR-008. NFR-001 awaits its walkthrough. **Not delivered:** NFR-009 (nothing deployed) and NFR-010 (needs the service split, CR-014).  
+**Status:** 211 of 211 automated tests pass locally (16 Oct 2026), CI on main runs the integration tests against PostgreSQL, 26 of 26 acceptance checks pass, and PT-01 passes (p95 0.064 s). There is no staging yet (B2). Evidence: `Test/Evidence/` and `Docs/Risks/RTM/CivicConnect-RTM-v3.0.xlsx`.
+
+## M2 Baseline Conformance (Requirements)
+Most requirement areas match the M2 baseline. CR-003, CR-009, CR-012 and CR-016 control the deviations. Two remain open for Architecture: one deployable instead of separate services (CR-014), and the ADR-006 contract (CR-015). The full table is in `Docs/Requirements/M3_Baseline_Conformance.md`.
+
+## Controlled Changes (M3)
+The M2 table in Controlled Changes to the Baseline is kept as history. The M3 decisions are in full in `Docs/Risks/RTM/CivicConnect-Change-Register-v3.0.xlsx`.
+
+| Decision | CRs |
+| :--- | :--- |
+| Approved and applied | CR-001, CR-002, CR-004, CR-008, CR-011, EC-001 |
+| Approved and implemented | CR-005 (overdue targets), CR-006 (CSV export), CR-007 (sponsor summary), CR-009 (Rejected status) |
+| Proposed | CR-012 (the owner in scope or an administrator closes), CR-016 (post-freeze work in the release candidate) |
+| Withdrawn | CR-013 (superseded by CR-016) |
+| Deferred to M4 | CR-003 (sign-in) |
+| Raised for Architecture | CR-010 (approved, not built), CR-014 (one deployable), CR-015 (POST, GUID ids) |
+
+## Release Readiness (Requirements)
+| Requirements | State |
+| :--- | :--- |
+| FR-001 to FR-023, NFR-002 to NFR-008 | Delivered and verified (automated; acceptance for the core journey). FR-019 and FR-020 against the development sign-in only |
+| NFR-001 | Delivered; walkthrough pending |
+| NFR-009, NFR-010 | Not delivered |
+
+**Open blocker:** B2 (staging). **Accepted limitations:** development identity instead of sign-in (RSK-012), and local evidence only. The gate summary and residual risk are in CI & Automated Verification and the Risk Register.
+
+### Release Evidence Summary
+**Release candidate:** `m3-rc1` on `main` (tagged after merge). **Classification: CONDITIONALLY READY.** All requirements are built and verified for demonstration; it is not ready for public use.
+
+| Evidence | Result | Source |
+| :--- | :--- | :--- |
+| Scope | FR-001 to FR-023, NFR-002 to NFR-008 (CR-016) | [Scope freeze](../Scope%20freeze%20proposal/Scope_Freeze_Proposal_v2.0.md), [Change register](../Risks/RTM/CivicConnect-Change-Register-v3.0.xlsx) |
+| Tests | 211 of 211 pass locally; CI run on the tag to be linked | [RTM v3.0](../Risks/RTM/CivicConnect-RTM-v3.0.xlsx), [CI gates](../CI_Documentation/CI_Quality_Gates.md) |
+| Acceptance | 26 of 26 checks pass | [Acceptance checks](../../Test/Evidence/M3_Acceptance_Checks.md) |
+| Performance | PT-01 p95 0.064 s against a 3 s target, local only | [PT-01 results](../../Test/Evidence/PT-01_Results.md) |
+
+**Conditions:** real sign-in (CR-003, RSK-012), staging (B2), the NFR-001 walkthrough, and a green CI run on the tag. **Residual risks:** RSK-010, RSK-012, RSK-015 ([Risk Register](../Risks/Risk_Register_v3.0.md)).
+
+### Defect Register
+| ID | Defect | Status |
+| :--- | :--- | :--- |
+| DEF-001 | Staff details lacked requester and category (AC-010.1) | Fixed |
+| OBS-01 | Accept showed on requests already owned | Fixed |
+| OBS-02 | History showed user IDs instead of names | Fixed |
+| DEF-002 | The audit_entries insert-only trigger has no direct test (NFR-007) | Open, low |
+
+### Technical Debt Register
+| ID | Debt | Pay back when | Owner |
+| :--- | :--- | :--- | :--- |
+| TD-01 | One deployable, not separate services (CR-014) | Before NFR-010 checks | Architecture |
+| TD-02 | Development sign-in, no real authentication (CR-003) | Before staging (B2) | DevOps & Security |
+| TD-03 | API contract differs from the build (CR-015) | Next contract change | Architecture |
+| TD-04 | No deployment, migration step or Dockerfile (ADR-007) | M4 staging | DevOps & Security |
+| TD-05 | Legacy `Backend/` tree still in the repo (RSK-022) | After the release candidate | Team |
+| TD-06 | Mobile layout and accessibility review deferred | M4 | Requirements & UX |
 
 ---
 

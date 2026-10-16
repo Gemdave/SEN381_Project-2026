@@ -393,12 +393,12 @@ Every decision is compared here against CivicConnect's own drivers, including th
 ---
 
 ## M3 Overview
-**Release candidate:** the merged build of `main` and `frontend-milestone-3-development`, with its scope frozen in `Docs/Scope freeze proposal/Scope_Freeze_Proposal_v2.0.md`.  
-**Implemented:** FR-001 to FR-004, FR-007 to FR-014, and NFR-003 to NFR-007 (NFR-007 for request history only). NFR-001 awaits its walkthrough. **Not delivered:** FR-015 to FR-017 and FR-019 to FR-021 (CR-013), plus the Shoulds and Could listed in the scope freeze.  
-**Status:** 76 automated tests pass locally, 26 of 26 acceptance checks pass, and PT-01 passes (p95 0.064 s). CI skips the integration tests until it has a test database (B3), and there is no staging yet (B2). Evidence: `Test/Evidence/` and `Docs/Risks/RTM/CivicConnect-RTM-v3.0.xlsx`.
+**Release candidate:** the merged build of `main` and `frontend-milestone-3-development`, with its scope frozen in `Docs/Scope freeze proposal/Scope_Freeze_Proposal_v2.0.md` and the post-freeze work brought in by CR-016.  
+**Implemented:** FR-001 to FR-023 and NFR-002 to NFR-008. NFR-001 awaits its walkthrough. **Not delivered:** NFR-009 (nothing deployed) and NFR-010 (needs the service split, CR-014).  
+**Status:** 211 of 211 automated tests pass locally (16 Oct 2026), CI on main runs the integration tests against PostgreSQL, 26 of 26 acceptance checks pass, and PT-01 passes (p95 0.064 s). There is no staging yet (B2). Evidence: `Test/Evidence/` and `Docs/Risks/RTM/CivicConnect-RTM-v3.0.xlsx`.
 
 ## M2 Baseline Conformance (Requirements)
-Most requirement areas match the M2 baseline. CR-003, CR-009, CR-012 and CR-013 control the deviations. Two remain open for Architecture: one deployable instead of separate services (CR-014), and the ADR-006 contract (CR-015). The full table is in `Docs/Requirements/M3_Baseline_Conformance.md`.
+Most requirement areas match the M2 baseline. CR-003, CR-009, CR-012 and CR-016 control the deviations. Two remain open for Architecture: one deployable instead of separate services (CR-014), and the ADR-006 contract (CR-015). The full table is in `Docs/Requirements/M3_Baseline_Conformance.md`.
 
 ## Controlled Changes (M3)
 The M2 table in Controlled Changes to the Baseline is kept as history. The M3 decisions are in full in `Docs/Risks/RTM/CivicConnect-Change-Register-v3.0.xlsx`.
@@ -406,13 +406,22 @@ The M2 table in Controlled Changes to the Baseline is kept as history. The M3 de
 | Decision | CRs |
 | :--- | :--- |
 | Approved and applied | CR-001, CR-002, CR-004, CR-008, CR-011, EC-001 |
-| Deferred to M4 | CR-003 (sign-in), CR-005 to CR-007 (reporting), CR-009 (Rejected status) |
-| Proposed | CR-012 (the owner in scope or an administrator closes), CR-013 (six Musts deferred) |
+| Approved and implemented | CR-005 (overdue targets), CR-006 (CSV export), CR-007 (sponsor summary), CR-009 (Rejected status) |
+| Proposed | CR-012 (the owner in scope or an administrator closes), CR-016 (post-freeze work in the release candidate) |
+| Withdrawn | CR-013 (superseded by CR-016) |
+| Deferred to M4 | CR-003 (sign-in) |
 | Raised for Architecture | CR-010 (approved, not built), CR-014 (one deployable), CR-015 (POST, GUID ids) |
 
 ## Release Readiness (Requirements)
 | Requirements | State |
 | :--- | :--- |
+| FR-001 to FR-023, NFR-002 to NFR-008 | Delivered and verified (automated; acceptance for the core journey). FR-019 and FR-020 against the development sign-in only |
+| NFR-001 | Delivered; walkthrough pending |
+| NFR-009, NFR-010 | Not delivered |
+
+**Open blocker:** B2 (staging). **Accepted limitations:** development identity instead of sign-in (RSK-012), and local evidence only. The gate summary and residual risk are in CI & Automated Verification and the Risk Register.
+
+--- | :--- |
 | FR-001 to FR-004, FR-007 to FR-014, NFR-003 to NFR-007 | Delivered and verified (automated and acceptance) |
 | NFR-001 | Delivered; walkthrough pending |
 | FR-015 to FR-017, FR-019 to FR-021 | Not delivered (CR-013) |

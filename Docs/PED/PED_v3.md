@@ -491,13 +491,13 @@ The M2 table in Controlled Changes to the Baseline is kept as history. The M3 de
 | **Project** | CivicConnect |
 | **Baseline Type** | Milestone 3 (M3) |
 | **Version** | v3.0 |
-| **Date** | 14/10/2026 |
-| **Architecture Decision Recorded** | ADR-001 microservices (D-005); change under review in PR #23 |
-| **Scope Reviewed** | Pending |
-| **Requirements / Traceability Checked** | Pending |
-| **Risk Review Completed** | Pending |
-| **Repository / Governance Controls Checked** | Pending |
-| **Outcome** | **Pending** |
+| **Date** | 16/10/2026 |
+| **Architecture Decision Recorded** | ADR-001 microservices (D-005) |
+| **Scope Reviewed** | Yes |
+| **Requirements / Traceability Checked** | Yes |
+| **Risk Review Completed** | Yes |
+| **Repository / Governance Controls Checked** | Yes |
+| **Outcome** | **Accepted** |
 
 ---
 

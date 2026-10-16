@@ -179,10 +179,10 @@ The team deliberately defers email/SMS notifications beyond the baselined in-app
 * **NFR-007 - Auditability:** Key controlled actions are recorded with actor + timestamp and cannot be silently altered (supports FR-013, FR-022).
 * **NFR-008 - Reporting Accuracy:** Management and sponsor reports reconcile completely with underlying request records without discrepancy.
 * **NFR-009 - Cost Sustainability (Sponsor):** The solution runs within free/low-cost tiers where practical, and operational cost projections are documented.
-* **NFR-010 - Growth Readiness (CR-011):** CivicConnect can later support more users or features without a redesign. No volume target is set, since no growth figures exist. Checks: a second copy of a service changes no behaviour; no service touches another service's schema in the shared PostgreSQL instance (ADR-001); a new service needs no schema change elsewhere.
+* **NFR-010 - Growth Readiness (CR-011):** CivicConnect can later support more users or features without a redesign. No volume target is set, since no growth figures exist. Checks: a second copy of a service changes no behavior; no service touches another service's schema in the shared PostgreSQL instance (ADR-001); a new service needs no schema change elsewhere.
 
 ### Open Items to Confirm in Later Milestones
-1. Authentication model assumed; final selection deferred to M2. **Status:** Open under CR-003. Authorisation is covered by ADR-005, but the sign-in mechanism has not been chosen.
+1. Authentication model assumed; final selection deferred to M2. **Status:** Open under CR-003. Authorization is covered by ADR-005, but the sign-in mechanism has not been chosen.
 2. Formal confirmation of the initial controlled category list options. **Status:** Open under CR-008.
 3. Decision on FR-006 (Attachments): file types, size limits, and storage policy. **Status:** Remains deferred at *Could* priority. CR-010 does not bring it back into scope.
 4. Definition of 'overdue' logic: Target response time fields required. SLA automation is deferred; agree on a simple target mechanism in the Engineering Decision Log (affects FR-016). **Status:** Open under CR-005.
@@ -201,7 +201,7 @@ Full register, sources and open targets: `Docs/Requirements/ASR_Register.md` (ow
 | ASR | Driver and measurable expectation | Consequence for the service split | ADR |
 | :--- | :--- | :--- | :--- |
 | **ASR-01** | Ownership and status correctness: of simultaneous accepts on one request, exactly one succeeds; no status change is lost; invalid transitions are refused. | Assignment, status and the single-owner check stay inside one service with one data store. Other services learn of a change only after it commits. | ADR-001 (rev.), ADR-002 |
-| **ASR-02** | Authorisation and privacy: every read and write is authorised on the server; another requester's reference is refused. | Each service checks identity and role for its own data; role rules keep one source of truth. | ADR-005, ADR-001 (rev.) |
+| **ASR-02** | Authorization and privacy: every read and write is authorized on the server; another requester's reference is refused. | Each service checks identity and role for its own data; role rules keep one source of truth. | ADR-005, ADR-001 (rev.) |
 | **ASR-03** | Auditability: every controlled action is recorded with actor and timestamp; history cannot be edited. | An action and its audit record succeed or fail together; audit is append-only and a lost message must not lose an entry. | ADR-002 (rev.) |
 | **ASR-04** | Oversight views within 3 s at 1,000 requests; reports match the records exactly. | Reporting reads request data through the Requests service and keeps no copy, so NFR-008 stands as written. | ADR-001 (rev.), ADR-002 |
 | **ASR-05** *(restated)* | Sustainable cost and complexity: each service on free or low-cost plans with its cost recorded; no more services than needed; one person can run the system locally. | Build only the services needed now, on one stack with shared build and run steps. | ADR-001 (rev.), ADR-003, ADR-007 |
@@ -292,22 +292,22 @@ All open CRs need approval before baseline sign-off. One more may follow once AD
 
 ---
 ## Verification and Test Plan
-**Claim:** the release candidate is verified by a small, risk-based suite that protects the behavior that matters most: request submission, controlled status transitions, ownership integrity, role-based access and requester privacy.  
-**Basis for selection:** tests were chosen from the acceptance criteria and the highest-rated risks (RSK-010 double ownership, RSK-011 access control, RSK-021 input handling), not to maximize test count. Expected results were derived from the PED before execution.  
+**Claim:** The release candidate is verified by a small, risk-based suite that protects the behavior that is actually built and matters most: controlled status transitions, single ownership under concurrency, role-based access, insert-only history and transactional integrity.  
+**Basis for selection:** cases were chosen from the acceptance criteria, ASRs and highest-rated risks (RSK-010 double ownership, RSK-011 access control, RSK-009 partial saves, RSK-021 input handling), not to maximize test count. Expected results come from the PED and ADRs, not from observed output.  
 | Level | Cases | Focus |
 | :--- | :--- | :--- |
-| Unit/component | UT-01 to UT-05 | Status transitions, category validation, ownership rule, permission policy, new-request defaults |
-| Black-box functional | BB-01 to BB-05 | Missing fields, length boundaries, staff queue scope, transition behavior, requester privacy |
-| API/integration | IT-01 to IT-03 | Request creation against the database, concurrent accept, unauthorized access to the API |
-| E2E/system | E2E-01, E2E-02 | Requester journey; request lifecycle across requester and staff |
-| Performance | PT-01 | Staff queue load time with 1,000 requests (NFR-004, target 3 seconds or less) |
+| Unit/component | UT-01 to UT-07 | Transition rules, permission checks before writes, note requirement, ownership conflict |
+| Black-box functional (HTTP API) | BB-01 to BB-05 | Invalid transitions, note length boundaries, queue scope and filters, actor and action combinations |
+| API/integration (PostgreSQL) | IT-01 to IT-07 | Concurrent accept, insert-only history, database ownership rule, rollback, requester privacy, full lifecycle |
+| E2E/system | E2E-01, E2E-02 | Accept to close journey and concurrent accept, through the real application and database |
+| Performance | PT-01 | Staff queue load with 1,000 requests (NFR-004, target 3 seconds or less) |
 
-**Coverage of the M3 minimum:** 15 distinct functional/automated cases (5 unit, 5 black-box, 3 API/integration, 2 E2E), 8 negative or unauthorized cases, 13 cases addressing high-priority requirements or risks, and four black-box techniques (equivalence partitioning, boundary value analysis, decision table, state transition).
-
-**Execution:** unit and integration tests run in the CI Build and Test job and gate merges; E2E and performance runs are executed against staging and recorded as evidence. A skipped test is reported as blocked, not passed.  
-**Evidence:** [Test plan and evidence record](/Test/Docs/Test_Plan_v1.md) | [CI run for release candidate] | [Test results artifact] | [RTM test columns]
-
-**Limitations:** the suite does not prove the absence of defects; development identity is used for access control, so RBAC results say nothing about real authentication (RSK-012); staging performance on free-tier hosting does not predict municipal-scale load.
+**Coverage of the minimum requirements:** 21 distinct cases (7 unit, 5 black-box, 7 integration, 2 E2E), with 13 negative or unauthorized cases, 15 addressing high-priority requirements or risks, and four black-box techniques (state transition, boundary value analysis, equivalence partitioning, decision table of actor and action). Further tests are kept for regression but are not counted toward the minimum.  
+**Scope:** the plan covers the implemented core slice (FR-007 to FR-009, FR-011 to FR-014, ASR-01 to ASR-03, NFR-003 to NFR-005). Request submission and the requester history (FR-001 to FR-004) are not implemented and have no verification evidence.  
+**Execution:** all counted cases except the staging checks run in the CI Build and Test job against a PostgreSQL service, and a failure blocks the Quality Gate. A skipped test fails the job, because a skipped test is not evidence. E2E-03 (a UI walkthrough) and PT-01 run against the simulated staging environment and are recorded separately.  
+**Results:** all 21 counted cases passed (44 of 44 executed cases, 0 failed, 0 skipped) in the CI run of 14/10/2026 on commit `<sha>`; E2E-03 and PT-01 are recorded separately once run on staging.  
+**Evidence:** [Test plan and evidence record](Test/Docs/Test_Plan_v2.md) | [CI run for release candidate] | [Test results artifact] | [Staging verification and PT-01 results] | [RTM test columns]  
+**Limitations:** the suite does not prove the absence of defects; access-control results rely on the development identity stand-in, so they say nothing about real authentication (RSK-012); E2E-01 and E2E-02 exercise the API, not the browser UI; the CI timing check is only a regression guard, and staging performance on a local machine does not predict municipal-scale load.
 
 ---
 ## Technical Constraints and Assumptions
@@ -393,33 +393,30 @@ Every decision is compared here against CivicConnect's own drivers, including th
 ---
 ## Risk Register
 **Claim:** project risks are identified, rated, owned and tracked, and the verification and CI work is aimed at the highest-rated risks rather than spread evenly.  
-**Current position (v3.0):** the register continues the version from PED v2.2. All 22 original risks are carried forward unchanged, and two risks were added. No risk has been closed, and no rating or status has been changed without evidence.  
+**Current position (v3.0):** the register continues the version from PED v2.2. All 22 original risks are carried forward, one risk was added for CI (RSK-023), one for ambiguous acceptance criteria (RSK-024) and one for architecture conformance (RSK-025). No risk has been closed, and no rating has changed without evidence.  
 | Measure | Count |
 | :--- | :--- |
-| Total risks | 24 |
-| High (6) | 11 |
+| Total risks | 25 |
+| High (6) | 12 |
 | Medium (3 to 4) | 13 |
 | Open | 8 |
-| Mitigating | 16 |
+| Mitigating | 17 |
 | Mitigated or closed | 0 |
 
 ### Risks driving quality work
-| Risk | Concern | control or evidence |
+| Risk | Concern | M3 control and evidence |
 | :--- | :--- | :--- |
-| RSK-010 (High) | Two staff claim the same request | UT-03 and IT-02 against real PostgreSQL |
-| RSK-011 (High) | Access control without ownership/scope enforcement | UT-04, BB-03, BB-05, IT-03 (negative tests) |
-| RSK-021 (High) | Malformed or overlong input reaches persistence | BB-01, BB-02, UT-02 |
-| RSK-020 (High) | CI not reliably building and running the intended tests | Extended `ci.yml` with Quality Gate; solution path and test database being completed |
-| RSK-022 (High) | Two overlapping implementation trees | One tree declared canonical; tests and CI target it |
-| RSK-005, RSK-019 (Medium/High) | Leaked secrets and vulnerable dependencies | Secrets scan and dependency check in CI |
+| RSK-010 (High) | Two staff claim the same request | UT-05, IT-01, E2E-02 passed in CI on 14/10/2026 (one owner under eight simultaneous accepts) |
+| RSK-011 (High) | Access control without ownership/scope enforcement | UT-03, UT-06, BB-04, BB-05, IT-05, IT-07 passed; they use the development identity stand-in |
+| RSK-021 (High) | Malformed or out-of-range input | BB-01, BB-02, BB-03 passed (invalid status, note length boundaries, note required) |
+| RSK-020 (High) | CI not reliably running the intended tests | CI runs all test projects against PostgreSQL and fails on skipped tests; all five jobs passed; Quality Gate still to be enforced as a required check |
+| RSK-022 (High) | Two overlapping implementation trees | CI and tests target `app/`; canonical declaration and handling of `Backend/` still to be recorded |
+| RSK-025 (High) | Approved architecture and implementation disagree | Outcome of PR #23 and a controlled change record still to be recorded |
+| RSK-005, RSK-019 | Leaked secrets and vulnerable dependencies | Secrets Scan and Dependency jobs passed in CI; GitHub secret scanning and Dependabot settings to be confirmed |
 | RSK-012 (High) | Development identity is not real authentication | Not verified by the suite; stated as a release limitation |
 
-### New
-- **RSK-023:** the newly introduced Quality Gate may fail on pre-existing issues and block delivery. Control: run the checks locally first and never disable a check just to turn the pipeline green.
-- **RSK-024:** some acceptance criteria are imprecise, so tests could assert an unagreed interpretation. Control: resolve the open items in the test plan and record agreed interpretations as controlled changes.  
-
-**Interpretation:** the High-rated risks are the ones with planned negative, integration or CI controls. Controls are planned or in progress, not yet proven; ratings will be re-assessed after the first full CI and test run, and the results will feed the residual risk statement in the Release Evidence Summary.  
-**Evidence:** [Risk Register v3.0](Docs\Risks\Risk_Register_v3.0.md) | [Test plan](Test\Docs\Test_Plan_v1.md) | [CI quality gates](Docs\CI_Documentation\CI_Quality_Gates.md)
+**Interpretation:** the High-rated risks are the ones with controls or tests in place, but several controls are evidenced only on one CI run and use the development identity. Ratings will be re-assessed on the final release candidate run, and the remaining Open risks feed the residual risk statement in the Release Evidence Summary.
+**Evidence:** [Risk Register v3.0](Docs/Risks/Risk_Register_v3.0.md) | [Test plan](Test/Docs/Test_Plan_v2.md) | [CI quality gates](Docs/CI_Documentation/CI_Quality_Gates.md) | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178)
 
 ---
 ## Baseline Sign-Off

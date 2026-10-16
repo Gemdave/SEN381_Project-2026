@@ -1,5 +1,6 @@
 using CivicConnect.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Xunit;
 
 namespace CivicConnect.IntegrationTests;
@@ -52,6 +53,8 @@ public sealed class TestDatabaseFixture : IAsyncLifetime
             return;
         }
 
+        RefuseUnsafeTarget(ConnectionString!);
+
         await using var db = NewContext();
         await db.Database.EnsureDeletedAsync();
         await db.Database.MigrateAsync();
@@ -63,6 +66,25 @@ public sealed class TestDatabaseFixture : IAsyncLifetime
             .Options);
 
     public Task DisposeAsync() => Task.CompletedTask;
+
+    /*The fixture deletes and recreates the database it connects to,
+    so it only accepts a local database whose name ends in _test (RSK-005, RSK-011).
+    Anything else, such as the real database, is refused before anything is deleted.*/
+    internal static void RefuseUnsafeTarget(string connectionString)
+    {
+        var builder = new NpgsqlConnectionStringBuilder(connectionString);
+        string[] localHosts = ["localhost", "127.0.0.1", "::1"];
+
+        var hostIsLocal = localHosts.Contains(builder.Host, StringComparer.OrdinalIgnoreCase);
+        var nameIsTest = builder.Database?.EndsWith("_test", StringComparison.OrdinalIgnoreCase) == true;
+
+        if (!hostIsLocal || !nameIsTest)
+        {
+            throw new InvalidOperationException(
+                "CIVICCONNECT_TEST_DB must point at a local database whose name ends in _test, " +
+                "because the test fixture deletes and recreates it. Refusing to continue.");
+        }
+    }
 }
 
 /// <summary>Tests in this collection share one database and run one after another.</summary>
@@ -71,3 +93,5 @@ public sealed class DatabaseCollection : ICollectionFixture<TestDatabaseFixture>
 {
     public const string Name = "Database";
 }
+
+

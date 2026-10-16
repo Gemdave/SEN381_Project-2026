@@ -207,3 +207,57 @@ Manager and sponsor reporting (`/reports/*`), administration (`/admin/*`), attac
 * **Staff visibility.** With no team or category assignment data yet, Slice 1 lets staff see requests that are unassigned or their own. Whether staff are also restricted by team/category (AC-008.1) needs a stakeholder answer, and interacts with CR-004.
 * **Validation status code.** The contract uses 400 with a per-field `errors` object. If ADR-006 says 422, change the mapping in `ApiExceptionHandler` and this table together.
 * **Rejected status.** See proposed CR-009 in `Data_Model.md`.
+
+## 7. As built at M3 (differences from this contract)
+
+The backend in `app/` was built against Slice 1 above. These are the differences. The last column says what the team should do about each one.
+
+| Area | Contract (Slice 1) | As built | Action |
+| :-- | :-- | :-- | :-- |
+| Change status | `PATCH /api/v1/requests/{id}/status`, body `{ "status", "reason" }` | `POST /api/v1/requests/{id}/status`, body `{ "status", "note" }` | Align the code to the contract (verb and field name), or update this document |
+| Add note | Body `{ "body" }`, returns 201 | Body `{ "text" }`, returns 200 | Align the code to the contract, or update this document |
+| Queue | `GET /api/v1/requests/queue?status&categoryId&sort&page&pageSize` | `GET /api/v1/queue?status&categoryId&q&mine&sort&page` | Align the route, or update this document |
+| Queue sort values | `created`, `-created`, `status`, `category` | `Oldest`, `Newest`, `Reference`, `Status` | Align, or update this document |
+| Queue page size | `pageSize` query value | Fixed at 20 | Update this document, or add `pageSize` |
+| Error body | RFC 9457 `application/problem+json` | `{ "code", "message" }` | Record as a deviation (ADR-006) |
+| Ids | Numeric (`"id": 1`) | GUIDs | Update this document |
+| Resolving | Not specified | `Resolved` needs a note (AC-014.1). The note is saved in the history. | Add to this contract |
+| Closing | `request.close` permission | The owning staff member or an administrator | Record in ADR-005 |
+| Sign-in | Real authentication | Development only: `?user=<guid>`, and the app refuses to start outside Development | Open until CR-003 closes |
+
+### POST /api/v1/requests/{id}/status (as built)
+
+```json
+{ "status": "InProgress" }
+{ "status": "Resolved", "note": "Replaced the faulty part." }
+```
+
+| Result | Body `code` | When |
+| :-- | :-- | :-- |
+| 200 | | The status changed. A history row and a requester message were saved in the same transaction. |
+| 400 | `unknown_status` | The status name does not exist |
+| 400 | `note_required` | Resolving without a note |
+| 403 | | The caller may not make that change (not the owner, or a requester). Closing needs the owner or an administrator. |
+| 404 | | The request does not exist |
+| 409 | `transition_not_allowed` | The move is not allowed from the current status |
+| 409 | `status_changed` | Someone changed the request first |
+
+### POST /api/v1/requests/{id}/notes (as built)
+
+```json
+{ "text": "Electrician booked for Friday." }
+```
+
+200 on success. 400 `note_empty` or `note_too_long` (1 to 2000 characters). 403 when the caller may not add notes. A note is a history entry, so it cannot be edited or deleted, and the database refuses to change or delete history rows.
+
+### GET /api/v1/queue (as built)
+
+Query: `status`, `categoryId`, `q` (title or reference), `mine=true`, `sort`, `page`. Staff only (403 otherwise). Shows requests that are unassigned or assigned to the caller. Each row has `id`, `reference`, `title`, `status`, `category`, `createdAtUtc` and `isAssigned`. An empty result is a normal 200.
+
+### Accept (`POST /api/v1/requests/{id}/assignment`)
+
+Unchanged. One new outcome: **409** `request_not_available` when the request is not assigned to anyone but is no longer in the Received status.
+
+### Not built yet
+
+Submitting a request (`POST /api/v1/requests`), reading requests (`GET /api/v1/requests` and `/{id}`), categories, the feedback endpoints, the Rejected status, `/health`, reports, administration and real authentication. Requester messages are stored (table `requester_feedback`) but have no read endpoint yet.

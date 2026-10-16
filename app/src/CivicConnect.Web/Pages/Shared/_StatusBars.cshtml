@@ -1,0 +1,21 @@
+@*
+    FR-015 and FR-023. Requests by status as a bar chart in plain HTML. Each bar
+    shows its number beside it, so the chart never relies on bar length or
+    colour alone. Shared by the oversight page and the service summary.
+*@
+@model IReadOnlyList<CivicConnect.Application.Abstractions.StatusCount>
+@{
+    var largest = Math.Max(1, Model.Max(s => s.Count));
+}
+
+<ul class="bars" aria-label="Requests by status">
+    @foreach (var row in Model)
+    {
+        var width = (int)Math.Round(100.0 * row.Count / largest);
+        <li>
+            <span><status-badge status="@row.Status"></status-badge></span>
+            <span class="bar"><span class="bar-fill fill-@row.Status.ToString().ToLowerInvariant()" style="width: @width%"></span></span>
+            <span class="bar-count">@row.Count</span>
+        </li>
+    }
+</ul>

@@ -17,6 +17,17 @@ public class RequestHistoryEntry
     public string? Note { get; private set; }
     public DateTimeOffset OccurredAtUtc { get; private set; }
 
+    /// <summary>FR-001. The first entry of every request, written with the request itself.</summary>
+    public static RequestHistoryEntry ForSubmission(Guid requestId, Guid requesterId, DateTimeOffset now)
+        => new()
+        {
+            RequestId = requestId,
+            ActorUserId = requesterId,
+            Action = "Submitted",
+            NewValue = RequestStatus.Received.ToString(),
+            OccurredAtUtc = now
+        };
+
     public static RequestHistoryEntry ForAssignment(Guid requestId, Guid actorUserId, DateTimeOffset now)
         => new()
         {
@@ -28,8 +39,12 @@ public class RequestHistoryEntry
             OccurredAtUtc = now
         };
 
+    /// <summary>
+    /// FR-012. The optional note carries resolution information when a request
+    /// is resolved or closed (AC-014.1).
+    /// </summary>
     public static RequestHistoryEntry ForTransition(
-        Guid requestId, Guid actorUserId, RequestStatus from, RequestStatus to, DateTimeOffset now)
+        Guid requestId, Guid actorUserId, RequestStatus from, RequestStatus to, DateTimeOffset now, string? note = null)
         => new()
         {
             RequestId = requestId,
@@ -37,6 +52,18 @@ public class RequestHistoryEntry
             Action = "StatusChanged",
             OldValue = from.ToString(),
             NewValue = to.ToString(),
+            Note = string.IsNullOrWhiteSpace(note) ? null : note.Trim(),
+            OccurredAtUtc = now
+        };
+
+    /// <summary>FR-006. The file name is the new value, so the history reads "Attachment added to photo.jpg".</summary>
+    public static RequestHistoryEntry ForAttachment(Guid requestId, Guid actorUserId, string fileName, DateTimeOffset now)
+        => new()
+        {
+            RequestId = requestId,
+            ActorUserId = actorUserId,
+            Action = "AttachmentAdded",
+            NewValue = fileName,
             OccurredAtUtc = now
         };
 

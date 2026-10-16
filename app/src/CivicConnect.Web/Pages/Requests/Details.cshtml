@@ -1,0 +1,33 @@
+@page
+@model CivicConnect.Web.Pages.Requests.DetailsModel
+@{
+    ViewData["Title"] = Model.Detail!.Reference;
+}
+
+@if (Model.Submitted)
+{
+    <p class="message message-success" role="status">Saved. Your reference is <strong>@Model.Detail!.Reference</strong>.</p>
+}
+
+@if (Model.Message is not null)
+{
+    <partial name="_Message" model="Model.Message" />
+}
+
+<h1>@Model.Detail!.Title</h1>
+
+@* AC-003.2: fields only. There is no status control here for a requester to use. *@
+<partial name="_RequestFields" model="Model.Detail" />
+
+@* NFR-002: refreshed every few seconds, so a staff change shows without a reload. *@
+<section data-status-poll="/Requests/Details?id=@Model.Id&amp;handler=Updates" aria-live="polite">
+    <partial name="_RequestUpdates" model="Model" />
+</section>
+
+<partial name="_Attachments" model="Model.Attachments" />
+
+<p><a href="/Requests">Back to my requests</a></p>
+
+@section Scripts {
+    <script src="~/js/status-poll.js"></script>
+}

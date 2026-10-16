@@ -1,9 +1,618 @@
-:root { --ink: #1f2933; --line: #d9dee3; }
-body { font-family: system-ui, sans-serif; color: var(--ink); margin: 0 auto; max-width: 60rem; padding: 1rem; }
-header { display: flex; gap: 1rem; align-items: baseline; border-bottom: 1px solid var(--line); padding-bottom: .5rem; }
-.request-summary { border-bottom: 1px solid var(--line); padding: .75rem 0; }
-.status { font-size: .8rem; padding: .1rem .5rem; border: 1px solid var(--line); border-radius: 1rem; }
-.empty-state { color: #6b7280; }
-.history { list-style: none; padding-left: 0; }
-.history li { border-bottom: 1px solid var(--line); padding: .4rem 0; font-size: .9rem; }
-.message { background: #f3f4f6; padding: .5rem .75rem; border-left: 3px solid var(--ink); }
+/* ==========================================================================
+   CivicConnect stylesheet
+
+   One hand-written file and no CSS framework: ADR-003 chose server-rendered
+   Razor Pages with no build step. Every colour, size and gap comes from the
+   tokens in section 1, so a change to the look is made once.
+
+   Palette: greys and black for text and lines, a light maroon accent. Each
+   request status keeps its own colour, and is always shown with its word, so
+   colour is never the only signal.
+
+   Sections
+     1. Tokens
+     2. Base elements
+     3. Page shell: header, navigation and the main panel
+     4. Buttons
+     5. Forms and filter bars
+     6. Messages and empty states
+     7. Status badges and the overdue tag
+     8. Tables
+     9. Request fields, history and timelines
+    10. Sign-in and home
+    11. Submit a request
+    12. Request details: progress tracker and updates
+    13. Staff queue and other request tables
+    14. Oversight, summary and admin pages
+    15. Headline figures and the status bar chart
+    16. Staff request details: two columns and the action panel
+    17. Edit per row (admin tables)
+    18. Audit trail
+
+   Layout is desktop-first for now; the mobile layout is deferred.
+   ========================================================================== */
+
+
+/* 1. Tokens ---------------------------------------------------------------- */
+
+:root {
+    /* Greys and black */
+    --ink: #1a1a1a;            /* main text, header bar */
+    --ink-soft: #3d3d3d;       /* secondary text */
+    --muted: #6b6b6b;          /* hints, timestamps */
+    --line: #dcdcdc;           /* borders and rules */
+    --line-soft: #ececec;      /* table row stripes, subtle dividers */
+    --page: #f4f4f4;           /* page background behind the panel */
+    --surface: #ffffff;        /* panels, cards, inputs */
+
+    /* Light maroon accent. White text on --accent passes WCAG AA contrast. */
+    --accent: #a3485a;
+    --accent-strong: #873a4a;  /* hover and pressed */
+    --accent-soft: #f7ebee;    /* selected backgrounds */
+    --accent-on-dark: #e8aab7; /* links on the black header */
+
+    /* Message tones */
+    --success-ink: #1e6b34;
+    --success-bg: #ecf7ef;
+    --error-ink: #a61b1b;
+    --error-bg: #fdecec;
+
+    /* Request status colours (text, background) */
+    --received-ink: #1d5fbf;    --received-bg: #e8f0fc;
+    --assigned-ink: #6b3fa0;    --assigned-bg: #f1eafa;
+    --inprogress-ink: #8a5a00;  --inprogress-bg: #fdf3e1;
+    --resolved-ink: #1e7a3c;    --resolved-bg: #e7f6ec;
+    --closed-ink: #555555;      --closed-bg: #eeeeee;
+    --rejected-ink: #b42318;    --rejected-bg: #fdecea;
+
+    /* Overdue tag */
+    --overdue-ink: #b42318;
+    --overdue-bg: #fef3f2;
+    --overdue-line: #fda29b;
+
+    /* Spacing scale */
+    --space-1: .25rem;
+    --space-2: .5rem;
+    --space-3: .75rem;
+    --space-4: 1rem;
+    --space-5: 1.5rem;
+    --space-6: 2rem;
+
+    /* Shape and type */
+    --radius: .4rem;
+    --radius-large: .6rem;
+    --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --text-small: .85rem;
+    --text-tiny: .78rem;
+    --shell-width: 66rem;
+}
+
+
+/* 2. Base elements --------------------------------------------------------- */
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--font);
+    line-height: 1.5;
+}
+
+h1 { font-size: 1.75rem; margin: 0 0 var(--space-2); }
+h2 { font-size: 1.25rem; margin: var(--space-5) 0 var(--space-2); }
+h3 { font-size: 1.05rem; margin: var(--space-5) 0 var(--space-2); }
+
+a { color: var(--accent); }
+a:hover { color: var(--accent-strong); }
+
+/* A visible outline wherever the keyboard is, never removed. */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hint { color: var(--muted); }
+.lead { color: var(--ink-soft); margin-top: 0; }
+.actor { color: var(--muted); }
+
+
+/* 3. Page shell -------------------------------------------------------------
+   A black header bar across the full width, and the page content on a white
+   panel below it. The nav shows only the signed-in role's links (ADR-004). */
+
+.shell { max-width: var(--shell-width); margin: 0 auto; padding: 0 var(--space-4); }
+
+.site-header { background: var(--ink); color: #ffffff; }
+
+.site-header .shell {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    min-height: 3.5rem;
+    white-space: nowrap;
+}
+
+/* The site name, with a small maroon square as a mark. */
+.brand { color: #ffffff; text-decoration: none; font-size: 1.05rem; }
+.brand:hover { color: #ffffff; }
+.brand::before {
+    content: "";
+    display: inline-block;
+    width: .7rem;
+    height: .7rem;
+    margin-right: var(--space-2);
+    background: var(--accent);
+    border-radius: 2px;
+}
+
+.site-nav { display: flex; gap: var(--space-1); }
+
+.site-nav a {
+    color: #d6d6d6;
+    text-decoration: none;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius);
+    font-size: .95rem;
+}
+
+.site-nav a:hover { color: #ffffff; background: rgba(255, 255, 255, .08); }
+
+/* The page you are on: white text with a maroon underline. */
+.site-nav a[aria-current="page"] { color: #ffffff; box-shadow: inset 0 -3px 0 var(--accent); border-radius: 0; }
+
+.signed-in-as { margin-left: auto; display: flex; gap: var(--space-3); align-items: baseline; color: #d6d6d6; font-size: var(--text-small); }
+.signed-in-as strong { color: #ffffff; }
+.signed-in-as a { color: var(--accent-on-dark); }
+
+/* The white panel that holds each page. */
+.page {
+    margin: var(--space-5) auto var(--space-6);
+    padding: var(--space-5) var(--space-6);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-large);
+}
+
+
+/* 4. Buttons ----------------------------------------------------------------
+   Every button is a primary (maroon) button unless it says otherwise:
+   .secondary for low-emphasis actions such as Apply, .danger for actions
+   that take something away (reject, deactivate, retire), .small in tables. */
+
+button, .button {
+    display: inline-block;
+    font: inherit;
+    font-weight: 600;
+    padding: var(--space-2) var(--space-4);
+    color: #ffffff;
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    cursor: pointer;
+    text-decoration: none;
+}
+
+button:hover, .button:hover { background: var(--accent-strong); border-color: var(--accent-strong); color: #ffffff; }
+
+button.secondary, .button.secondary { color: var(--ink); background: var(--surface); border-color: var(--line); }
+button.secondary:hover, .button.secondary:hover { border-color: var(--ink-soft); background: var(--page); color: var(--ink); }
+
+button.danger { color: var(--error-ink); background: var(--surface); border-color: var(--error-ink); }
+button.danger:hover { color: #ffffff; background: var(--error-ink); }
+
+button.small, table button { padding: var(--space-1) var(--space-3); font-size: var(--text-small); }
+
+
+/* 5. Forms and filter bars ------------------------------------------------- */
+
+input, textarea, select {
+    font: inherit;
+    padding: var(--space-2);
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid #c4c4c4;
+    border-radius: var(--radius);
+}
+
+input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+
+/* A one-column form: label above field. */
+.stacked { display: grid; gap: var(--space-2); max-width: 34rem; margin: var(--space-4) 0; }
+.stacked label { font-weight: 600; }
+.stacked button { justify-self: start; margin-top: var(--space-2); }
+
+.field-error, .errors { color: var(--error-ink); font-size: var(--text-small); }
+
+/* A row of filters above a list or table. */
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-4);
+    align-items: end;
+    margin: var(--space-4) 0;
+    padding: var(--space-3) var(--space-4);
+    background: var(--page);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+
+.filters label { display: grid; gap: var(--space-1); font-size: var(--text-small); color: var(--ink-soft); }
+.filters input, .filters select, .filters button { padding: var(--space-1) var(--space-2); }
+.filters .inline-check { display: flex; gap: var(--space-2); align-items: center; }
+
+/* Small forms that sit inside a table cell. */
+form.inline { display: inline-flex; gap: var(--space-2); align-items: center; margin: 0; }
+form.inline input, form.inline select { padding: var(--space-1) var(--space-2); }
+
+
+/* 6. Messages and empty states ----------------------------------------------
+   The result of an action. Success is green, a refusal or error is red, so
+   the two can never be mistaken for each other. */
+
+.message {
+    margin: 0 0 var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    border-left: 4px solid var(--ink-soft);
+    border-radius: var(--radius);
+    background: var(--page);
+}
+
+.message-success { color: var(--success-ink); background: var(--success-bg); border-left-color: var(--success-ink); }
+.message-error { color: var(--error-ink); background: var(--error-bg); border-left-color: var(--error-ink); }
+
+.empty-state { color: var(--muted); padding: var(--space-4); border: 1px dashed var(--line); border-radius: var(--radius); }
+
+
+/* 7. Status badges and the overdue tag ---------------------------------------
+   Rendered by StatusBadgeTagHelper as class "status status-<name>". */
+
+.status, .overdue {
+    display: inline-block;
+    font-size: var(--text-tiny);
+    font-weight: 600;
+    padding: .1rem .55rem;
+    border: 1px solid transparent;
+    border-radius: 1rem;
+    white-space: nowrap;
+}
+
+.status-received   { color: var(--received-ink);   background: var(--received-bg); }
+.status-assigned   { color: var(--assigned-ink);   background: var(--assigned-bg); }
+.status-inprogress { color: var(--inprogress-ink); background: var(--inprogress-bg); }
+.status-resolved   { color: var(--resolved-ink);   background: var(--resolved-bg); }
+.status-closed     { color: var(--closed-ink);     background: var(--closed-bg); }
+.status-rejected   { color: var(--rejected-ink);   background: var(--rejected-bg); }
+
+/* FR-016 (AC-016.2): open and past its target response time. */
+.overdue { color: var(--overdue-ink); background: var(--overdue-bg); border-color: var(--overdue-line); }
+
+
+/* 8. Tables -------------------------------------------------------------------
+   One look for every table: a light header, striped rows, numbers aligned. */
+
+table { border-collapse: collapse; margin: var(--space-4) 0; font-size: .92rem; }
+caption { text-align: left; font-weight: 600; padding-bottom: var(--space-2); }
+
+th, td { padding: var(--space-2) var(--space-3); text-align: left; vertical-align: middle; border-bottom: 1px solid var(--line-soft); }
+thead th, tr:first-child > th { background: var(--page); color: var(--ink-soft); font-size: var(--text-small); border-bottom: 1px solid var(--line); }
+tbody tr:nth-child(even) { background: #fafafa; }
+tbody tr:hover { background: var(--accent-soft); }
+
+/* Full-width data tables: the staff queue, oversight and admin lists. */
+.data, .performance, .admin-list { width: 100%; }
+.performance td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+.performance tr:last-child td { font-weight: 600; border-top: 2px solid var(--line); }
+.admin-list .inactive { color: var(--muted); }
+
+
+/* 9. Request fields, history and timelines --------------------------------- */
+
+/* A request's fields as a two-column list (AC-003.1, AC-010.1). */
+.fields { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-2) var(--space-5); margin: var(--space-4) 0; }
+.fields dt { font-weight: 600; color: var(--ink-soft); }
+.fields dd { margin: 0; }
+
+/* Action history and audit lists. */
+.history { list-style: none; padding-left: 0; margin: var(--space-2) 0; }
+.history li { padding: var(--space-2) 0; border-bottom: 1px solid var(--line-soft); font-size: .92rem; }
+.history time { color: var(--muted); font-size: var(--text-small); margin-right: var(--space-2); }
+
+.request-summary { border-bottom: 1px solid var(--line-soft); padding: var(--space-3) 0; }
+
+
+/* 10. Sign-in and home -------------------------------------------------------- */
+
+/* Sign-in: one panel per role, each user a full-width button. */
+.roles { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); margin: var(--space-4) 0; }
+.role { border: 1px solid var(--line); border-radius: var(--radius-large); padding: var(--space-3) var(--space-4); }
+.role h2 { font-size: 1.05rem; margin: 0; }
+.role .hint { margin: var(--space-1) 0 var(--space-3); font-size: var(--text-small); }
+
+.choose button {
+    display: grid;
+    gap: .1rem;
+    width: 100%;
+    margin-bottom: var(--space-2);
+    text-align: left;
+    font-weight: 400;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line);
+}
+
+.choose button:hover { color: var(--ink); background: var(--accent-soft); border-color: var(--accent); }
+.choose button span { color: var(--muted); font-size: var(--text-tiny); }
+
+/* Home: one card for each action the role may take. */
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); margin: var(--space-4) 0; }
+
+.card {
+    display: grid;
+    gap: var(--space-1);
+    padding: var(--space-4);
+    color: var(--ink);
+    text-decoration: none;
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--accent);
+    border-radius: var(--radius-large);
+}
+
+.card:hover { color: var(--ink); background: var(--accent-soft); }
+.card span { color: var(--ink-soft); font-size: .9rem; }
+
+
+/* 11. Submit a request ---------------------------------------------------------
+   NFR-001: five numbered steps in one column, so a first-time requester can
+   see how far there is to go. Categories are tiles rather than a dropdown. */
+
+.steps { display: grid; gap: var(--space-5); max-width: 40rem; margin: var(--space-5) 0; }
+.step { border: 0; padding: 0; margin: 0; display: grid; gap: var(--space-2); }
+.step legend, .step > label, .step-label { font-weight: 600; padding: 0; margin-bottom: var(--space-2); }
+.step button { justify-self: start; }
+
+.step-number {
+    display: inline-grid;
+    place-items: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    margin-right: var(--space-2);
+    color: #ffffff;
+    background: var(--accent);
+    border-radius: 50%;
+    font-size: var(--text-small);
+}
+
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2); }
+
+.tile {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+    padding: var(--space-3);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+
+.tile:hover { border-color: var(--accent); }
+.tile input { accent-color: var(--accent); margin: 0; }
+
+/* The chosen tile. */
+.tile:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+
+
+/* 12. Request details ------------------------------------------------------------
+   A progress tracker shows where the request is in its lifecycle (AC-003.1),
+   then the updates as a timeline (AC-007.1). Both refresh with polling. */
+
+.tracker { display: flex; list-style: none; padding: 0; margin: var(--space-4) 0; counter-reset: step; }
+
+.tracker-step {
+    flex: 1;
+    position: relative;
+    padding-top: 2rem;
+    text-align: center;
+    font-size: var(--text-small);
+    color: var(--muted);
+}
+
+/* The numbered dot for each step. */
+.tracker-step::before {
+    counter-increment: step;
+    content: counter(step);
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1.6rem;
+    height: 1.6rem;
+    line-height: 1.6rem;
+    color: var(--muted);
+    background: var(--surface);
+    border: 2px solid var(--line);
+    border-radius: 50%;
+    z-index: 1;
+}
+
+/* The line joining one dot to the next. */
+.tracker-step + .tracker-step::after {
+    content: "";
+    position: absolute;
+    top: .8rem;
+    right: 50%;
+    width: 100%;
+    height: 2px;
+    background: var(--line);
+}
+
+.tracker-step.done { color: var(--ink-soft); }
+.tracker-step.done::before { content: "\2713"; color: #ffffff; background: var(--accent); border-color: var(--accent); }
+.tracker-step.done::after, .tracker-step.current::after { background: var(--accent); }
+.tracker-step.current { color: var(--ink); font-weight: 600; }
+.tracker-step.current::before { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+.tracker-step.rejected::before { content: "\2715"; color: #ffffff; background: var(--rejected-ink); border-color: var(--rejected-ink); }
+.tracker-step.rejected { color: var(--rejected-ink); }
+
+/* Updates for the requester, newest first, joined by a line. */
+.timeline { list-style: none; padding-left: var(--space-4); margin: var(--space-2) 0; border-left: 2px solid var(--line); }
+.timeline li { position: relative; padding: 0 0 var(--space-4) var(--space-3); }
+.timeline li::before {
+    content: "";
+    position: absolute;
+    left: calc(-1 * var(--space-4) - 6px);
+    top: .45rem;
+    width: 10px;
+    height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+}
+.timeline time { display: block; color: var(--muted); font-size: var(--text-small); }
+
+.attachments a { font-weight: 600; }
+
+
+/* 13. Staff queue and other request tables ------------------------------------
+   A table with the filter bar above it. Overdue rows are tinted wherever they
+   appear, and in the queue a request nobody owns can be accepted from its row. */
+
+td.actions { text-align: right; white-space: nowrap; }
+.queue .owned { color: var(--muted); font-size: var(--text-small); }
+tr.is-overdue, tbody tr.is-overdue:nth-child(even) { background: var(--overdue-bg); }
+tbody tr.is-overdue:hover { background: #fde4e1; }
+td time { white-space: nowrap; }
+
+/* A heading with its main action beside it, such as My requests and Submit. */
+.page-heading { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-4); }
+
+.paging { display: flex; gap: var(--space-4); align-items: baseline; margin-top: var(--space-4); font-size: .9rem; }
+
+
+/* 14. Oversight, summary and admin ------------------------------------------- */
+
+.counts { display: flex; gap: var(--space-6); }
+.exports { display: flex; gap: var(--space-4); font-size: .9rem; }
+.scopes { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); }
+.scopes .inline-check { display: flex; gap: var(--space-1); align-items: center; font-size: var(--text-small); }
+
+
+/* 15. Headline figures and the status bar chart -----------------------------------
+   FR-015, FR-018 and FR-023. A row of figures, then one bar per status, drawn
+   with plain HTML so no chart library is needed. Each bar carries its number,
+   so the chart never relies on bar length alone. */
+
+.stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-3); margin: var(--space-4) 0; padding: 0; }
+
+.stat {
+    margin: 0;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--ink-soft);
+    border-radius: var(--radius-large);
+}
+
+/* The label is small and muted; the figure under it is large. */
+.stat > .label, .stat > dt { display: block; color: var(--muted); font-size: var(--text-small); }
+.stat > :not(.label):not(dt) { display: block; margin: 0; font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stat.warn { border-top-color: var(--overdue-ink); }
+.stat.warn > :not(.label):not(dt) { color: var(--overdue-ink); }
+.stat.good { border-top-color: var(--resolved-ink); }
+
+.bars { list-style: none; padding: 0; margin: var(--space-3) 0 var(--space-5); max-width: 44rem; }
+.bars li { display: grid; grid-template-columns: 7rem 1fr 3rem; gap: var(--space-3); align-items: center; padding: var(--space-1) 0; }
+.bar { height: .8rem; background: var(--line-soft); border-radius: .4rem; overflow: hidden; }
+.bar-fill { display: block; height: 100%; border-radius: .4rem; }
+.bar-count { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+
+.fill-received   { background: var(--received-ink); }
+.fill-assigned   { background: var(--assigned-ink); }
+.fill-inprogress { background: var(--inprogress-ink); }
+.fill-resolved   { background: var(--resolved-ink); }
+.fill-closed     { background: var(--closed-ink); }
+.fill-rejected   { background: var(--rejected-ink); }
+
+
+/* 16. Staff request details --------------------------------------------------------
+   The request, its notes, files and history on the left; what this staff
+   member may do on the right. The panel stays in view while scrolling. */
+
+.detail-layout { display: grid; grid-template-columns: minmax(0, 1fr) 20rem; gap: var(--space-6); align-items: start; }
+
+.action-panel {
+    position: sticky;
+    top: var(--space-4);
+    padding: var(--space-4);
+    background: var(--page);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--accent);
+    border-radius: var(--radius-large);
+}
+
+.action-panel h2 { margin-top: 0; font-size: 1.05rem; }
+.action-panel h3 { margin: var(--space-4) 0 var(--space-2); font-size: .95rem; }
+.action-panel .stacked { margin: 0; max-width: none; }
+.action-panel textarea, .action-panel select { width: 100%; }
+.action-panel form + form, .action-panel section + section { border-top: 1px solid var(--line); margin-top: var(--space-4); padding-top: var(--space-2); }
+
+
+/* 17. Edit per row ------------------------------------------------------------------
+   Admin tables show each row's controls only when its Edit button is opened.
+   It uses the browser's own details element, so it needs no JavaScript. */
+
+td.edit-cell { position: relative; text-align: right; white-space: nowrap; }
+td.edit-cell > * { display: inline-block; vertical-align: middle; }
+td.edit-cell > * + * { margin-left: var(--space-2); }
+
+.row-edit > summary {
+    display: inline-block;
+    list-style: none;
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--text-small);
+    font-weight: 600;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+
+.row-edit > summary::-webkit-details-marker { display: none; }
+.row-edit > summary:hover, .row-edit[open] > summary { border-color: var(--accent); color: var(--accent); }
+
+/* The opened controls float under the button, over the rows below. */
+.row-edit-panel {
+    position: absolute;
+    right: 0;
+    z-index: 10;
+    display: grid;
+    gap: var(--space-3);
+    width: 24rem;
+    margin-top: var(--space-2);
+    padding: var(--space-4);
+    text-align: left;
+    white-space: normal;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-large);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+}
+
+.row-edit-panel form { display: grid; gap: var(--space-2); }
+.row-edit-panel label { font-size: var(--text-small); font-weight: 600; }
+.row-edit-panel button { justify-self: start; }
+
+/* A small card for a create form above a table. */
+.create { padding: var(--space-3) var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-large); background: var(--page); }
+.create h2 { margin: 0 0 var(--space-2); font-size: 1rem; }
+
+
+/* 18. Audit trail -------------------------------------------------------------------
+   One line per action: when, what kind, what it touched, the change, who. */
+
+.audit li { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-3); align-items: baseline; }
+.audit .action {
+    font-size: var(--text-tiny);
+    font-weight: 600;
+    padding: .05rem .5rem;
+    color: var(--accent-strong);
+    background: var(--accent-soft);
+    border-radius: 1rem;
+}
+.audit .change { color: var(--ink-soft); }
+.audit .actor { margin-left: auto; }

@@ -10,5 +10,8 @@ public enum RequestStatus
     Assigned = 1,
     InProgress = 2,
     Resolved = 3,
-    Closed = 4
+    Closed = 4,
+
+    /// <summary>CR-009. Terminal, reached only from Received, and always with a reason (AC-007.2).</summary>
+    Rejected = 5
 }

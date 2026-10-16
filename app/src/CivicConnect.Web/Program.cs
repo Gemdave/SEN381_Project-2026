@@ -1,6 +1,9 @@
 using CivicConnect.Application.Abstractions;
+using CivicConnect.Application.Access;
+using CivicConnect.Application.ReferenceData;
 using CivicConnect.Application.Requests;
 using CivicConnect.Infrastructure.Persistence;
+using CivicConnect.Infrastructure.Persistence.Queries;
 using CivicConnect.Infrastructure.Persistence.Repositories;
 using CivicConnect.Infrastructure.Security;
 using CivicConnect.Infrastructure.Seed;
@@ -27,14 +30,24 @@ builder.Services.ConfigureHttpJsonOptions(o =>
 
 builder.Services.AddScoped<IRequestRepository, RequestRepository>();
 builder.Services.AddScoped<IRequestHistoryRepository, RequestHistoryRepository>();
+builder.Services.AddScoped<IRequestQueries, RequestQueries>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 builder.Services.AddScoped<IQueueRepository, QueueRepository>();
 builder.Services.AddScoped<IAuthorisationPolicy, AuthorisationPolicy>();
 builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddScoped<AssignmentService>();
+builder.Services.AddScoped<SubmissionService>();
 builder.Services.AddScoped<StatusTransitionService>();
 builder.Services.AddScoped<NoteService>();
+builder.Services.AddScoped<IOversightQueries, OversightQueries>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IAuditRepository, AuditRepository>();
+builder.Services.AddScoped<CategoryService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<IAttachmentRepository, AttachmentRepository>();
+builder.Services.AddScoped<AttachmentService>();
 // While CR-003 is open there is no authentication, so the development stand in
 // is registered only in Development. Anywhere else the application refuses to
 // start rather than running with no identity (RSK-012).
@@ -73,9 +86,11 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.MapRazorPages();
+app.MapRequestEndpoints();
 app.MapAssignmentEndpoints();
 app.MapStatusEndpoints();
 app.MapQueueEndpoints();
+app.MapAttachmentEndpoints();
 
 app.Run();
 

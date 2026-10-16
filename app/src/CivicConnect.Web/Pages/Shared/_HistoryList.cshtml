@@ -1,22 +1,22 @@
-@model IReadOnlyList<CivicConnect.Domain.Requests.RequestHistoryEntry>
+@model CivicConnect.Web.Models.HistoryView
 
-@if (Model.Count == 0)
+@if (Model.Entries.Count == 0)
 {
     <partial name="_EmptyState" model="@("No actions recorded yet.")" />
 }
 else
 {
     <ul class="history">
-        @foreach (var entry in Model)
+        @foreach (var entry in Model.Entries)
         {
             <li>
-                <time datetime="@entry.OccurredAtUtc.ToString("o")">@entry.OccurredAtUtc.ToString("u")</time>
-                <span class="action">@entry.Action</span>
+                <time datetime="@entry.OccurredAtUtc.ToString("o")">@DisplayTime.Show(entry.OccurredAtUtc)</time>
+                <span class="action">@CivicConnect.Web.Models.HistoryView.ActionText(entry.Action)</span>
                 @if (entry.OldValue is not null || entry.NewValue is not null)
                 {
-                    <span class="change">@entry.OldValue to @entry.NewValue</span>
+                    <span class="change">@(entry.OldValue is null ? "" : Model.ValueText(entry.OldValue) + " ")to @Model.ValueText(entry.NewValue)</span>
                 }
-                <span class="actor">by @entry.ActorUserId</span>
+                <span class="actor">by @Model.NameOf(entry.ActorUserId)</span>
             </li>
         }
     </ul>

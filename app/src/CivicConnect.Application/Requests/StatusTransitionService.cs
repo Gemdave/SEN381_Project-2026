@@ -24,16 +24,21 @@ public sealed class StatusTransitionService(
     public async Task<TransitionOutcome> MoveAsync(
         Guid requestId, Guid staffUserId, RequestStatus to, string? note, CancellationToken ct)
     {
-        // Closing has its own permission (FR-014, AC-014.2).
-        var action = to == RequestStatus.Closed ? RequestAction.Close : RequestAction.Transition;
+        // Closing (FR-014, AC-014.2) and rejecting (CR-009) have their own permissions.
+        var action = to switch
+        {
+            RequestStatus.Closed => RequestAction.Close,
+            RequestStatus.Rejected => RequestAction.Reject,
+            _ => RequestAction.Transition
+        };
         if (!await policy.MayAsync(staffUserId, action, requestId, ct))
         {
             return TransitionOutcome.Forbidden;
         }
 
-        // Resolving records how it was resolved (AC-014.1).
+        // Resolving records how it was resolved (AC-014.1); rejecting records why (AC-007.2).
         var cleanNote = note?.Trim();
-        if (to == RequestStatus.Resolved && string.IsNullOrEmpty(cleanNote))
+        if (to is RequestStatus.Resolved or RequestStatus.Rejected && string.IsNullOrEmpty(cleanNote))
         {
             return TransitionOutcome.NoteRequired;
         }
@@ -75,11 +80,19 @@ public sealed class StatusTransitionService(
         }, ct);
     }
 
+    /// <summary>
+    /// CR-009 (AC-007.2). Staff in scope turn down a request that has just been
+    /// received, with a reason the requester is shown.
+    /// </summary>
+    public Task<TransitionOutcome> RejectAsync(Guid requestId, Guid staffUserId, string? reason, CancellationToken ct)
+        => MoveAsync(requestId, staffUserId, RequestStatus.Rejected, reason, ct);
+
     private static string MessageFor(RequestStatus to, string? note) => to switch
     {
         RequestStatus.InProgress => "Work has started on your request.",
         RequestStatus.Resolved => "Your request has been resolved: " + note,
         RequestStatus.Closed => "Your request has been closed.",
+        RequestStatus.Rejected => "Your request was not accepted: " + note,
         _ => "Your request was updated."
     };
 }

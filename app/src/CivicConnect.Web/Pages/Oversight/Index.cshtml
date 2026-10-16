@@ -1,0 +1,135 @@
+@page
+@model CivicConnect.Web.Pages.Oversight.IndexModel
+@using CivicConnect.Application.Abstractions
+@using CivicConnect.Web.Pages.Oversight
+@{
+    ViewData["Title"] = "Oversight";
+}
+
+<h1>Oversight</h1>
+
+@if (!Model.Allowed)
+{
+    <partial name="_EmptyState" model="@("The oversight view is for managers and administrators.")" />
+}
+else
+{
+    var s = Model.Summary!;
+    var withinTarget = s.Resolved > 0 ? (int)Math.Round(100.0 * s.ResolvedWithinTarget / s.Resolved) + "%" : "None yet";
+
+    @* FR-016 and FR-017 (AC-016.1, AC-017.1): narrowing by status, category or
+       lifecycle state updates every figure below. *@
+    <form method="get" class="filters">
+        <label>
+            Status
+            <select name="status">
+                <option value="">Any</option>
+                @foreach (var status in Enum.GetValues<RequestStatus>())
+                {
+                    <option value="@status" selected="@(Model.Status == status)">@IndexModel.StatusText(status)</option>
+                }
+            </select>
+        </label>
+        <label>
+            Category
+            <select name="categoryId">
+                <option value="">Any</option>
+                @foreach (var category in Model.Categories)
+                {
+                    <option value="@category.Id" selected="@(Model.CategoryId == category.Id)">@category.Name</option>
+                }
+            </select>
+        </label>
+        <label>
+            State
+            <select name="lifecycle">
+                <option value="">Any</option>
+                <option value="@Lifecycle.Open" selected="@(Model.Lifecycle == Lifecycle.Open)">Open</option>
+                <option value="@Lifecycle.Overdue" selected="@(Model.Lifecycle == Lifecycle.Overdue)">Overdue</option>
+            </select>
+        </label>
+        <button type="submit" class="secondary">Apply</button>
+        @if (Model.Filtered)
+        {
+            <a href="/Oversight">Clear filters</a>
+        }
+    </form>
+
+    @* FR-015 (AC-015.1): the headline figures for the current filters. *@
+    <div class="stats">
+        <div class="stat"><span class="label">Total requests</span><span class="total">@s.Total</span></div>
+        <div class="stat"><span class="label">Open</span><span class="open">@s.Open</span></div>
+        <div class="stat warn"><span class="label">Overdue</span><span class="overdue-count">@s.Overdue</span></div>
+        <div class="stat good"><span class="label">Resolved</span><span class="resolved">@s.Resolved</span></div>
+        <div class="stat"><span class="label">Resolved within target</span><span>@withinTarget</span></div>
+        <div class="stat"><span class="label">Average hours to resolve</span><span>@IndexModel.Hours(s.AverageHoursToResolve)</span></div>
+    </div>
+
+    <h2>By status</h2>
+    <partial name="_StatusBars" model="s.ByStatus" />
+
+    @* FR-018 (AC-018.1): volumes, open, overdue and resolved counts and time to resolve, by category. *@
+    <h2>Service performance by category</h2>
+    <table class="performance">
+        <tr>
+            @foreach (var column in IndexModel.FigureColumns)
+            {
+                <th>@column</th>
+            }
+        </tr>
+        @foreach (var row in IndexModel.FigureRows(s))
+        {
+            <tr>
+                @foreach (var cell in row)
+                {
+                    <td>@cell</td>
+                }
+            </tr>
+        }
+    </table>
+
+    @* AC-018.2: the exports carry the same filters, so they match what is shown. *@
+    <p class="exports">
+        <a class="button secondary" href="/Oversight?handler=ExportFigures&amp;@Model.FilterQuery">Export performance table (CSV)</a>
+        <a class="button secondary" href="/Oversight?handler=ExportRequests&amp;@Model.FilterQuery">Export all @s.Total matching requests (CSV)</a>
+    </p>
+
+    <h2>Most recent</h2>
+    @if (s.Recent.Count == 0)
+    {
+        <partial name="_EmptyState" model="@("No requests match these filters.")" />
+    }
+    else
+    {
+        <table class="data">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Submitted</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in s.Recent)
+                {
+                    <tr class="@(item.Overdue ? "is-overdue" : null)">
+                        <td><a href="/Staff/Details?id=@item.Id">@item.Reference</a></td>
+                        <td>@item.Title</td>
+                        <td>@item.Category</td>
+                        <td>
+                            <status-badge status="@item.Status"></status-badge>
+                            @if (item.Overdue)
+                            {
+                                @* AC-016.2 *@
+                                <span class="overdue">Overdue</span>
+                            }
+                        </td>
+                        <td><time datetime="@item.CreatedAtUtc.ToString("o")">@DisplayTime.Show(item.CreatedAtUtc)</time></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}

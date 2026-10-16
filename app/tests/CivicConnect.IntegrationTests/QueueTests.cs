@@ -29,6 +29,7 @@ public class QueueTests(TestDatabaseFixture fixture)
             var r2 = Request.Submit("Q2-" + token, "Pothole mine " + token, "x", category.Id, requester.Id, now);
             var r3 = Request.Submit("Q3-" + token, "Pothole theirs " + token, "x", category.Id, requester.Id, now);
             setup.AddRange(category, requester, a, b, r1, r2, r3);
+            setup.AddRange(StaffCategoryScope.Create(a.Id, category.Id), StaffCategoryScope.Create(b.Id, category.Id));
             await setup.SaveChangesAsync();
 
             var repository = new RequestRepository(setup);
@@ -60,6 +61,39 @@ public class QueueTests(TestDatabaseFixture fixture)
         Assert.Equal(new[] { open, mine }, newestFirst);
     }
 
+    /// <summary>FR-008 (AC-008.2): an unassigned request outside the staff member's categories is not listed.</summary>
+    [RequiresDatabaseFact]
+    public async Task Staff_do_not_see_requests_outside_their_categories()
+    {
+        var token = Guid.NewGuid().ToString("N")[..8];
+        Guid inside, outside, staffId;
+
+        await using (var setup = fixture.NewContext())
+        {
+            var covered = Category.Create("Covered " + token);
+            var other = Category.Create("Other " + token);
+            var requester = AppUser.Create("Requester", UserRole.Requester);
+            var staff = AppUser.Create("Staff", UserRole.ServiceStaff);
+            var now = DateTimeOffset.UtcNow;
+
+            var r1 = Request.Submit("S1-" + token, "Inside " + token, "x", covered.Id, requester.Id, now);
+            var r2 = Request.Submit("S2-" + token, "Outside " + token, "x", other.Id, requester.Id, now);
+            setup.AddRange(covered, other, requester, staff, r1, r2, StaffCategoryScope.Create(staff.Id, covered.Id));
+            await setup.SaveChangesAsync();
+
+            inside = r1.Id;
+            outside = r2.Id;
+            staffId = staff.Id;
+        }
+
+        await using var db = fixture.NewContext();
+        var visible = (await new QueueRepository(db).SearchAsync(staffId, new QueueFilter(Search: token), CancellationToken.None))
+            .Select(r => r.Id).ToList();
+
+        Assert.Contains(inside, visible);
+        Assert.DoesNotContain(outside, visible);
+    }
+
     /// <summary>NFR-004: the queue loads within 3 seconds at 1,000 requests.</summary>
     [RequiresDatabaseFact]
     public async Task The_queue_loads_in_under_three_seconds_with_1000_requests()
@@ -72,7 +106,7 @@ public class QueueTests(TestDatabaseFixture fixture)
             var category = Category.Create("Perf " + token);
             var requester = AppUser.Create("Requester", UserRole.Requester);
             var staff = AppUser.Create("Staff", UserRole.ServiceStaff);
-            setup.AddRange(category, requester, staff);
+            setup.AddRange(category, requester, staff, StaffCategoryScope.Create(staff.Id, category.Id));
 
             for (var i = 0; i < 1000; i++)
             {

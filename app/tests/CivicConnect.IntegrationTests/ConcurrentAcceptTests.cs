@@ -38,12 +38,17 @@ public class ConcurrentAcceptTests(TestDatabaseFixture fixture)
                 var staff = AppUser.Create("Staff " + i, UserRole.ServiceStaff);
                 setup.Users.Add(staff);
                 staffIds.Add(staff.Id);
+
+                // FR-008: every competitor must be in scope, so the race is decided
+                // by the conditional update and not by the policy.
+                setup.StaffCategoryScopes.Add(StaffCategoryScope.Create(staff.Id, category.Id));
             }
 
             var request = Request.Submit(
                 reference: "REQ-" + Random.Shared.Next(1000, 9999),
                 title: "Concurrent accept",
                 description: "Two staff accept at the same moment.",
+                location: "Integration test",
                 categoryId: category.Id,
                 requesterId: requester.Id,
                 now: DateTimeOffset.UtcNow);

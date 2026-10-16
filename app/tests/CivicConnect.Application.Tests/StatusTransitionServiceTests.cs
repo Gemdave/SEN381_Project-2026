@@ -92,6 +92,58 @@ public class StatusTransitionServiceTests
     }
 
     [Fact]
+    [Trait("TestCase", "AC-007.2")]
+    public async Task Rejecting_needs_a_reason()
+    {
+        var (service, history, feedback) = Build(RequestStatus.Received);
+
+        var outcome = await service.RejectAsync(Guid.NewGuid(), Staff, "  ", CancellationToken.None);
+
+        Assert.Equal(TransitionOutcome.NoteRequired, outcome);
+        Assert.Empty(history.Entries);
+        Assert.Empty(feedback.Items);
+    }
+
+    [Fact]
+    [Trait("TestCase", "AC-007.2")]
+    public async Task Rejecting_asks_for_the_reject_permission_and_tells_the_requester_why()
+    {
+        var policy = new FakePolicy(true);
+        var (service, history, feedback) = Build(RequestStatus.Received, policy: policy);
+
+        var outcome = await service.RejectAsync(Guid.NewGuid(), Staff, "This is a private matter.", CancellationToken.None);
+
+        Assert.Equal(TransitionOutcome.Changed, outcome);
+        Assert.Equal(RequestAction.Reject, Assert.Single(policy.Asked));
+        var change = history.Entries[0];
+        Assert.Equal(("Received", "Rejected"), (change.OldValue, change.NewValue));
+        var message = Assert.Single(feedback.Items);
+        Assert.Equal("Your request was not accepted: This is a private matter.", message.Message);
+    }
+
+    [Fact]
+    public async Task Rejecting_without_the_permission_changes_nothing()
+    {
+        var (service, history, _) = Build(RequestStatus.Received, policy: new DenyActionPolicy(RequestAction.Reject));
+
+        var outcome = await service.RejectAsync(Guid.NewGuid(), Staff, "Duplicate.", CancellationToken.None);
+
+        Assert.Equal(TransitionOutcome.Forbidden, outcome);
+        Assert.Empty(history.Entries);
+    }
+
+    [Fact]
+    public async Task A_request_already_accepted_cannot_be_rejected()
+    {
+        var (service, history, _) = Build(RequestStatus.Assigned);
+
+        var outcome = await service.RejectAsync(Guid.NewGuid(), Staff, "Duplicate.", CancellationToken.None);
+
+        Assert.Equal(TransitionOutcome.NotAllowed, outcome);
+        Assert.Empty(history.Entries);
+    }
+
+    [Fact]
     public async Task Losing_the_race_is_reported_and_nothing_is_recorded()
     {
         var (service, history, feedback) = Build(RequestStatus.Assigned, rows: 0);

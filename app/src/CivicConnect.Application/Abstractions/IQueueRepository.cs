@@ -26,7 +26,8 @@ public sealed record QueueRow(
     RequestStatus Status,
     string Category,
     DateTimeOffset CreatedAtUtc,
-    bool IsAssigned);
+    bool IsAssigned,
+    DateTimeOffset TargetResponseAtUtc);
 
 public sealed record CategoryOption(Guid Id, string Name);
 

@@ -1,0 +1,39 @@
+@page
+@model CivicConnect.Web.Pages.IndexModel
+@{
+    ViewData["Title"] = "Sign in";
+}
+
+<h1>CivicConnect</h1>
+<p class="lead">Choose who to sign in as. To change later, use Switch user at the top of any page.</p>
+
+@if (Model.Message is not null)
+{
+    <partial name="_Message" model="Model.Message" />
+}
+
+@* Development only: the CR-003 stand-in for sign-in (RSK-012). *@
+<div class="roles">
+    @foreach (var group in Model.Groups)
+    {
+        <section class="role" aria-labelledby="role-@group.Role">
+            <h2 id="role-@group.Role">@group.Title</h2>
+            <p class="hint">@group.Description</p>
+            @foreach (var user in group.Users)
+            {
+                <form method="post" class="choose">
+                    <input type="hidden" name="userId" value="@user.Id" />
+                    <button type="submit">
+                        <strong>@user.Name</strong>
+                        @if (user.Detail is not null)
+                        {
+                            <span>@user.Detail</span>
+                        }
+                    </button>
+                </form>
+            }
+        </section>
+    }
+</div>
+
+<p class="hint">Development sign-in only. Real sign-in is still open under CR-003.</p>

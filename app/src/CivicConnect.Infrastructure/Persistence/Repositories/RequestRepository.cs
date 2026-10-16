@@ -32,6 +32,12 @@ public sealed class RequestRepository(CivicConnectDbContext db) : IRequestReposi
             .Select(r => new RequestOwnership(r.Id, r.AssignedToUserId, r.Status, r.RequesterId))
             .FirstOrDefaultAsync(ct);
 
+    private const string NextReferenceSql =
+        "SELECT nextval('" + CivicConnectDbContext.ReferenceSequence + "') AS \"Value\"";
+
+    public Task<long> NextReferenceNumberAsync(CancellationToken ct)
+        => db.Database.SqlQueryRaw<long>(NextReferenceSql).SingleAsync(ct);
+
     public async Task AddAsync(Request request, CancellationToken ct)
         => await db.Requests.AddAsync(request, ct);
 }

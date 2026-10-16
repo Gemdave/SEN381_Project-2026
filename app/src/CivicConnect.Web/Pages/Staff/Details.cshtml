@@ -1,29 +1,116 @@
 @page
 @model CivicConnect.Web.Pages.Staff.DetailsModel
 @{
-    ViewData["Title"] = "Request " + Model.Reference;
+    ViewData["Title"] = "Request " + Model.Detail!.Reference;
+    var received = Model.Detail!.Status == RequestStatus.Received;
+    var canAccept = Model.Capabilities.CanAccept && received;
+    var canReject = Model.Capabilities.CanReject && received;
+    var notes = Model.History.Entries.Where(h => h.Note is not null).ToList();
 }
 
-<h1>@Model.Reference</h1>
-<h2>@Model.Title</h2>
-<status-badge status="@Model.Status"></status-badge>
+<h1>@Model.Detail!.Reference</h1>
+<p class="lead">@Model.Detail!.Title</p>
 
 @if (Model.Message is not null)
 {
-    <p class="message">@Model.Message</p>
+    <partial name="_Message" model="Model.Message" />
 }
 
-<p>@Model.Description</p>
+<div class="detail-layout">
+    @* The request comes first in the page, so it is read before the actions. *@
+    <div class="detail-main">
+        @* AC-010.1: requester, category, description and status, with history below. *@
+        <partial name="_RequestFields" model="Model.Detail" />
 
-@* ADR-004: the control appears only when the capability is present, and the
-   handler authorises the action again on post. *@
-@if (Model.Capabilities.CanAccept)
-{
-    <form method="post" asp-page-handler="Accept">
-        <input type="hidden" name="id" value="@Model.Id" />
-        <button type="submit">Accept this request</button>
-    </form>
-}
+        @if (notes.Count > 0)
+        {
+            <h3>Notes</h3>
+            <ul class="history">
+                @foreach (var entry in notes)
+                {
+                    <li>
+                        <time datetime="@entry.OccurredAtUtc.ToString("o")">@DisplayTime.Show(entry.OccurredAtUtc)</time>
+                        @entry.Note
+                        <span class="actor">by @Model.History.NameOf(entry.ActorUserId)</span>
+                    </li>
+                }
+            </ul>
+        }
 
-<h3>Action history</h3>
-<partial name="_HistoryList" model="Model.History" />
+        <partial name="_Attachments" model="Model.Attachments" />
+
+        <h3>Action history</h3>
+        <partial name="_HistoryList" model="Model.History" />
+    </div>
+
+    @* ADR-004: a control appears only when the capability is present, and the
+       handler authorises the action again on post. *@
+    <aside class="action-panel" aria-label="Actions on this request">
+        <h2>Actions</h2>
+
+        @if (!canAccept && !canReject && Model.NextStatuses.Count == 0 && !Model.Capabilities.CanAddNote)
+        {
+            <p class="hint">There is nothing for you to do on this request.</p>
+        }
+
+        @if (canAccept)
+        {
+            @* FR-011: accept ownership; a second accept is refused (AC-011.2). *@
+            <section>
+                <form method="post" asp-page-handler="Accept" class="stacked">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit">Accept this request</button>
+                </form>
+            </section>
+        }
+
+        @if (Model.NextStatuses.Count > 0)
+        {
+            @* FR-012 and FR-014: only the moves the lifecycle allows (AC-012.1). *@
+            <section>
+                <h3>Move status</h3>
+                <form method="post" asp-page-handler="Transition" class="stacked">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <label for="next">Move to</label>
+                    <select id="next" name="next">
+                        @foreach (var status in Model.NextStatuses)
+                        {
+                            <option value="@status">@(status == RequestStatus.InProgress ? "In progress" : status.ToString())</option>
+                        }
+                    </select>
+                    <label for="note">Note (required when resolving, AC-014.1)</label>
+                    <textarea id="note" name="note" rows="3" maxlength="@CivicConnect.Application.Requests.NoteService.MaxLength"></textarea>
+                    <button type="submit">Update status</button>
+                </form>
+            </section>
+        }
+
+        @if (Model.Capabilities.CanAddNote)
+        {
+            @* FR-013: a comment or action note, kept in the history (AC-013.1). *@
+            <section>
+                <h3>Add a note</h3>
+                <form method="post" asp-page-handler="Note" class="stacked">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <label for="text">Note</label>
+                    <textarea id="text" name="text" rows="3" maxlength="@CivicConnect.Application.Requests.NoteService.MaxLength"></textarea>
+                    <button type="submit" class="secondary">Add note</button>
+                </form>
+            </section>
+        }
+
+        @if (canReject)
+        {
+            @* CR-009, AC-007.2: the reason is shown to the requester. *@
+            <section>
+                <h3>Reject</h3>
+                <form method="post" asp-page-handler="Reject" class="stacked">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <label for="reason">Reason (the requester will see this)</label>
+                    <textarea id="reason" name="reason" rows="2" maxlength="@CivicConnect.Application.Requests.NoteService.MaxLength"></textarea>
+                    <button type="submit" class="danger">Reject this request</button>
+                </form>
+            </section>
+        }
+    </aside>
+</div>

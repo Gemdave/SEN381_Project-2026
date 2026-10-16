@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="831d10a5-5418-4f2d-b28a-93f3526b6048" name="@runnervm8k3b6 2026-10-15 10:18:25" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-15T10:18:25.5364495+00:00" queuing="2026-10-15T10:18:25.5364496+00:00" start="2026-10-15T10:18:24.3346848+00:00" finish="2026-10-15T10:18:25.7399013+00:00" />
+  <TestSettings name="default" id="8e91d035-a5cf-4830-a105-a73870216a1c">
+    <Deployment runDeploymentRoot="_runnervm8k3b6_2026-10-15_10_18_25" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="2c896dc8-910f-49cc-88bb-e0815e6045f3" testId="6394550a-73d6-e86c-c363-eb3250d3bfa5" testName="CivicConnect.Application.Tests.NoteServiceTests.Someone_without_permission_cannot_add_a_note" computerName="runnervm8k3b6" duration="00:00:00.0004652" startTime="2026-10-15T10:18:25.5125543+00:00" endTime="2026-10-15T10:18:25.5125543+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2c896dc8-910f-49cc-88bb-e0815e6045f3" />
+    <UnitTestResult executionId="acf4113d-48e1-4e50-809e-dbf52c1b0db8" testId="95b3c827-b203-5cc1-bf0f-c5b91e92c9d2" testName="CivicConnect.Application.Tests.AssignmentServiceTests.Zero_affected_rows_with_an_owner_is_a_conflict_and_writes_no_history" computerName="runnervm8k3b6" duration="00:00:00.0063310" startTime="2026-10-15T10:18:25.5127978+00:00" endTime="2026-10-15T10:18:25.5127978+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="acf4113d-48e1-4e50-809e-dbf52c1b0db8" />
+    <UnitTestResult executionId="abd1ea2b-ec2c-4680-8cd5-455dfc6e7a15" testId="48386a79-d078-3d4a-1f65-71266cb566b8" testName="CivicConnect.Application.Tests.AssignmentServiceTests.The_policy_is_checked_before_anything_is_written" computerName="runnervm8k3b6" duration="00:00:00.0005634" startTime="2026-10-15T10:18:25.4817296+00:00" endTime="2026-10-15T10:18:25.4817297+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="abd1ea2b-ec2c-4680-8cd5-455dfc6e7a15" />
+    <UnitTestResult executionId="5468a5ae-fd01-473a-b035-3bf3a2a2227e" testId="82fe4be6-b1f0-7213-6c97-b8968d30eab9" testName="CivicConnect.Application.Tests.StatusTransitionServiceTests.Closing_needs_the_close_permission" computerName="runnervm8k3b6" duration="00:00:00.0006054" startTime="2026-10-15T10:18:25.4822703+00:00" endTime="2026-10-15T10:18:25.4822704+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5468a5ae-fd01-473a-b035-3bf3a2a2227e" />
+    <UnitTestResult executionId="b8c95f2c-4ce1-45c9-9421-a08c1511a251" testId="ceddb285-5b95-4d34-e684-bc5fb4bc112a" testName="CivicConnect.Application.Tests.StatusTransitionServiceTests.An_invalid_transition_is_refused_and_nothing_is_recorded" computerName="runnervm8k3b6" duration="00:00:00.0006776" startTime="2026-10-15T10:18:25.5131416+00:00" endTime="2026-10-15T10:18:25.5131416+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b8c95f2c-4ce1-45c9-9421-a08c1511a251" />
+    <UnitTestResult executionId="097330c5-e7f9-4f80-bb25-9e274f510698" testId="a0a5d68a-59c1-6b1c-7612-5683ec2e5de0" testName="CivicConnect.Application.Tests.AssignmentServiceTests.A_missing_request_is_reported_as_not_found" computerName="runnervm8k3b6" duration="00:00:00.0174568" startTime="2026-10-15T10:18:25.4793133+00:00" endTime="2026-10-15T10:18:25.4793133+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="097330c5-e7f9-4f80-bb25-9e274f510698" />
+    <UnitTestResult executionId="ef673635-1b9e-4f8f-92d1-e0267297bdab" testId="2e8c2540-6ea9-5db9-f5fa-fb863e54336d" testName="CivicConnect.Application.Tests.NoteServiceTests.An_empty_note_is_refused" computerName="runnervm8k3b6" duration="00:00:00.0177096" startTime="2026-10-15T10:18:25.4663741+00:00" endTime="2026-10-15T10:18:25.4663968+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ef673635-1b9e-4f8f-92d1-e0267297bdab" />
+    <UnitTestResult executionId="5e2fe4b1-6ec4-4312-ae90-cf17bede8a90" testId="4869be4b-48c5-3d8f-affd-ccafe934fe56" testName="CivicConnect.Application.Tests.StatusTransitionServiceTests.Losing_the_race_is_reported_and_nothing_is_recorded" computerName="runnervm8k3b6" duration="00:00:00.0180972" startTime="2026-10-15T10:18:25.4799280+00:00" endTime="2026-10-15T10:18:25.4799280+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5e2fe4b1-6ec4-4312-ae90-cf17bede8a90" />
+    <UnitTestResult executionId="38ad9ee6-3de9-40b1-a495-5fe3887e2c6c" testId="5cf0da20-537a-d695-e4ac-993233fd0a35" testName="CivicConnect.Application.Tests.StatusTransitionServiceTests.A_valid_move_records_the_change_the_note_and_a_message_for_the_requester" computerName="runnervm8k3b6" duration="00:00:00.0157821" startTime="2026-10-15T10:18:25.5129266+00:00" endTime="2026-10-15T10:18:25.5129266+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="38ad9ee6-3de9-40b1-a495-5fe3887e2c6c" />
+    <UnitTestResult executionId="e866c0c9-d843-4841-b549-6a5b444a53b3" testId="c2e63c3f-0468-6f3b-6dac-f03701f63f78" testName="CivicConnect.Application.Tests.StatusTransitionServiceTests.Resolving_needs_a_note" computerName="runnervm8k3b6" duration="00:00:00.0004913" startTime="2026-10-15T10:18:25.5133689+00:00" endTime="2026-10-15T10:18:25.5133690+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e866c0c9-d843-4841-b549-6a5b444a53b3" />
+    <UnitTestResult executionId="ece3f74b-00a2-4562-9880-1604d2a551e9" testId="180671dc-6347-004c-f193-c214536aa8ef" testName="CivicConnect.Application.Tests.NoteServiceTests.A_note_is_saved_to_the_history_trimmed" computerName="runnervm8k3b6" duration="00:00:00.0057320" startTime="2026-10-15T10:18:25.4829697+00:00" endTime="2026-10-15T10:18:25.4829698+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ece3f74b-00a2-4562-9880-1604d2a551e9" />
+    <UnitTestResult executionId="fb121450-1392-48a3-b20d-1993ee4faee7" testId="074db3f2-3375-38dc-2d8f-0ad51850854b" testName="CivicConnect.Application.Tests.AssignmentServiceTests.One_affected_row_means_the_accept_succeeded_and_history_is_written" computerName="runnervm8k3b6" duration="00:00:00.0039489" startTime="2026-10-15T10:18:25.4826338+00:00" endTime="2026-10-15T10:18:25.4826338+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fb121450-1392-48a3-b20d-1993ee4faee7" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="CivicConnect.Application.Tests.StatusTransitionServiceTests.Resolving_needs_a_note" storage="/home/runner/work/sen381_project-2026/sen381_project-2026/app/tests/civicconnect.application.tests/bin/release/net10.0/civicconnect.application.tests.dll" id="c2e63c3f-0468-6f3b-6dac-f03701f63f78">
+      <Execution id="e866c0c9-d843-4841-b549-6a5b444a53b3" />
+      <TestMethod codeBase="/home/runner/work/SEN381_Project-2026/SEN381_Project-2026/app/tests/CivicConnect.Application.Tests/bin/Release/net10.0/CivicConnect.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="CivicConnect.Application.Tests.StatusTransitionServiceTests" name="Resolving_needs_a_note" />
+    </UnitTest>
+    <UnitTest name="CivicConnect.Application.Tests.StatusTransitionServiceTests.A_valid_move_records_the_change_the_note_and_a_message_for_the_requester" storage="/home/runner/work/sen381_project-2026/sen381_project-2026/app/tests/civicconnect.application.tests/bin/release/net10.0/civicconnect.application.tests.dll" id="5cf0da20-537a-d695-e4ac-993233fd0a35">
+      <Execution id="38ad9ee6-3de9-40b1-a495-5fe3887e2c6c" />
+      <TestMethod codeBase="/home/runner/work/SEN381_Project-2026/SEN381_Project-2026/app/tests/CivicConnect.Application.Tests/bin/Release/net10.0/CivicConnect.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="CivicConnect.Application.Tests.StatusTransitionServiceTests" name="A_valid_move_records_the_change_the_note_and_a_message_for_the_requester" />
+    </UnitTest>
+    <UnitTest name="CivicConnect.Application.Tests.AssignmentServiceTests.Zero_affected_rows_with_an_owner_is_a_conflict_and_writes_no_history" storage="/home/runner/work/sen381_project-2026/sen381_project-2026/app/tests/civicconnect.application.tests/bin/release/net10.0/civicconnect.application.tests.dll" id="95b3c827-b203-5cc1-bf0f-c5b91e92c9d2">
+      <Execution id="acf4113d-48e1-4e50-809e-dbf52c1b0db8" />
+      <TestMethod codeBase="/home/runner/work/SEN381_Project-2026/SEN381_Project-2026/app/tests/CivicConnect.Application.Tests/bin/Release/net10.0/CivicConnect.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="CivicConnect.Application.Tests.AssignmentServiceTests" name="Zero_affected_rows_with_an_owner_is_a_conflict_and_writes_no_history" />
+    </UnitTest>
+    <UnitTest name="CivicConnect.Application.Tests.NoteServiceTests.Someone_without_permission_cannot_add_a_note" storage="/home/runner/work/sen381_project-2026/sen381_project-2026/app/tests/civicconnect.application.tests/bin/release/net10.0/civicconnect.application.tests.dll" id="6394550a-73d6-e86c-c363-eb3250d3bfa5">
+      <Execution id="2c896dc8-910f-49cc-88bb-e0815e6045f3" />
+      <TestMethod codeBase="/home/runner/work/SEN381_Project-2026/SEN381_Project-2026/app/tests/CivicConnect.Application.Tests/bin/Release/net10.0/CivicConnect.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="CivicConnect.Application.Tests.NoteServiceTests" name="Someone_without_permission_cannot_add_a_note" />
+    </UnitTest>
+    <UnitTest name="CivicConnect.Application.Tests.AssignmentServiceTests.The_policy_is_checked_before_anything_is_written" storage="/home/runner/work/sen381_project-2026/sen381_project-2026/app/tests/civicconnect.application.tests/bin/release/net10.0/civicconnect.application.tests.dll" id="48386a79-d078-3d4a-1f65-71266cb566b8">
+      <Execution id="abd1ea2b-ec2c-4680-8cd5-455dfc6e7a15" />
+      <TestMethod codeBase="/home/runner/work/SEN381_Project-2026/SEN381_Project-2026/app/tests/CivicConnect.Application.Tests/bin/Release/net10.0/CivicConnect.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="CivicConnect.Application.Tests.AssignmentServiceTests" name="The_policy_is_checked_before_anything_is_written" />
+    </UnitTest>
+    <UnitTest name="CivicConnect.Application.Tests.NoteServiceTests.A_note_is_saved_to_the_history_trimmed" storage="/home/runner/work/sen381_project-2026/sen381_project-2026/app/tests/civicconnect.application.tests/bin/release/net10.0/civicconnect.application.tests.dll" id="180671dc-6347-004c-f193-c214536aa8ef">
+      <Execution id="ece3f74b-00a2-4562-9880-1604d2a551e9" />
+      <TestMethod codeBase="/home/runner/work/SEN381_Project-2026/SEN381_Project-2026/app/tests/CivicConnect.Application.Tests/bin/Release/net10.0/CivicConnect.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="CivicConnect.Application.Tests.NoteServiceTests" name="A_note_is_saved_to_the_history_trimmed" />
+    </UnitTest>
+    <UnitTest name="CivicConnect.Application.Tests.StatusTransitionServiceTests.Losing_the_race_is_reported_and_nothing_is_recorded" storage="/home/runner/work/sen381_project-2026/sen381_project-2026/app/tests/civicconnect.application.tests/bin/release/net10.0/civicconnect.application.tests.dll" id="4869be4b-48c5-3d8f-affd-ccafe934fe56">
+      <Execution id="5e2fe4b1-6ec4-4312-ae90-cf17bede8a90" />
+      <TestMethod codeBase="/home/runner/work/SEN381_Project-2026/SEN381_Project-2026/app/tests/CivicConnect.Application.Tests/bin/Release/net10.0/CivicConnect.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="CivicConnect.Application.Tests.StatusTransitionServiceTests" name="Losing_the_race_is_reported_and_nothing_is_recorded" />
+    </UnitTest>
+    <UnitTest name="CivicConnect.Application.Tests.AssignmentServiceTests.A_missing_request_is_reported_as_not_found" storage="/home/runner/work/sen381_project-2026/sen381_project-2026/app/tests/civicconnect.application.tests/bin/release/net10.0/civicconnect.application.tests.dll" id="a0a5d68a-59c1-6b1c-7612-5683ec2e5de0">
+      <Execution id="097330c5-e7f9-4f80-bb25-9e274f510698" />
+      <TestMethod codeBase="/home/runner/work/SEN381_Project-2026/SEN381_Project-2026/app/tests/CivicConnect.Application.Tests/bin/Release/net10.0/CivicConnect.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="CivicConnect.Application.Tests.AssignmentServiceTests" name="A_missing_request_is_reported_as_not_found" />
+    </UnitTest>
+    <UnitTest name="CivicConnect.Application.Tests.StatusTransitionServiceTests.An_invalid_transition_is_refused_and_nothing_is_recorded" storage="/home/runner/work/sen381_project-2026/sen381_project-2026/app/tests/civicconnect.application.tests/bin/release/net10.0/civicconnect.application.tests.dll" id="ceddb285-5b95-4d34-e684-bc5fb4bc112a">
+      <Execution id="b8c95f2c-4ce1-45c9-9421-a08c1511a251" />
+      <TestMethod codeBase="/home/runner/work/SEN381_Project-2026/SEN381_Project-2026/app/tests/CivicConnect.Application.Tests/bin/Release/net10.0/CivicConnect.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="CivicConnect.Application.Tests.StatusTransitionServiceTests" name="An_invalid_transition_is_refused_and_nothing_is_recorded" />
+    </UnitTest>
+    <UnitTest name="CivicConnect.Application.Tests.StatusTransitionServiceTests.Closing_needs_the_close_permission" storage="/home/runner/work/sen381_project-2026/sen381_project-2026/app/tests/civicconnect.application.tests/bin/release/net10.0/civicconnect.application.tests.dll" id="82fe4be6-b1f0-7213-6c97-b8968d30eab9">
+      <Execution id="5468a5ae-fd01-473a-b035-3bf3a2a2227e" />
+      <TestMethod codeBase="/home/runner/work/SEN381_Project-2026/SEN381_Project-2026/app/tests/CivicConnect.Application.Tests/bin/Release/net10.0/CivicConnect.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="CivicConnect.Application.Tests.StatusTransitionServiceTests" name="Closing_needs_the_close_permission" />
+    </UnitTest>
+    <UnitTest name="CivicConnect.Application.Tests.AssignmentServiceTests.One_affected_row_means_the_accept_succeeded_and_history_is_written" storage="/home/runner/work/sen381_project-2026/sen381_project-2026/app/tests/civicconnect.application.tests/bin/release/net10.0/civicconnect.application.tests.dll" id="074db3f2-3375-38dc-2d8f-0ad51850854b">
+      <Execution id="fb121450-1392-48a3-b20d-1993ee4faee7" />
+      <TestMethod codeBase="/home/runner/work/SEN381_Project-2026/SEN381_Project-2026/app/tests/CivicConnect.Application.Tests/bin/Release/net10.0/CivicConnect.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="CivicConnect.Application.Tests.AssignmentServiceTests" name="One_affected_row_means_the_accept_succeeded_and_history_is_written" />
+    </UnitTest>
+    <UnitTest name="CivicConnect.Application.Tests.NoteServiceTests.An_empty_note_is_refused" storage="/home/runner/work/sen381_project-2026/sen381_project-2026/app/tests/civicconnect.application.tests/bin/release/net10.0/civicconnect.application.tests.dll" id="2e8c2540-6ea9-5db9-f5fa-fb863e54336d">
+      <Execution id="ef673635-1b9e-4f8f-92d1-e0267297bdab" />
+      <TestMethod codeBase="/home/runner/work/SEN381_Project-2026/SEN381_Project-2026/app/tests/CivicConnect.Application.Tests/bin/Release/net10.0/CivicConnect.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="CivicConnect.Application.Tests.NoteServiceTests" name="An_empty_note_is_refused" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="6394550a-73d6-e86c-c363-eb3250d3bfa5" executionId="2c896dc8-910f-49cc-88bb-e0815e6045f3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="95b3c827-b203-5cc1-bf0f-c5b91e92c9d2" executionId="acf4113d-48e1-4e50-809e-dbf52c1b0db8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="48386a79-d078-3d4a-1f65-71266cb566b8" executionId="abd1ea2b-ec2c-4680-8cd5-455dfc6e7a15" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="82fe4be6-b1f0-7213-6c97-b8968d30eab9" executionId="5468a5ae-fd01-473a-b035-3bf3a2a2227e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ceddb285-5b95-4d34-e684-bc5fb4bc112a" executionId="b8c95f2c-4ce1-45c9-9421-a08c1511a251" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a0a5d68a-59c1-6b1c-7612-5683ec2e5de0" executionId="097330c5-e7f9-4f80-bb25-9e274f510698" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2e8c2540-6ea9-5db9-f5fa-fb863e54336d" executionId="ef673635-1b9e-4f8f-92d1-e0267297bdab" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4869be4b-48c5-3d8f-affd-ccafe934fe56" executionId="5e2fe4b1-6ec4-4312-ae90-cf17bede8a90" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5cf0da20-537a-d695-e4ac-993233fd0a35" executionId="38ad9ee6-3de9-40b1-a495-5fe3887e2c6c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c2e63c3f-0468-6f3b-6dac-f03701f63f78" executionId="e866c0c9-d843-4841-b549-6a5b444a53b3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="180671dc-6347-004c-f193-c214536aa8ef" executionId="ece3f74b-00a2-4562-9880-1604d2a551e9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="074db3f2-3375-38dc-2d8f-0ad51850854b" executionId="fb121450-1392-48a3-b20d-1993ee4faee7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="12" executed="12" passed="12" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.05]   Discovering: CivicConnect.Application.Tests
+[xUnit.net 00:00:00.08]   Discovered:  CivicConnect.Application.Tests
+[xUnit.net 00:00:00.08]   Starting:    CivicConnect.Application.Tests
+[xUnit.net 00:00:00.19]   Finished:    CivicConnect.Application.Tests
+</StdOut>
+    </Output>
+    <CollectorDataEntries>
+      <Collector agentName="runnervm8k3b6" uri="datacollector://microsoft/CoverletCodeCoverage/1.0" collectorDisplayName="XPlat code coverage">
+        <UriAttachments>
+          <UriAttachment>
+            <A href="runnervm8k3b6/coverage.cobertura.xml"></A>
+          </UriAttachment>
+        </UriAttachments>
+      </Collector>
+    </CollectorDataEntries>
+  </ResultSummary>
+</TestRun>

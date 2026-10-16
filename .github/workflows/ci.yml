@@ -202,7 +202,7 @@ jobs:
           fi
 
   # ---------------------------------------------------------------------------
-  # 4. Secrets scan (full history, so past commits are covered too)
+  # 4. Secrets scan
   # ---------------------------------------------------------------------------
   secrets-scan:
     name: Secrets Scan
@@ -219,6 +219,14 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Secrets Scan
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Secrets Scan
+          path: results.sarif
+          retention-days: 30
 
   # ---------------------------------------------------------------------------
   # 5. Quality gate - the single required status check for branch protection

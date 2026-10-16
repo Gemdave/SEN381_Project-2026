@@ -421,12 +421,35 @@ The M2 table in Controlled Changes to the Baseline is kept as history. The M3 de
 
 **Open blocker:** B2 (staging). **Accepted limitations:** development identity instead of sign-in (RSK-012), and local evidence only. The gate summary and residual risk are in CI & Automated Verification and the Risk Register.
 
---- | :--- |
-| FR-001 to FR-004, FR-007 to FR-014, NFR-003 to NFR-007 | Delivered and verified (automated and acceptance) |
-| NFR-001 | Delivered; walkthrough pending |
-| FR-015 to FR-017, FR-019 to FR-021 | Not delivered (CR-013) |
+### Release Evidence Summary
+**Release candidate:** `m3-rc1` on `main` (tagged after merge). **Classification: CONDITIONALLY READY.** All requirements are built and verified for demonstration; it is not ready for public use.
 
-**Open blockers:** B2 (staging) and B3 (no test database in CI). **Accepted limitations:** development identity instead of sign-in (RSK-012), and local evidence only. The gate summary and residual risk are in CI & Automated Verification and the Risk Register.
+| Evidence | Result | Source |
+| :--- | :--- | :--- |
+| Scope | FR-001 to FR-023, NFR-002 to NFR-008 (CR-016) | [Scope freeze](../Scope%20freeze%20proposal/Scope_Freeze_Proposal_v2.0.md), [Change register](../Risks/RTM/CivicConnect-Change-Register-v3.0.xlsx) |
+| Tests | 211 of 211 pass locally; CI run on the tag to be linked | [RTM v3.0](../Risks/RTM/CivicConnect-RTM-v3.0.xlsx), [CI gates](../CI_Documentation/CI_Quality_Gates.md) |
+| Acceptance | 26 of 26 checks pass | [Acceptance checks](../../Test/Evidence/M3_Acceptance_Checks.md) |
+| Performance | PT-01 p95 0.064 s against a 3 s target, local only | [PT-01 results](../../Test/Evidence/PT-01_Results.md) |
+
+**Conditions:** real sign-in (CR-003, RSK-012), staging (B2), the NFR-001 walkthrough, and a green CI run on the tag. **Residual risks:** RSK-010, RSK-012, RSK-015 ([Risk Register](../Risks/Risk_Register_v3.0.md)).
+
+### Defect Register
+| ID | Defect | Status |
+| :--- | :--- | :--- |
+| DEF-001 | Staff details lacked requester and category (AC-010.1) | Fixed |
+| OBS-01 | Accept showed on requests already owned | Fixed |
+| OBS-02 | History showed user IDs instead of names | Fixed |
+| DEF-002 | The audit_entries insert-only trigger has no direct test (NFR-007) | Open, low |
+
+### Technical Debt Register
+| ID | Debt | Pay back when | Owner |
+| :--- | :--- | :--- | :--- |
+| TD-01 | One deployable, not separate services (CR-014) | Before NFR-010 checks | Architecture |
+| TD-02 | Development sign-in, no real authentication (CR-003) | Before staging (B2) | DevOps & Security |
+| TD-03 | API contract differs from the build (CR-015) | Next contract change | Architecture |
+| TD-04 | No deployment, migration step or Dockerfile (ADR-007) | M4 staging | DevOps & Security |
+| TD-05 | Legacy `Backend/` tree still in the repo (RSK-022) | After the release candidate | Team |
+| TD-06 | Mobile layout and accessibility review deferred | M4 | Requirements & UX |
 
 ---
 

@@ -22,3 +22,10 @@
 | Gerald Enright | ChatGPT | Asked for advise on what to update on the README | yes | Read the changes that were proposed and revised the work that is actually present in the project | Rejected suggestions that claimed unfinished parts were finished. Changed suggestions that were inaccurate or irrelevant. |
 | Gerald Enright | Claude | Asked to analyze the project and identify new risks for M3 | yes | Read the proposed risks and determined relevance | Discarded the irrelevant risks. |
 | Mogau Malope | claude | asked to find gaps in the rtm, file structuring and achitecture that don't match the requirements or deliverables | yes | read through the suggestions to try and find any actual gaps in the rtm | the rtm was changed with added columns and records for the changes from milestone 2 |
+| Mogau Malope | Claude | Asked to outline the remaining FRs and assist in refining code with tests | yes | Reviewed code, ran all tests | added fixes to written code |
+| Mogau Malope | Claude | Add a rough example starting point for sign-in based on role in home page | yes | Signed in as each role | Rejected auto sign-in as a remembered user |
+| Mogau Malope | Claude | Suggest a design and restyle for the screens | yes | Reviewed each suggestion against ADR-004 and if the designs match miletsone deliverables | Chose the palette and implemented it with code |
+| Mogau Malope | Claude | Fix times showing a trailing Z | yes | Compared with stored UTC times | Chose South African time |
+| Mogau Malope | Claude | Fix a dependency security warning | yes | Ran the vulnerability check and tests | Approved an extra version pin |
+| Mogau Malope | Claude | Cross check the RTM and change register if any gaps are present in any of them | yes | Checked each cited test passed | Kept the recorded limits |
+| Mogau Malope | Claude | Summarise the M3 guidelines and cross check with the current files within the project | yes | Read the guidelines myself | Used for planning only |

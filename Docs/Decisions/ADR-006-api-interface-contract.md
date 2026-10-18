@@ -1,6 +1,6 @@
 # ADR-006 REST Interface Between the Browser and Backend
 
-> **Status:** Proposed, awaiting team approval
+> **Status:** Accepted, implemented in release v1.0.0 with a recorded deviation: status changes use POST and ids are GUIDs (CR-015, TD-03)
 > **Owner:** Systems Architect and Backend Lead
 > **Builds on:** D-002 and Task 3 API and integration decisions
 > **Quality drivers:** ASR-02, ASR-04, ASR-05, ASR-06

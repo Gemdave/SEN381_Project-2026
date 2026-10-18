@@ -1,0 +1,26 @@
+@page
+@model CivicConnect.Web.Pages.Account.SignInModel
+@{
+    ViewData["Title"] = "Sign in";
+}
+
+<h1>Sign in to CivicConnect</h1>
+<p class="lead">Use the email address and password your administrator gave you.</p>
+
+@if (Model.Message is not null)
+{
+    <partial name="_Message" model="Model.Message" />
+}
+
+@* CR-003: real sign-in. Browsers can fill these two fields from a password manager. *@
+<form method="post" asp-page="/Account/SignIn" asp-route-returnUrl="@Model.ReturnUrl" class="auth-form">
+    <label for="email">Email</label>
+    <input id="email" name="Email" type="email" value="@Model.Email" autocomplete="username" maxlength="254" required autofocus />
+
+    <label for="password">Password</label>
+    <input id="password" name="Password" type="password" autocomplete="current-password" maxlength="128" required />
+
+    <button type="submit">Sign in</button>
+</form>
+
+<p class="hint">Forgotten your password? Ask an administrator to reset it.</p>

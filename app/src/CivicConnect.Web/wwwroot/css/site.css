@@ -616,3 +616,10 @@ td.edit-cell > * + * { margin-left: var(--space-2); }
 }
 .audit .change { color: var(--ink-soft); }
 .audit .actor { margin-left: auto; }
+
+/* CR-003: sign-in, change password and the header sign-out button. */
+.auth-form { display: grid; gap: var(--space-2); max-width: 24rem; margin: var(--space-4) 0; }
+.auth-form input { width: 100%; }
+.auth-form button { justify-self: start; margin-top: var(--space-2); }
+.sign-out { margin: 0; }
+.link-button { background: none; border: 0; padding: 0; font: inherit; color: var(--accent-on-dark); text-decoration: underline; cursor: pointer; }

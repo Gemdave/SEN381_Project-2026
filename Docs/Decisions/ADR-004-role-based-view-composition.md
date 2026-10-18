@@ -1,6 +1,6 @@
 # ADR-004 Role based view composition
 >**Design pattern decision 1 of 2.**  
-**Status:** Proposed, revision 2 (08/10/2026); to align with the revised ADR-001 (CR-010), ADR-005 and ADR-006  
+**Status:** Accepted, implemented in release v1.0.0 (revision 2, 08/10/2026). Option C runs inside the single deployable (CR-014)  
 **Owner:** Requirements Lead and Frontend Engineer  
 **Quality drivers:** ASR-06 first, then ASR-02, ASR-05, ASR-07, ASR-04  
 **Risks touched:** RSK-011, RSK-016, RSK-022  

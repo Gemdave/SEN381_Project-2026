@@ -86,3 +86,16 @@ internal sealed class FixedClock : IClock
 {
     public DateTimeOffset UtcNow { get; } = new(2026, 9, 30, 12, 0, 0, TimeSpan.Zero);
 }
+
+// Not a real hash: it only lets the tests tell a right password from a wrong one without the cost of PBKDF2.
+internal sealed class FakePasswordHasher : IPasswordHasher
+{
+    public string Hash(string password) => "fake$" + password;
+
+    public bool Verify(string? password, string? hash) => hash is not null && hash == "fake$" + password;
+}
+
+internal sealed class MutableClock(DateTimeOffset start) : IClock
+{
+    public DateTimeOffset UtcNow { get; set; } = start;
+}

@@ -1,6 +1,6 @@
 # ADR-001 Microservices as independently deployable services
 
-> **Status:** Approved
+> **Status:** Approved; not implemented in release v1.0.0. The release is one deployable, accepted as technical debt (CR-014, TD-01)
 > **Owner:** Systems Architect and Backend Lead
 > **Builds on:** D-001, D-002 in the PED decision log
 > **Supersedes:** the earlier version of this ADR (layered modular monolith). Recorded in the PED as D-005

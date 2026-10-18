@@ -2,6 +2,7 @@ using CivicConnect.Application.Abstractions;
 using CivicConnect.Domain.Access;
 using CivicConnect.Web.Models;
 using CivicConnect.Web.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -15,6 +16,7 @@ namespace CivicConnect.Web.Pages;
 /// (AC-019.1). Staff are shown with their categories, because those decide which
 /// requests they see (FR-008).
 /// </summary>
+[AllowAnonymous]
 public class IndexModel(
     IUserRepository users,
     ICategoryRepository categories,
@@ -41,7 +43,7 @@ public class IndexModel(
     {
         if (!environment.IsDevelopment())
         {
-            return NotFound();
+            return RedirectToPage("/Account/SignIn");
         }
 
         // A remembered user is signed out first, and the page reloads so that

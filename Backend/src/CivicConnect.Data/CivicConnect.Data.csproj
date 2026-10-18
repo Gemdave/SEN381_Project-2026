@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CivicConnect.Core\CivicConnect.Core.csproj" />
     <PackageReference Include="Npgsql" Version="10.0.3" />
   </ItemGroup>
 

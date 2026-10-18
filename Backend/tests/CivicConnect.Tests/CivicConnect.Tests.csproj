@@ -13,9 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\CivicConnect.Core\CivicConnect.Core.csproj" />
-    <ProjectReference Include="..\..\src\CivicConnect.Data\CivicConnect.Data.csproj" />
-  </ItemGroup>
+</ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />

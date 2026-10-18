@@ -4,9 +4,4 @@
     <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\CivicConnect.Core\CivicConnect.Core.csproj" />
-    <ProjectReference Include="..\CivicConnect.Data\CivicConnect.Data.csproj" />
-  </ItemGroup>
-
 </Project>

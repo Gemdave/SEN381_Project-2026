@@ -312,19 +312,25 @@ public class SignInFlowTests(SignInFixture app)
 
         var mismatch = await Html.PostFormAsync(browser, "/Account/ChangePassword", token, new Dictionary<string, string>
         {
-            ["CurrentPassword"] = "temporary passphrase", ["NewPassword"] = "my own new passphrase", ["ConfirmPassword"] = "something else entirely"
+            ["CurrentPassword"] = "temporary passphrase",
+            ["NewPassword"] = "my own new passphrase",
+            ["ConfirmPassword"] = "something else entirely"
         });
         Assert.Equal("The new password and its confirmation do not match.", Html.Message(await BodyAsync(mismatch)));
 
         var weak = await Html.PostFormAsync(browser, "/Account/ChangePassword", Html.Token(await BodyAsync(mismatch)), new Dictionary<string, string>
         {
-            ["CurrentPassword"] = "temporary passphrase", ["NewPassword"] = "short", ["ConfirmPassword"] = "short"
+            ["CurrentPassword"] = "temporary passphrase",
+            ["NewPassword"] = "short",
+            ["ConfirmPassword"] = "short"
         });
         Assert.StartsWith("Use at least 12 characters", Html.Message(await BodyAsync(weak)));
 
         var done = await Html.PostFormAsync(browser, "/Account/ChangePassword", Html.Token(await BodyAsync(weak)), new Dictionary<string, string>
         {
-            ["CurrentPassword"] = "temporary passphrase", ["NewPassword"] = "my own new passphrase", ["ConfirmPassword"] = "my own new passphrase"
+            ["CurrentPassword"] = "temporary passphrase",
+            ["NewPassword"] = "my own new passphrase",
+            ["ConfirmPassword"] = "my own new passphrase"
         });
         Assert.Equal("/Home", Where(done));
         Assert.Equal(HttpStatusCode.OK, (await browser.GetAsync("/Home")).StatusCode);
@@ -345,7 +351,9 @@ public class SignInFlowTests(SignInFixture app)
         var page = await first.GetStringAsync("/Account/ChangePassword");
         var changed = await Html.PostFormAsync(first, "/Account/ChangePassword", Html.Token(page), new Dictionary<string, string>
         {
-            ["CurrentPassword"] = password, ["NewPassword"] = "a different long passphrase", ["ConfirmPassword"] = "a different long passphrase"
+            ["CurrentPassword"] = password,
+            ["NewPassword"] = "a different long passphrase",
+            ["ConfirmPassword"] = "a different long passphrase"
         });
 
         Assert.Equal("/Home", Where(changed));
@@ -364,7 +372,10 @@ public class SignInFlowTests(SignInFixture app)
         var page = await admin.GetStringAsync("/Admin/Users");
         var created = await Html.PostFormAsync(admin, "/Admin/Users?handler=Create", Html.Token(page), new Dictionary<string, string>
         {
-            ["name"] = name, ["role"] = nameof(UserRole.Requester), ["email"] = email, ["temporaryPassword"] = "first temporary phrase"
+            ["name"] = name,
+            ["role"] = nameof(UserRole.Requester),
+            ["email"] = email,
+            ["temporaryPassword"] = "first temporary phrase"
         });
         Assert.StartsWith("User created.", Html.Message(await BodyAsync(created)));
 
@@ -379,13 +390,19 @@ public class SignInFlowTests(SignInFixture app)
         // The same email cannot be used twice, and a weak temporary password is refused.
         var duplicate = await Html.PostFormAsync(admin, "/Admin/Users?handler=Create", Html.Token(await BodyAsync(created)), new Dictionary<string, string>
         {
-            ["name"] = "Someone Else", ["role"] = nameof(UserRole.Requester), ["email"] = email.ToUpperInvariant(), ["temporaryPassword"] = "second temporary phrase"
+            ["name"] = "Someone Else",
+            ["role"] = nameof(UserRole.Requester),
+            ["email"] = email.ToUpperInvariant(),
+            ["temporaryPassword"] = "second temporary phrase"
         });
         Assert.Equal("Another account already uses that email address.", Html.Message(await BodyAsync(duplicate)));
 
         var weak = await Html.PostFormAsync(admin, "/Admin/Users?handler=Create", Html.Token(await BodyAsync(duplicate)), new Dictionary<string, string>
         {
-            ["name"] = "Weak One", ["role"] = nameof(UserRole.Requester), ["email"] = "weak@civicconnect.test", ["temporaryPassword"] = "short"
+            ["name"] = "Weak One",
+            ["role"] = nameof(UserRole.Requester),
+            ["email"] = "weak@civicconnect.test",
+            ["temporaryPassword"] = "short"
         });
         Assert.StartsWith("The temporary password needs at least 12 characters", Html.Message(await BodyAsync(weak)));
     }
@@ -399,7 +416,8 @@ public class SignInFlowTests(SignInFixture app)
         var page = await admin.GetStringAsync("/Admin/Users");
         var reset = await Html.PostFormAsync(admin, "/Admin/Users?handler=ResetPassword", Html.Token(page), new Dictionary<string, string>
         {
-            ["id"] = target.Id.ToString(), ["temporaryPassword"] = "reset temporary phrase"
+            ["id"] = target.Id.ToString(),
+            ["temporaryPassword"] = "reset temporary phrase"
         });
 
         Assert.StartsWith("Password reset.", Html.Message(await BodyAsync(reset)));
@@ -416,7 +434,8 @@ public class SignInFlowTests(SignInFixture app)
 
         var response = await Html.PostFormAsync(requester, "/Admin/Users?handler=ResetPassword", Html.Token(page), new Dictionary<string, string>
         {
-            ["id"] = target.Id.ToString(), ["temporaryPassword"] = "attacker chosen phrase"
+            ["id"] = target.Id.ToString(),
+            ["temporaryPassword"] = "attacker chosen phrase"
         });
 
         Assert.Equal("Only administrators can manage users and roles.", Html.Message(await BodyAsync(response)));

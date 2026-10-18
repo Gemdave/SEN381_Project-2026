@@ -83,7 +83,7 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-        app.UseExceptionHandler("/Error");
+    app.UseExceptionHandler("/Error");
     app.UseHsts();
 
     // ADR-007. A new database is migrated and given its categories and first

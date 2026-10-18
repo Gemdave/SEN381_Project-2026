@@ -86,7 +86,7 @@ public sealed class UserService(
     /*CR-003. For a user who has forgotten their password. 
     Sets a new temporary password, clears any lockout and ends their current sessions. 
     Audited, but the password itself never is.*/
-        public async Task<UserOutcome> ResetPasswordAsync(Guid adminId, Guid userId, string? temporaryPassword, CancellationToken ct)
+    public async Task<UserOutcome> ResetPasswordAsync(Guid adminId, Guid userId, string? temporaryPassword, CancellationToken ct)
     {
         var (outcome, user) = await TargetAsync(adminId, userId, ct);
         if (user is null)

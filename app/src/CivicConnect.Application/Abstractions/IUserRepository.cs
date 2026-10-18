@@ -12,7 +12,7 @@ public interface IUserRepository
     Task<AppUser?> FindAsync(Guid userId, CancellationToken ct);
     //CR-003. The argument is already normalized (AppUser.NormalizeEmail).
     Task<AppUser?> FindByEmailAsync(string normalizedEmail, CancellationToken ct);
-    
+
     void Add(AppUser user);
     // FR-008. Replaces the staff member's category scopes with exactly these.
     Task ReplaceScopesAsync(Guid userId, IReadOnlyCollection<Guid> categoryIds, CancellationToken ct);

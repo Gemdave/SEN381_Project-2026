@@ -9,7 +9,7 @@ public class AppUser
     public const int DisplayNameMax = 100;
     public const int EmailMax = 254;
     public const int PasswordHashMax = 255;
-    
+
     private AppUser() { }
     public Guid Id { get; private set; } = Guid.NewGuid();
     public string DisplayName { get; private set; } = string.Empty;

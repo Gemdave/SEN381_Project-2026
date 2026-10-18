@@ -529,7 +529,7 @@ The M2 table in Controlled Changes to the Baseline is kept as history. The M3 de
 ## M1 Scope to Final Delivery
 **Final status categories:** IMPLEMENTED, PARTIALLY IMPLEMENTED, NOT IMPLEMENTED, CHANGED/REMOVED THROUGH APPROVED CHANGE. Deferred and out-of-scope items are listed separately and are not counted as failures.
 
-| M1 scope item | M1 priority / status | Final status | Acceptance criteria | Evidence | Conclusion |
+| M1 scope item | M1 priority / status | Final status | Acceptance criteria | Evidence (RTM test IDs) | Conclusion |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | FR-001 Submit a request | Must / In scope | IMPLEMENTED | AC-001.1, AC-001.2 Met | RTM v4.0; `SubmissionServiceTests`, E2E-01 | Delivered as committed |
 | FR-002 Controlled category | Must / In scope | IMPLEMENTED | AC-002.1, AC-002.2 Met | UT-02 | Delivered as committed |
@@ -538,6 +538,7 @@ The M2 table in Controlled Changes to the Baseline is kept as history. The M3 de
 | FR-005 Search own history | Should / In scope | IMPLEMENTED | AC-005.1 Met | `ManagementScreensTests` | Delivered (CR-016) |
 | FR-007 In-app feedback | Must / In scope | IMPLEMENTED | AC-007.1 Met; AC-007.2 Met through CR-009 | E2E-02, `UpdatesPollingTests` | Delivered; Rejected added by approved change |
 | Category list as reference data | In scope | IMPLEMENTED | Covered by FR-002, FR-021 | `CategoryServiceTests` | Delivered |
+| Engineering baseline documentation (stakeholder analysis, constraints, initial architecture, decision log) | In scope | IMPLEMENTED | None (documentation, not counted in the percentage) | This PED: Stakeholder Profiles, Technical Constraints and Assumptions, Engineering Decision Log | Delivered at M1 and kept as history through v4.0 |
 | FR-008 to FR-014 Service staff | Must (baselined at M2) | IMPLEMENTED | All 12 Met (AC-014.2 as reworded by CR-012) | RTM v4.0 | Delivered |
 | FR-015 to FR-018 Management | Must and Should | IMPLEMENTED | All 6 Met | `ReportingTests` | Delivered (CR-016; CR-005, CR-006) |
 | FR-019 to FR-022 Administrator | Must and Should | IMPLEMENTED | All 5 Met | `UserAdminTests`, `SignInTests` | Delivered (CR-016; sign-in CR-003) |
@@ -546,7 +547,7 @@ The M2 table in Controlled Changes to the Baseline is kept as history. The M3 de
 | NFR-001 Usability | Should | IMPLEMENTED | Met | Timed first-user walkthrough (Role 1) | Delivered; the timed first-user walkthrough met the five-step, five-minute target |
 | NFR-007 Auditability | Must | IMPLEMENTED | Met | `HistoryInsertOnlyTests` (request history and audit trail) | Delivered; DEF-002 closed |
 | NFR-009 Cost | Should | IMPLEMENTED | Met | ADR-007; `Test/Evidence/Hosted_Deployment_Check.md` | Delivered: runs live on Render Free and Neon Free at $0 per month |
-| NFR-010 Growth readiness | Must (added by CR-011) | NOT IMPLEMENTED | Not Met | CR-014 | Service split not built; accepted as technical debt (TD-01) |
+| NFR-010 Growth readiness | Must (added by CR-011) | NOT IMPLEMENTED | Not Met | CR-014 | Service split not built: the team kept one deployable to finish the committed functions on time (CR-014, TD-01). Effect: the Sponsor's growth need (C-5) is met only by scaling the whole application, so the three NFR-010 checks cannot pass |
 
 | Deferred or out of scope at M1 | Final status | Conclusion |
 | :--- | :--- | :--- |

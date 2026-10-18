@@ -33,3 +33,6 @@
 |Keletso Marota|Claude|Drafted M3 documentation: the API contract as-built section and the data model corrections. |yes|Compared each statement with the code, the migrations, and the test results before using it.|Rejected recommendations that are not implemented in code.|
 | Gerald Enright | Claude | Asked to find security checks | yes | Checked how the security checks were implemented and ensured that they run correctly | Changed the recommendations to remain relevant to the project |
 | Gerald Enright | Claude | Asked to analyze the project and explain new risk gaps | yes | Read through the risk gaps and updated the risk register | Used what was determined to be relevant and declined the rest |
+| Mogau Malope | Claude | Write the DEF-002 audit trail test | yes | Ran it on PostgreSQL; all previous tests pass | changed test naming |
+| Mogau Malope | Claude | Run the simulated production and live site checks | yes | Read the results; opened the live site myself | The AI did not sign in to the live site |
+| Mogau Malope | Claude | Check the repo against the FINAL brief | yes | Confirmed each finding in the files | Mark estimates used as a guide only |

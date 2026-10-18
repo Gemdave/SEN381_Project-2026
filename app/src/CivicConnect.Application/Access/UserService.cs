@@ -11,7 +11,9 @@ public enum UserOutcome
     NotFound,
     Forbidden,
     OwnAccount,
-    NotStaff
+    NotStaff,
+    EmailTaken,
+    WeakPassword
 }
 
 /// <summary>
@@ -28,7 +30,8 @@ public sealed class UserService(
     IAuditRepository audit,
     IAuthorisationPolicy policy,
     IUnitOfWork unitOfWork,
-    IClock clock)
+    IClock clock,
+    IPasswordHasher hasher)
 {
     public async Task<UserOutcome> CreateAsync(Guid adminId, string? displayName, UserRole role, CancellationToken ct)
     {

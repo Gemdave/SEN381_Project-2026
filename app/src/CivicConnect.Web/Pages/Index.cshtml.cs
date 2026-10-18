@@ -16,6 +16,7 @@ namespace CivicConnect.Web.Pages;
 /// (AC-019.1). Staff are shown with their categories, because those decide which
 /// requests they see (FR-008).
 /// </summary>
+[AllowAnonymous]
 public class IndexModel(
     IUserRepository users,
     ICategoryRepository categories,
@@ -42,7 +43,7 @@ public class IndexModel(
     {
         if (!environment.IsDevelopment())
         {
-            return NotFound();
+            return RedirectToPage("/Account/SignIn");
         }
 
         // A remembered user is signed out first, and the page reloads so that

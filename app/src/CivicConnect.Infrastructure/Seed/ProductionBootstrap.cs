@@ -51,7 +51,7 @@ public static class ProductionBootstrap
             }
             else
             {
-                var email = AppUser.NormaliseEmail(options.AdminEmail);
+                var email = AppUser.NormalizeEmail(options.AdminEmail);
                 var existing = await db.Users.FirstOrDefaultAsync(u => u.Email == email, ct);
                 if (existing is null)
                 {

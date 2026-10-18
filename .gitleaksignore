@@ -1,5 +1,7 @@
 # Reviewed false positives (CR-003, 18 Oct 2026). The configuration key name
-# "Authentication:Pbkdf2Iterations" resembled an API key to the generic-api-key rule.
+# resembled an API key to the generic-api-key rule.
 # No secret was committed; the key has since been renamed to Hashing:Cost.
 87d00613c96807364d42023b0baaba67b9c13a21:app/src/CivicConnect.Web/Program.cs:generic-api-key:53
 87d00613c96807364d42023b0baaba67b9c13a21:app/src/CivicConnect.Web/Program.cs:generic-api-key:56
+6ba9a4b41e42fd9176ea7c7cf1c3b44e174d48b9:.gitleaksignore:generic-api-key:2
+20d835e17106d8bbc5ae2c121c0a6acee221730d:.gitleaksignore:generic-api-key:2

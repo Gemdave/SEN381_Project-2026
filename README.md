@@ -833,7 +833,7 @@ Final status for release `v1.0.0`; the full list is in PED v4.0, Known Limitatio
 4. **Sign-in has no multi-factor authentication or self-service password reset** (ADR-008, RSK-012).
 5. **The API contract document is outdated:** the built API uses POST for status changes and GUID ids (CR-015).
 6. **Desktop layout only; no accessibility review** (TD-06).
-7. **Evidence gaps:** the NFR-001 usability walkthrough was not run, and the audit-table trigger has no direct test (DEF-002).
+7. **Evidence gap:** the NFR-001 usability walkthrough was not run.
 8. **Some documents describe the intended architecture** (ADR-001) rather than the single deployable that was built; the PED and ADR statuses record the difference.
 
 ---

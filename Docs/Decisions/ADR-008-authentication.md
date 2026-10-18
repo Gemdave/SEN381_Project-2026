@@ -29,7 +29,7 @@ CR-003 left sign-in open through M3. The application ran only in Development, on
 The sponsor names an identity provider, an email service becomes affordable, or the system holds data that justifies multi-factor authentication.
 
 ## Verification
-* `AppUserSignInTests`, `SignInTests` (application and integration) and `Pbkdf2PasswordHasherTests`: 287 of 287 tests pass at v1.0.0.
+* `AppUserSignInTests`, `SignInTests` (application and integration) and `Pbkdf2PasswordHasherTests`: 288 of 288 tests pass at v1.0.0.
 * Simulated production, 13 of 13 checks: `Test/Evidence/Final_Simulated_Production.md`.
 
 ## Evidence

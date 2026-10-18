@@ -15,7 +15,7 @@ The register is concluded for release `v1.0.0`. Each risk has a final status: **
 
 | ID | Final status | Reason and evidence (v1.0.0) |
 |---|---|---|
-| RSK-001 | Closed | The stack was learned and used: all 23 FRs built; 287 of 287 automated tests pass. |
+| RSK-001 | Closed | The stack was learned and used: all 23 FRs built; 288 of 288 automated tests pass. |
 | RSK-002 | Closed | All work merged through reviewed PRs into one tagged release, `v1.0.0`. |
 | RSK-003 | Closed | Every CR has a final decision (Change Register v4.0). |
 | RSK-004 | Accepted / Carried | AI use is recorded with human verification in the AI Usage Register; correctness still depends on that review. |
@@ -27,7 +27,7 @@ The register is concluded for release `v1.0.0`. Each risk has a final status: **
 | RSK-010 | Mitigated | Conditional update plus `ConcurrentAcceptTests` (eight simultaneous accepts, one owner). Residual: shown under test load only. |
 | RSK-011 | Mitigated | One policy checks role, ownership and category scope; the role matrix and real sign-in tests pass. Residual: no penetration test. |
 | RSK-012 | Mitigated | Real sign-in replaced the development identity outside Development (CR-003, ADR-008); `SignInTests` pass. Residual: no MFA, administrator-only password reset, lockout can be abused, hash cost unmeasured on a hosted server. |
-| RSK-013 | Mitigated | Database triggers make `request_history` and `audit_entries` insert-only. Residual: no insert-only grants on the database role; the audit trigger has no direct test (DEF-002). |
+| RSK-013 | Mitigated | Database triggers make `request_history` and `audit_entries` insert-only. Both triggers are tested directly (DEF-002 closed). Residual: no insert-only grants on the database role. |
 | RSK-014 | Accepted / Carried | Not realised: nothing is hosted on a free tier yet. Applies again when the hosted deployment happens. |
 | RSK-015 | Accepted / Carried | No hosted database, so no restore rehearsal. Accepted for this coursework deployment; future work. |
 | RSK-016 | Closed | The capability object and policy are used by every role; the Sponsor role was added as one new page folder (CR-007). |

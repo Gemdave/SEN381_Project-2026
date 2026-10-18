@@ -296,7 +296,7 @@ cannot be merged unless the Quality Gate passes.
 
 **Verification evidence.** CI builds and tests only the `app/` tree. `StatusTransitionTests` and `AssignmentServiceTests` run in the Quality Gate, while `ConcurrentAcceptTests` is skipped until CI provides a test database. RTM rows that cite `Backend/` tests are marked "Not in CI" and do not count as verified.
 
-**Final (v4.0).** The table above keeps the M1 baseline statuses as history. The final RTM is `Docs/Risks/RTM/CivicConnect-RTM-v4.0.xlsx`: every requirement now traces through implementation, tests and evidence to a final acceptance status (column W) and outcome (column X). All 36 FR acceptance criteria are Met; NFR-001, NFR-007 and NFR-009 are Partially Met and NFR-010 is Not Met (see M1 Scope to Final Delivery). CI now provides a PostgreSQL database, so `ConcurrentAcceptTests` and every other integration test run there, and `Backend/` has been removed (RSK-022).
+**Final (v4.0).** The table above keeps the M1 baseline statuses as history. The final RTM is `Docs/Risks/RTM/CivicConnect-RTM-v4.0.xlsx`: every requirement now traces through implementation, tests and evidence to a final acceptance status (column W) and outcome (column X). All 36 FR acceptance criteria are Met; NFR-001 and NFR-009 are Partially Met and NFR-010 is Not Met (see M1 Scope to Final Delivery). CI now provides a PostgreSQL database, so `ConcurrentAcceptTests` and every other integration test run there, and `Backend/` has been removed (RSK-022).
 
 ---
 
@@ -333,7 +333,7 @@ All open CRs need approval before baseline sign-off. One more may follow once AD
 **Execution:** all counted cases except the staging checks run in the CI Build and Test job against a PostgreSQL service, and a failure blocks the Quality Gate. A skipped test fails the job, because a skipped test is not evidence. E2E-03 (a UI walkthrough) and PT-01 run against the simulated staging environment and are recorded separately.  
 **Results:** all 21 counted cases passed (44 of 44 executed cases, 0 failed, 0 skipped) in the CI run of 14/10/2026; E2E-03 and PT-01 are recorded separately once run on staging.  
 **Evidence:** [Test plan and evidence record](Test/Docs/Test_Plan_v2.md) | [CI run for release candidate] | [Test results artifact] | [Staging verification and PT-01 results] | [RTM test columns]  
-**Final (v1.0.0):** the suite has grown to 287 automated tests (89 domain, 92 application, 106 integration), all passing on 18/10/2026. It now covers FR-001 to FR-023 and real sign-in (`SignInTests`, `AppUserSignInTests`, `Pbkdf2PasswordHasherTests`); the counted minimum above is unchanged. The RTM uses the Test Plan v1 case IDs and this section uses Test Plan v2 IDs, so the RTM names tests by class as well.
+**Final (v1.0.0):** the suite has grown to 288 automated tests (89 domain, 92 application, 107 integration), all passing on 18/10/2026. It now covers FR-001 to FR-023 and real sign-in (`SignInTests`, `AppUserSignInTests`, `Pbkdf2PasswordHasherTests`); the counted minimum above is unchanged. The RTM uses the Test Plan v1 case IDs and this section uses Test Plan v2 IDs, so the RTM names tests by class as well.
 **Limitations:** the suite does not prove the absence of defects; access-control results rely on the development identity stand-in, so they say nothing about real authentication (RSK-012); E2E-01 and E2E-02 exercise the API, not the browser UI; the CI timing check is only a regression guard, and staging performance on a local machine does not predict municipal-scale load.
 
 ---
@@ -483,7 +483,7 @@ The M2 table in Controlled Changes to the Baseline is kept as history. The M3 de
 | DEF-001 | Staff details lacked requester and category (AC-010.1) | Fixed; acceptance check AC-010.1 passes |
 | OBS-01 | Accept showed on requests already owned | Fixed; covered by `StaffScreensTests` |
 | OBS-02 | History showed user IDs instead of names | Fixed; covered by `StaffScreensTests` |
-| DEF-002 | The audit_entries insert-only trigger has no direct test (NFR-007) | Carried, low: the trigger exists and runs; only the direct test is missing, so NFR-007 is Partially Met |
+| DEF-002 | The audit_entries insert-only trigger had no direct test (NFR-007) | Fixed: `HistoryInsertOnlyTests` now proves the trigger refuses edits and deletes; NFR-007 is Met |
 
 ### Technical Debt Register
 | ID | Debt | Final status (v1.0.0) | Consequence if kept |
@@ -497,12 +497,13 @@ The M2 table in Controlled Changes to the Baseline is kept as history. The M3 de
 
 
 ## Final Product (M4)
-**Release:** `v1.0.0` on `main`, the merge of `SignIn-Module`. **Product status:** complete for its approved scope and stable: 287 of 287 automated tests pass and the simulated production check passes 13 of 13 (18/10/2026).
+**Release:** `v1.0.0` on `main`, the merge of `SignIn-Module`. **Product status:** complete for its approved scope and stable: 288 of 288 automated tests pass and the simulated production check passes 13 of 13 (18/10/2026).
 
 **What changed since the release candidate (`v1.0.0-rc1`):** finalisation, not new scope.
 * Real sign-in outside Development (CR-003, ADR-008), which was deferred to M4; it closes TD-02 and mitigates RSK-012.
 * The legacy `Backend/` tree removed, leaving one implementation (RSK-022, TD-05).
 * A production startup step that prepares a fresh database with the 7 categories and the first administrator, with no development data.
+* DEF-002 closed: the audit trail's insert-only trigger now has a direct test, so NFR-007 is Met.
 * Records concluded: RTM v4.0, Change Register v4.0, Risk Register v4.0, final ADR statuses and the new ADR-008.
 
 **Critical journeys demonstrated on this release:** a requester submits a request and follows it to closure; staff accept, update, note and resolve or reject it; a manager sees overdue work and exports the performance figures; an administrator manages users, roles and categories behind real sign-in.
@@ -525,7 +526,7 @@ The M2 table in Controlled Changes to the Baseline is kept as history. The M3 de
 | FR-023 Sponsor reporting | Should | IMPLEMENTED | AC-023.1 Met | `ReportingTests` | Delivered (CR-007, CR-016) |
 | NFR-002 to NFR-006, NFR-008 | Must and Should | IMPLEMENTED | Met | RTM v4.0; PT-01 | Delivered; NFR-004 measured locally only |
 | NFR-001 Usability | Should | PARTIALLY IMPLEMENTED | Partially Met | Five-step form built | The timed first-user walkthrough was not run |
-| NFR-007 Auditability | Must | PARTIALLY IMPLEMENTED | Partially Met | `HistoryInsertOnlyTests` | Controls exist; the audit trigger has no direct test (DEF-002) |
+| NFR-007 Auditability | Must | IMPLEMENTED | Met | `HistoryInsertOnlyTests` (request history and audit trail) | Delivered; DEF-002 closed |
 | NFR-009 Cost | Should | PARTIALLY IMPLEMENTED | Partially Met | ADR-007 | $0 plan documented and runs with no paid service; not proven on a hosted free tier |
 | NFR-010 Growth readiness | Must (added by CR-011) | NOT IMPLEMENTED | Not Met | CR-014 | Service split not built; accepted as technical debt (TD-01) |
 
@@ -539,9 +540,9 @@ The M2 table in Controlled Changes to the Baseline is kept as history. The M3 de
 
 **Scope Completion Percentage** (Met = 1, Partially Met = 0.5, Not Met = 0; AC-002.3 excluded, it does not exist, EC-001):
 * **Committed M1 scope** (FR-001 to FR-005, FR-007): 11 of 11 acceptance criteria Met = **100%**.
-* **Full approved baseline** (36 FR acceptance criteria and 10 NFR targets): 42 Met + 3 Partially Met (1.5) + 1 Not Met = 43.5 of 46 = **94.6%**.
+* **Full approved baseline** (36 FR acceptance criteria and 10 NFR targets): 43 Met + 2 Partially Met (1.0) + 1 Not Met = 44 of 46 = **95.7%**.
 
-**Conclusion:** both figures exceed the 80% target. Every Must functional requirement is implemented. The Must items not fully met are NFR-010, accepted as technical debt through CR-014, and NFR-007, where the controls are in place but one test is missing. The delivered scope is coherent: every stakeholder group (ST-1 to ST-5) has a working journey.
+**Conclusion:** both figures exceed the 80% target. Every Must functional requirement is implemented. The only Must item not met is NFR-010, accepted as technical debt through CR-014. The delivered scope is coherent: every stakeholder group (ST-1 to ST-5) has a working journey.
 
 ## Final Deployment and Go-Live Decision
 **Final deployment state: simulated production.** **Decision: GO for simulated production; NO-GO for a public hosted production release.**
@@ -557,9 +558,9 @@ The M2 table in Controlled Changes to the Baseline is kept as history. The M3 de
 
 ## Project Reflection
 * **Problem and value:** the final product replaces informal requests with a tracked lifecycle and gives every stakeholder (requesters, staff, management, administrators, sponsor) a working journey, which addresses the M1 problem statement.
-* **Scope:** 100% of the committed M1 scope and 94.6% of the full baseline were delivered. Changes were controlled: 16 CRs plus one editorial correction, each with a final status.
-* **Quality:** confidence comes from 287 automated tests on a real PostgreSQL database, a concurrency test, a role matrix, 26 of 26 acceptance checks and a production-configuration check. Still uncertain: hosted performance and recovery, and attack resistance (no penetration test).
-* **Risk, defects and debt:** 10 of 25 risks closed, 9 mitigated, 6 accepted; all found defects fixed except one missing test (DEF-002); TD-02 and TD-05 repaid.
+* **Scope:** 100% of the committed M1 scope and 95.7% of the full baseline were delivered. Changes were controlled: 16 CRs plus one editorial correction, each with a final status.
+* **Quality:** confidence comes from 288 automated tests on a real PostgreSQL database, a concurrency test, a role matrix, 26 of 26 acceptance checks and a production-configuration check. Still uncertain: hosted performance and recovery, and attack resistance (no penetration test).
+* **Risk, defects and debt:** 10 of 25 risks closed, 9 mitigated, 6 accepted; all found defects fixed, including DEF-002; TD-02 and TD-05 repaid.
 * **Decision consequences:** ADR-002 (conditional update) protected the most important rule, single ownership, from the start. ADR-004 with ADR-005 made new roles cheap: the Sponsor role and real sign-in were added without changing the policy. ADR-001 (microservices) was approved but never built, which left an architecture deviation (CR-014) and NFR-010 unmet.
 * **Execution:** two overlapping code trees (`app/` and `Backend/`) cost rework until the requester screens were ported in M3; deferring sign-in (CR-003) to M4 meant security evidence arrived late. Reviewed PRs, CI with a real database and a controlled change register kept the work traceable. AI use is recorded with human verification in the AI Usage Register.
 * **Future:** hosted deployment and backups, MFA and self-service reset, the service split, an updated API contract, mobile layout and an accessibility review.
@@ -573,7 +574,6 @@ The M2 table in Controlled Changes to the Baseline is kept as history. The M3 de
 | Sign-in without MFA or self-service reset (RSK-012) | Weaker protection for administrator accounts | MFA, emailed reset links, breached-password check |
 | API contract outdated (CR-015, TD-03) | External clients would follow the wrong contract | Update `openapi.yaml` and ADR-006 |
 | Usability walkthrough not run (NFR-001) | The five-step target is built but not measured | Timed first-user walkthrough |
-| Audit trigger without a direct test (DEF-002) | NFR-007 Partially Met | Add the test |
 | Desktop layout only; no accessibility review (TD-06) | Phone users and assistive technology not verified | Responsive layout and a WCAG review |
 
 ---
@@ -629,7 +629,7 @@ The M2 table in Controlled Changes to the Baseline is kept as history. The M3 de
 | **Baseline Type** | Final project (M4) |
 | **Version** | v4.0 Final; release `v1.0.0` |
 | **Date** | 18/10/2026 |
-| **Scope completion** | 100% of committed M1 scope; 94.6% of the full baseline |
+| **Scope completion** | 100% of committed M1 scope; 95.7% of the full baseline |
 | **Deployment decision** | Simulated production (GO); public hosted production (NO-GO) |
 | **Records concluded** | RTM v4.0, Change Register v4.0, Risk Register v4.0, ADR-001 to ADR-008, Defect and Technical Debt registers, AI Usage Register |
 | **Outcome** | **Concluded** |

@@ -37,8 +37,27 @@ public class UsersModel(
 
     public async Task OnGetAsync(CancellationToken ct) => await LoadAsync(ct);
 
-    public async Task<IActionResult> OnPostCreateAsync(string? name, UserRole role, CancellationToken ct)
-        => await AfterAsync(await service.CreateAsync(currentUser.Id, name, role, ct), "User created.", ct);
+    /// <summary>
+    /// With an email, the account can sign in with the temporary password and must
+    /// change it first (CR-003). Without one it is created as before and cannot sign in.
+    /// </summary>
+    public async Task<IActionResult> OnPostCreateAsync(
+        string? name, UserRole role, string? email, string? temporaryPassword, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(email) && string.IsNullOrEmpty(temporaryPassword))
+        {
+            return await AfterAsync(await service.CreateAsync(currentUser.Id, name, role, ct), "User created.", ct);
+        }
+
+        return await AfterAsync(
+            await service.CreateWithSignInAsync(currentUser.Id, name, role, email, temporaryPassword, ct),
+            "User created. Give them the temporary password; they choose their own at first sign-in.", ct);
+    }
+
+    public async Task<IActionResult> OnPostResetPasswordAsync(Guid id, string? temporaryPassword, CancellationToken ct)
+        => await AfterAsync(
+            await service.ResetPasswordAsync(currentUser.Id, id, temporaryPassword, ct),
+            "Password reset. Give them the temporary password; their other sessions have ended.", ct);
 
     public async Task<IActionResult> OnPostRoleAsync(Guid id, UserRole role, CancellationToken ct)
         => await AfterAsync(await service.ChangeRoleAsync(currentUser.Id, id, role, ct), "Role changed. It applies from the user's next action.", ct);
@@ -57,7 +76,9 @@ public class UsersModel(
         Message = PageMessage.From(outcome == UserOutcome.Done, outcome switch
         {
             UserOutcome.Done => done,
-            UserOutcome.Invalid => $"A user needs a name of at most {AppUser.DisplayNameMax} characters and a known role.",
+            UserOutcome.Invalid => $"A user needs a name of at most {AppUser.DisplayNameMax} characters and a known role. A user who signs in also needs a valid email address.",
+            UserOutcome.EmailTaken => "Another account already uses that email address.",
+            UserOutcome.WeakPassword => $"The temporary password needs at least {PasswordPolicy.MinLength} characters and must not be an obvious choice.",
             UserOutcome.NotFound => "That user no longer exists.",
             UserOutcome.OwnAccount => "You cannot change your own role or deactivate yourself.",
             UserOutcome.NotStaff => "Only service staff have categories.",

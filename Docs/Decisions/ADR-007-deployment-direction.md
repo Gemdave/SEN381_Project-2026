@@ -1,5 +1,5 @@
 # ADR-007
->**Status:** Proposed, awaiting team approval  
+>**Status:** Accepted, partly implemented: verified as simulated production at v1.0.0; no hosted deployment yet (TD-04)  
 **Owner:** DevOps, Security and Quality Lead  
 **Quality drivers:** ASR-05 first, then ASR-01, ASR-04  
 **Risks touched:** RSK-005, RSK-006, RSK-014, RSK-015, RSK-020  

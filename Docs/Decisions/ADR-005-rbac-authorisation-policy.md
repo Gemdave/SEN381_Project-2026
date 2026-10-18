@@ -1,6 +1,6 @@
 # ADR-005 One authorization policy for roles and ownership
 >**Design pattern decision 2 of 2.**  
-**Status:** Proposed, awaiting team approval  
+**Status:** Accepted, implemented in release v1.0.0; sign-in added by ADR-008  
 **Owner:** DevOps, Security and Quality Lead  
 **Replaces:** D-004, through change request CR-003  
 **Quality drivers:** ASR-02 first, then ASR-01, ASR-03  

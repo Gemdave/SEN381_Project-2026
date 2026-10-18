@@ -90,6 +90,24 @@
                 }
             </div>
         }
+        else
+        {
+            @* CR-003: real sign-in. Signing out is a POST so another site cannot trigger it. *@
+            <div class="signed-in-as">
+                @if (me is null)
+                {
+                    <a href="/Account/SignIn">Sign in</a>
+                }
+                else
+                {
+                    <span><strong class="current-user">@me.DisplayName</strong> (@CivicConnect.Web.Pages.Admin.UsersModel.RoleText(me.Role))</span>
+                    <a href="/Account/ChangePassword">Change password</a>
+                    <form method="post" asp-page="/Account/SignOut" class="sign-out">
+                        <button type="submit" class="link-button">Sign out</button>
+                    </form>
+                }
+            </div>
+        }
       </div></div>
     </header>
     <main>

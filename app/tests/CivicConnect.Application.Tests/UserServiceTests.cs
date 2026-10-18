@@ -19,6 +19,9 @@ internal sealed class FakeUserRepository : IUserRepository
     public Task<AppUser?> FindAsync(Guid userId, CancellationToken ct)
         => Task.FromResult(Users.FirstOrDefault(u => u.Id == userId));
 
+    public Task<AppUser?> FindByEmailAsync(string normalisedEmail, CancellationToken ct)
+        => Task.FromResult(Users.FirstOrDefault(u => u.Email == normalisedEmail));
+
     public void Add(AppUser user) => Users.Add(user);
 
     public Task ReplaceScopesAsync(Guid userId, IReadOnlyCollection<Guid> categoryIds, CancellationToken ct)
@@ -52,7 +55,7 @@ public class UserServiceTests
 
         var audit = new FakeAuditRepository();
         var service = new UserService(
-            users, categories, audit, new AdminPolicy(isAdministrator), new DirectUnitOfWork(), new FixedClock());
+            users, categories, audit, new AdminPolicy(isAdministrator), new DirectUnitOfWork(), new FixedClock(), new FakePasswordHasher());
         return new Setup(service, users, categories, audit, requester, staff);
     }
 

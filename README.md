@@ -294,16 +294,6 @@ SEN381_Project-2026/
 │   ├── CivicConnect.slnx
 │   └── global.json
 │
-├── Backend/
-│   ├── src/
-│   │   ├── CivicConnect.Core/
-│   │   ├── CivicConnect.Data/
-│   │   └── CivicConnect.Web/
-│   │
-│   ├── tests/
-│   ├── db/
-│   └── README_backend.md
-│
 ├── Docs/
 │   ├── AI_Register/
 │   ├── API/
@@ -328,12 +318,8 @@ SEN381_Project-2026/
 ```
 
 ---
-# 10. Important Note About `app/` and `Backend/`
-There are currently **two backend codebases in the repository**.
-
-## `app/`
-`app/` is the newer active implementation and should be treated as the primary application going forward.  
-It follows the newer layered architecture:  
+# 10. Implementation History: `app/` and the Removed `Backend/`
+`app/` is the only implementation and the one assessed (release `v1.0.0`). It follows a layered architecture:  
 ```
 Domain
 Application
@@ -341,30 +327,7 @@ Infrastructure
 Web
 ```
 
-The current build slice concentrates on the staff request workflow and its associated engineering controls.
-
-## `Backend/`
-`Backend/` contains an earlier implementation of the CivicConnect backend.  
-It contains a more extensive API-oriented build slice, including:  
-- Request submission
-- Categories
-- Request history
-- Feedback
-- Staff queue
-- Assignment
-- Status transitions
-- Notes
-- API controllers
-- SQL migrations
-- API contract implementation
-
-It also has its own tests and backend README.  
-This implementation should currently be regarded as **legacy/reference construction rather than a second production application**.  
-Future development should avoid adding new functionality independently to both implementations. The team should either:  
-1. continue with `app/` and archive/remove the older backend when appropriate, or
-2. formally designate `Backend/` as the active implementation and reconcile the repository accordingly.
-
-The project documentation should always make clear which implementation is being assessed.
+An earlier, overlapping implementation in `Backend/` was removed at release `v1.0.0` after its features (requester screens, categories, history, feedback, notes and the Rejected status) had been rebuilt in `app/` (RSK-022, TD-05). It remains available in the Git history.
 
 ---
 # 11. Current Staff Workflow
@@ -451,13 +414,10 @@ This follows the principle:
 > **Hiding a button is a usability feature, not an access-control mechanism.**
 
 ---
-# 14. Development Authentication
-Real authentication is **not yet implemented**.  
-During development, the application uses a development-only identity mechanism.  
-The current implementation reads a user identifier from the request and falls back to a seeded staff user when necessary.  
-The application deliberately refuses to run outside Development because production authentication has not yet been implemented.  
-This is an explicit temporary control associated with the open authentication change request.  
-**Do not deploy the current development identity mechanism to a real environment.**
+# 14. Authentication
+Real sign-in is implemented outside Development (CR-003, ADR-008): email and password, passwords stored as salted PBKDF2 hashes, a Secure, HttpOnly, SameSite=Lax cookie, a forced password change for new and reset accounts, and a temporary lockout after repeated failures. Roles are read on every request, so a role change or deactivation applies on the user's next action.  
+In Development only, a "choose who to sign in as" page stands in for sign-in so local demos and the test suite can switch users. It refuses to run in any other environment.  
+Known limits: no multi-factor authentication and no self-service password reset (an administrator resets passwords). See `Docs/Decisions/ADR-008-authentication.md`.
 
 ---
 # 15. Database
@@ -605,17 +565,17 @@ Do not commit database credentials.
 
 ---
 ## Running the Application
-From the repository root:  
+**Development** (the "choose a user" sign-in, sample data): from the repository root, with the connection string in user secrets as above:  
 ```bash
-cd app
-dotnet run --project src/CivicConnect.Web
+dotnet run --project app/src/CivicConnect.Web -e ASPNETCORE_ENVIRONMENT=Development -e ASPNETCORE_URLS=http://localhost:5180
 ```
+Open http://localhost:5180/. The first start applies the EF Core migrations and adds the development sample data.
 
-### Current database-bootstrap caveat
-The active web application calls Entity Framework Core migrations during Development startup.  
-The current `app/` tree does not yet contain a committed EF migration set.  
-Therefore, **database migration/bootstrap should be completed before treating the above command as a guaranteed clean-machine setup procedure**.  
-This is an outstanding implementation task rather than something the README should conceal.
+**Production-like** (real sign-in, no sample data): user secrets are not read outside Development, so every setting is an environment variable, and HTTPS is required because the sign-in cookie is Secure. Use a separate database. The settings are listed in `Docs/Requirements/CR-003_Sign_In_Implementation.md`, section 4 (`ConnectionStrings__CivicConnect`, `Database__MigrateOnStartup`, `Bootstrap__AdminEmail`, `Bootstrap__AdminName`, `Bootstrap__AdminPassword`). Then, from the `app` folder:  
+```bash
+dotnet run --project src/CivicConnect.Web --no-launch-profile --urls "https://localhost:7001"
+```
+The first administrator must change the temporary password at first sign-in. Evidence of this configuration: `Test/Evidence/Final_Simulated_Production.md`.
 
 ---
 # 19. Running Tests
@@ -750,7 +710,7 @@ The `Docs/` directory is an important part of the project and should be read alo
 ### Requirements
 ```
 Docs/Requirements/ASR_Register.md
-Docs/PED/PED_v3.md
+Docs/PED/PED_v4.md
 ```
 
 Contains:  
@@ -866,24 +826,15 @@ Requirements, risks, decisions, implementation and tests should remain connected
 
 ---
 # 27. Known Limitations
-The following limitations should be considered when evaluating the current repository.  
-1. **Authentication is incomplete.**  
-   Development-only identity is used while the final authentication decision remains open.
-2. **The active UI is incomplete.**  
-   The current `app/` UI focuses on staff queue and request details rather than the complete requester/management experience.
-3. **The active API is incomplete.**  
-   The documented API contract contains endpoints that have not yet been implemented in `app/`.
-4. **The database migration story needs completion.**  
-   The active application expects EF migrations, but migration artifacts are not currently present in the active project.
-5. **Management and administration functionality is incomplete.**
-6. **Attachments are not implemented.**
-7. **Production deployment has not yet been demonstrated.**
-8. **The repository contains both a legacy `Backend/` implementation and the newer `app/` implementation.**  
-   These should eventually be consolidated or explicitly separated.
-9. **Some project documentation describes intended or proposed functionality rather than current implementation.**  
-   Requirements and API documentation should not be interpreted as evidence that a feature is already complete.
-10. **The project has not been executed in this review environment.**  
-    The uploaded project was inspected statically; the review environment does not have the .NET SDK installed, so a fresh `dotnet build`/`dotnet test` verification was not possible here.
+Final status for release `v1.0.0`; the full list is in PED v4.0, Known Limitations and Future Work.  
+1. **One deployable instead of separate services.** ADR-001's four-service split was not built (CR-014); NFR-010 is not met.
+2. **No hosted deployment.** The release is verified as simulated production only; a Dockerfile and hosting pipeline are future work (TD-04).
+3. **No backup or restore rehearsal** for a hosted database (RSK-015).
+4. **Sign-in has no multi-factor authentication or self-service password reset** (ADR-008, RSK-012).
+5. **The API contract document is outdated:** the built API uses POST for status changes and GUID ids (CR-015).
+6. **Desktop layout only; no accessibility review** (TD-06).
+7. **Evidence gaps:** the NFR-001 usability walkthrough was not run, and the audit-table trigger has no direct test (DEF-002).
+8. **Some documents describe the intended architecture** (ADR-001) rather than the single deployable that was built; the PED and ADR statuses record the difference.
 
 ---
 # 28. Project Team
@@ -927,19 +878,18 @@ Human review remains responsible for:
 # 31. Useful Documentation Map
 | Need | Start here |
 |---|---|
-| Understand requirements | `Docs/PED/PED_v3.md` |
+| Understand requirements | `Docs/PED/PED_v4.md` |
 | Understand architecture | `Docs/Architecture/Backend_Architecture.md` |
 | Understand architecture decisions | `Docs/Decisions/` |
 | Understand API | `Docs/API/API_Contract_v1.md` |
 | Machine-readable API | `Docs/API/openapi.yaml` |
 | Understand database | `Docs/Data/Data_Model.md` |
 | Understand CI | `Docs/CI_Documentation/CI_Quality_Gates.md` |
-| Understand risks | `Docs/Risks/Risk_Register_V2.1.md` |
+| Understand risks | `Docs/Risks/Risk_Register_v4.0.md` |
 | Understand AI usage | `Docs/AI_Register/AI_Register.md` |
 | Understand deployment | `Docs/Decisions/ADR-007-deployment-direction.md` |
 | Understand team process | `Docs/Governance/Team_Working_Agreement.md` |
 | Active application | `app/` |
-| Older backend implementation | `Backend/` |
 
 ---
 # 32. Project Direction

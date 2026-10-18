@@ -8,6 +8,7 @@ using CivicConnect.Infrastructure.Persistence.Repositories;
 using CivicConnect.Infrastructure.Security;
 using CivicConnect.Infrastructure.Seed;
 using CivicConnect.Web.Endpoints;
+using CivicConnect.Web.Security;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,17 +49,22 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<IAttachmentRepository, AttachmentRepository>();
 builder.Services.AddScoped<AttachmentService>();
-// While CR-003 is open there is no authentication, so the development stand in
-// is registered only in Development. Anywhere else the application refuses to
-// start rather than running with no identity (RSK-012).
+
+// CR-003. Passwords are hashed with PBKDF2
+builder.Services.AddSingleton<IPasswordHasher>(new Pbkdf2PasswordHasher(
+    builder.Configuration.GetValue("Hashing:Cost", Pbkdf2PasswordHasher.DefaultIterations)));
+builder.Services.AddScoped<SignInService>();
+
+// CR-003. Development keeps the stand-in (choose a seeded user), which the test suite
+// and local demos rely on. Every other environment uses real cookie sign-in, and the
+// stand-in refuses to run there (RSK-012).
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddScoped<CivicConnect.Web.Security.ICurrentUser, CivicConnect.Web.Security.DevelopmentCurrentUser>();
+    builder.Services.AddScoped<ICurrentUser, DevelopmentCurrentUser>();
 }
 else
 {
-    throw new InvalidOperationException(
-        "No authentication is configured. CR-003 must close before this runs outside Development.");
+    builder.Services.AddCivicConnectSignIn();
 }
 
 builder.Services.AddScoped<CivicConnect.Web.Security.CapabilityFactory>();
@@ -79,11 +85,44 @@ else
 {
     app.UseExceptionHandler("/Error");
     app.UseHsts();
+
+    // ADR-007. A new database is migrated and given its categories and first
+    // administrator when Database:MigrateOnStartup is true. Leave it false once the
+    // deployment is set up, and remove Bootstrap:AdminPassword from the host.
+    if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<CivicConnectDbContext>();
+        await db.Database.MigrateAsync();
+
+        var result = await ProductionBootstrap.RunAsync(
+            db,
+            scope.ServiceProvider.GetRequiredService<IPasswordHasher>(),
+            new BootstrapOptions(
+                app.Configuration["Bootstrap:AdminEmail"],
+                app.Configuration["Bootstrap:AdminName"],
+                app.Configuration["Bootstrap:AdminPassword"]));
+
+        app.Logger.LogInformation(
+            "Startup bootstrap: {Categories} categories added, administrator created: {Administrator}.",
+            result.CategoriesAdded, result.AdministratorCreated);
+        if (result.Warning is not null)
+        {
+            app.Logger.LogWarning("Startup bootstrap: {Warning}", result.Warning);
+        }
+    }
 }
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseAuthentication();
+    app.UseMustChangePassword();
+    app.UseAuthorization();
+}
 
 app.MapRazorPages();
 app.MapRequestEndpoints();

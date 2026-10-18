@@ -1,6 +1,6 @@
 # ADR-002 Conditional update and append-only history
 
-> **Status:** Proposed, awaiting team approval
+> **Status:** Accepted, implemented in release v1.0.0
 > **Owner:** Systems Architect and Backend Lead
 > **Builds on:** Task 2 persistence and data-integrity decisions
 > **Quality drivers:** ASR-01, ASR-03, ASR-04

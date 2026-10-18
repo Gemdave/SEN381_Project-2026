@@ -1,5 +1,5 @@
 # ADR-003 Technology stack
->**Status:** Incomplete. The team has to record its actual choice before this becomes Proposed.  
+>**Status:** Accepted, implemented in release v1.0.0 (C#/.NET 10, ASP.NET Core Razor Pages, EF Core with Npgsql, PostgreSQL 17, xUnit)  
 **Owner:** DevOps, Security and Quality Lead  
 **Replaces:** D-003  
 **Quality drivers:** ASR-05 first, then ASR-01, ASR-02, ASR-04  

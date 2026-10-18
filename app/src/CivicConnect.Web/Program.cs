@@ -50,10 +50,9 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<IAttachmentRepository, AttachmentRepository>();
 builder.Services.AddScoped<AttachmentService>();
 
-// CR-003. Passwords are hashed with PBKDF2 (Authentication:Pbkdf2Iterations can lower
-// the cost on a very small host; hashes record their own cost, so it can change later).
+// CR-003. Passwords are hashed with PBKDF2
 builder.Services.AddSingleton<IPasswordHasher>(new Pbkdf2PasswordHasher(
-    builder.Configuration.GetValue("Authentication:Pbkdf2Iterations", Pbkdf2PasswordHasher.DefaultIterations)));
+    builder.Configuration.GetValue("Hashing:Cost", Pbkdf2PasswordHasher.DefaultIterations)));
 builder.Services.AddScoped<SignInService>();
 
 // CR-003. Development keeps the stand-in (choose a seeded user), which the test suite

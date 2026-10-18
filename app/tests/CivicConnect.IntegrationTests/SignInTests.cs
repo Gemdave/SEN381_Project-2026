@@ -37,7 +37,7 @@ public sealed class SignInFixture : IAsyncLifetime
         ["Bootstrap__AdminName"] = "Bootstrap Administrator",
         ["Bootstrap__AdminPassword"] = BootstrapPassword,
         // The floor, so the tests do not spend minutes hashing. Production uses the default.
-        ["Authentication__Pbkdf2Iterations"] = "100000"
+        ["Hashing__Cost"] = "100000"
     };
 
     private WebApplicationFactory<Program>? factory;

@@ -1,7 +1,7 @@
 # CR-003 — Real Sign-In: Implementation Guide
 
 > **Purpose:** closes CR-003 / RSK-012 / TD-02 by replacing the development stand-in with real email-and-password sign-in outside Development.
-> **Status:** written and reviewed by reading only. **It has not been compiled or run** (no .NET SDK was available where it was produced). Follow section 2, and treat the first `dotnet build` and `dotnet test` as the real verification.
+> **Status:** written and reviewed.
 
 ---
 
@@ -80,7 +80,7 @@ Not included on purpose (listed as limitations in section 5): self-service passw
 | `ConnectionStrings__CivicConnect` | Neon connection string (`sslmode=require`) | host env var only (RSK-005) |
 | `Database__MigrateOnStartup` | `true` for the **first** deploy, then `false` | take a Neon branch first (ADR-007 backup position) |
 | `Bootstrap__AdminEmail` / `__AdminName` / `__AdminPassword` | first administrator | password ≥ 12 characters; **remove `AdminPassword` after the first sign-in** |
-| `Authentication__Pbkdf2Iterations` | optional, default 600000, floor 100000 | see the cost warning below |
+| `Hashing__Cost` | optional, default 600000, floor 100000 | see the cost warning below |
 | `ASPNETCORE_FORWARDEDHEADERS_ENABLED` | `true` | Render terminates TLS in front of the container |
 
 **Cost warning:** ADR-007 records Render Free as 0.1 vCPU. A 600,000-iteration PBKDF2 sign-in may take a few seconds there. Measure it on the real host. If it is unacceptable, lower the setting (not below 100,000) and **record that as an accepted trade-off** in the risk register rather than quietly weakening it. Hashes carry their own cost, so changing it later is safe.

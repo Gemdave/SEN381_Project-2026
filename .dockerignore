@@ -1,0 +1,16 @@
+# Keep the build context small and keep anything private or irrelevant out of the image.
+**/bin/
+**/obj/
+**/.vs/
+**/*.user
+.git/
+.github/
+.vscode/
+Docs/
+Test/
+app/tests/
+app/db/
+**/.env
+**/.env.*
+**/appsettings.Development.json
+**/TestResults/

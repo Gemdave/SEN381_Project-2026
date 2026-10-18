@@ -46,6 +46,64 @@ public sealed class UserService(
         users.Add(AppUser.Create(name, role));
         return await SaveAsync(adminId, "UserCreated", name, "as " + role, ct);
     }
+    /*CR-003. Creates an account that can sign in. 
+    The administrator sets a temporary password and the user must replace it on first sign-in, 
+    so the administrator never knows the password the user keeps.*/
+    public async Task<UserOutcome> CreateWithSignInAsync(
+        Guid adminId, string? displayName, UserRole role, string? email, string? temporaryPassword, CancellationToken ct)
+    {
+        if (!await policy.MayAdministerAsync(adminId, ct))
+        {
+            return UserOutcome.Forbidden;
+        }
+
+        var name = displayName?.Trim() ?? string.Empty;
+        if (name.Length == 0 || name.Length > AppUser.DisplayNameMax || !Enum.IsDefined(role)
+            || !AppUser.IsPlausibleEmail(email))
+        {
+            return UserOutcome.Invalid;
+        }
+
+        var normalized = AppUser.NormalizeEmail(email);
+        if (PasswordPolicy.Check(temporaryPassword, normalized) is not null)
+        {
+            return UserOutcome.WeakPassword;
+        }
+
+        if (await users.FindByEmailAsync(normalized, ct) is not null)
+        {
+            return UserOutcome.EmailTaken;
+        }
+
+        var user = AppUser.Create(name, role);
+        user.SetCredentials(normalized, hasher.Hash(temporaryPassword!), mustChangePassword: true);
+        users.Add(user);
+        return await SaveAsync(adminId, "UserCreated", name, "as " + role + ", with sign-in", ct);
+    }
+    /*CR-003. For a user who has forgotten their password. 
+    Sets a new temporary password, clears any lockout and ends their current sessions. 
+    Audited, but the password itself never is.*/
+        public async Task<UserOutcome> ResetPasswordAsync(Guid adminId, Guid userId, string? temporaryPassword, CancellationToken ct)
+    {
+        var (outcome, user) = await TargetAsync(adminId, userId, ct);
+        if (user is null)
+        {
+            return outcome;
+        }
+
+        if (user.Email is null)
+        {
+            return UserOutcome.Invalid;
+        }
+
+        if (PasswordPolicy.Check(temporaryPassword, user.Email) is not null)
+        {
+            return UserOutcome.WeakPassword;
+        }
+
+        user.SetCredentials(user.Email, hasher.Hash(temporaryPassword!), mustChangePassword: true);
+        return await SaveAsync(adminId, "UserPasswordReset", user.DisplayName, null, ct);
+    }
 
     public async Task<UserOutcome> ChangeRoleAsync(Guid adminId, Guid userId, UserRole role, CancellationToken ct)
     {

@@ -1,0 +1,15 @@
+@page
+@model CivicConnect.Web.Pages.ErrorModel
+@{
+    ViewData["Title"] = "Something went wrong";
+}
+
+<h1>Something went wrong</h1>
+<p class="lead">The request could not be completed. Nothing you entered was lost from the records already saved.</p>
+
+@if (Model.RequestId is not null)
+{
+    <p class="hint">Reference for an administrator: <code>@Model.RequestId</code></p>
+}
+
+<p><a href="/Home">Back to the home page</a></p>

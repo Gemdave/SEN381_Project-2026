@@ -25,6 +25,8 @@ else
         <h2>Create a user</h2>
         <form method="post" asp-page-handler="Create" class="inline">
             <input name="name" maxlength="@AppUser.DisplayNameMax" placeholder="Full name" aria-label="Name" />
+            <input name="email" type="email" maxlength="@AppUser.EmailMax" placeholder="Email (to sign in)" aria-label="Email" autocomplete="off" />
+            <input name="temporaryPassword" type="text" maxlength="@PasswordPolicy.MaxLength" placeholder="Temporary password" aria-label="Temporary password" autocomplete="off" />
             <select name="role" aria-label="Role">
                 @foreach (var role in roles)
                 {
@@ -33,6 +35,7 @@ else
             </select>
             <button type="submit">Create user</button>
         </form>
+        <p class="hint">With an email and a temporary password (at least @PasswordPolicy.MinLength characters) the user can sign in and must choose their own password first. Share the temporary password in person or by phone, not by email.</p>
     </section>
 
     <table class="admin-list">
@@ -46,7 +49,7 @@ else
                 var isStaff = user.Role == UserRole.ServiceStaff;
                 var scoped = user.ScopedCategoryIds.Where(categoryNames.ContainsKey).Select(id => categoryNames[id]).Order().ToList();
                 <tr class="@(user.IsActive ? null : "inactive")">
-                    <td>@user.DisplayName@(self ? " (you)" : "")</td>
+                    <td>@user.DisplayName@(self ? " (you)" : "")@if (user.Email is not null) { <br /><span class="hint">@user.Email</span> }</td>
                     <td>@CivicConnect.Web.Pages.Admin.UsersModel.RoleText(user.Role)</td>
                     <td>@(user.IsActive ? "Active" : "Deactivated")</td>
                     <td>
@@ -98,6 +101,17 @@ else
                                                 }
                                             </div>
                                             <button type="submit" class="small">Save categories</button>
+                                        </form>
+                                    }
+
+                                    @if (user.Email is not null)
+                                    {
+                                        @* CR-003: a forgotten password. This also clears a lockout and ends their sessions. *@
+                                        <form method="post" asp-page-handler="ResetPassword">
+                                            <input type="hidden" name="id" value="@user.Id" />
+                                            <label for="reset-@user.Id">Temporary password</label>
+                                            <input id="reset-@user.Id" name="temporaryPassword" type="text" autocomplete="off" maxlength="@PasswordPolicy.MaxLength" />
+                                            <button type="submit" class="small">Reset password</button>
                                         </form>
                                     }
 

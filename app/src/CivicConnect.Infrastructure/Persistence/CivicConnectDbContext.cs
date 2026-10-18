@@ -102,6 +102,9 @@ public class CivicConnectDbContext(DbContextOptions<CivicConnectDbContext> optio
             e.HasKey(x => x.Id);
             e.Property(x => x.DisplayName).HasMaxLength(AppUser.DisplayNameMax).IsRequired();
             e.Property(x => x.Role).HasConversion<string>().HasMaxLength(20).IsRequired();
+            e.Property(x => x.Email).HasMaxLength(AppUser.EmailMax);
+            e.HasIndex(x => x.Email).IsUnique();
+            e.Property(x => x.PasswordHash).HasMaxLength(AppUser.PasswordHashMax);
         });
 
         b.Entity<RequestAttachment>(e =>

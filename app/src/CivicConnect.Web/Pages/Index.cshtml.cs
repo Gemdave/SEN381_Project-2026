@@ -2,6 +2,7 @@ using CivicConnect.Application.Abstractions;
 using CivicConnect.Domain.Access;
 using CivicConnect.Web.Models;
 using CivicConnect.Web.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 

@@ -2,7 +2,7 @@
 
 **Owner:** K. Marota (Systems Architect & Backend Lead)
 **Supports:** ADR-001, ADR-002, ADR-003, ADR-006, ADR-007
-**Status:** Proposed for the M2 Architecture, Technology & Initial Design Baseline
+**Status:** Proposed for the M2 Architecture, Technology & Initial Design Baseline. **Final (v1.0.0):** see section 10, As built.
 
 ---
 
@@ -176,3 +176,18 @@ db/
 | Attachments | FR-006 deferred | Forward consideration |
 | Email/SMS | Deferred by C-4 | Forward consideration |
 | Push updates | Polling is enough for NFR-002 | Forward consideration |
+
+## 10. As built at v1.0.0 (final)
+
+This document describes the M2 design. The release differs as follows.
+
+| M2 design | As built at `v1.0.0` |
+| :-- | :-- |
+| Solution layout (section 8): `Core`, `Data` and `Web` projects with SQL migrations | `CivicConnect.Domain`, `CivicConnect.Application`, `CivicConnect.Infrastructure` and `CivicConnect.Web` in `app/src`, with EF Core migrations; the core layers still reference no database or web code |
+| Controllers in `Web` | Minimal API endpoints in `CivicConnect.Web/Endpoints` and Razor Pages; the earlier `Backend/` tree was removed (RSK-022) |
+| Real sign-in (section 9) | Built: cookie sign-in with PBKDF2 hashes (CR-003, ADR-008) |
+| Manager, admin and sponsor endpoints; reporting queries | Built as Razor Pages over application services (FR-015 to FR-023) |
+| Separate audit log table | Built: `audit_entries`, insert-only (FR-022, NFR-007) |
+| Attachments | Built: stored in PostgreSQL, up to 5 MB each (FR-006, CR-016) |
+| Email/SMS, push updates | Still not built; polling meets NFR-002 |
+| Deployment | One deployable, run from the `Dockerfile` on Render Free with Neon Free (ADR-007); the four services of ADR-001 were not built (CR-014) |

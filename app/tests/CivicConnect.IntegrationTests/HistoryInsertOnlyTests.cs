@@ -1,5 +1,7 @@
+using CivicConnect.Domain.Audit;
 using CivicConnect.Domain.Requests;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Xunit;
 
 namespace CivicConnect.IntegrationTests;
@@ -25,6 +27,33 @@ public class HistoryInsertOnlyTests(TestDatabaseFixture fixture)
 
         await using var check = fixture.NewContext();
         Assert.Equal("first note", check.RequestHistory.Single(h => h.Id == entry.Id).Note);
+    }
+
+    /// <summary>
+    /// NFR-007 and FR-022 (closes DEF-002): audit entries for category and user
+    /// changes cannot be edited or deleted either. The error must come from the
+    /// insert-only trigger itself, not from some other failure.
+    /// </summary>
+    [RequiresDatabaseFact]
+    [Trait("TestCase", "DEF-002")]
+    public async Task Audit_entries_cannot_be_changed_or_deleted()
+    {
+        var data = await TestData.CreateAsync(fixture);
+        await using var db = fixture.NewContext();
+
+        var entry = AuditEntry.Record(data.AdminId, "CategoryAdded", "Parks", null, DateTimeOffset.UtcNow);
+        db.AuditEntries.Add(entry);
+        await db.SaveChangesAsync();
+
+        var update = await Assert.ThrowsAnyAsync<PostgresException>(() => db.Database.ExecuteSqlRawAsync(
+            "UPDATE audit_entries SET \"Subject\" = 'edited' WHERE \"Id\" = {0}", entry.Id));
+        var delete = await Assert.ThrowsAnyAsync<PostgresException>(() => db.Database.ExecuteSqlRawAsync(
+            "DELETE FROM audit_entries WHERE \"Id\" = {0}", entry.Id));
+        Assert.Equal("audit_entries is insert-only", update.MessageText);
+        Assert.Equal("audit_entries is insert-only", delete.MessageText);
+
+        await using var check = fixture.NewContext();
+        Assert.Equal("Parks", check.AuditEntries.Single(a => a.Id == entry.Id).Subject);
     }
 
     /// <summary>NFR-005: the database refuses an owner that does not match the status.</summary>

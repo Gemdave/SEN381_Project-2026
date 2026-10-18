@@ -3,7 +3,7 @@
 **Owner:** K. Marota
 **Supports:** ADR-006 (REST contract, validation, errors, versioning), ADR-005 (security boundary)
 **Machine-readable copy:** `openapi.yaml` in this folder
-**Status:** Proposed for the M2 baseline. Matches the code in `CivicConnect.Web/Controllers`.
+**Status:** Proposed for the M2 baseline (Build Slice 1). Not updated to the final build (CR-015, TD-03); section 8 lists what release `v1.0.0` exposes.
 
 ---
 
@@ -261,3 +261,23 @@ Unchanged. One new outcome: **409** `request_not_available` when the request is 
 ### Not built yet
 
 Submitting a request (`POST /api/v1/requests`), reading requests (`GET /api/v1/requests` and `/{id}`), categories, the feedback endpoints, the Rejected status, `/health`, reports, administration and real authentication. Requester messages are stored (table `requester_feedback`) but have no read endpoint yet.
+
+## 8. As built at v1.0.0 (final)
+
+Section 7 described the M3 build. At release `v1.0.0` the API has six endpoints, all behind real sign-in (ADR-008): an anonymous call gets 401, and the development `?user=` value works only in Development.
+
+| Contract (sections 2 and 4) | Built at `v1.0.0` |
+| :-- | :-- |
+| `GET /api/v1/categories` | Not an endpoint; the submit page lists the active categories |
+| `POST /api/v1/requests` | Built (FR-001); 201 with a reference |
+| `GET /api/v1/requests` | Not an endpoint; the My requests page (FR-004, FR-005) |
+| `GET /api/v1/requests/{id}` | Not an endpoint; the request details pages (FR-003, FR-010) |
+| `GET /api/v1/requests/queue` | Built as `GET /api/v1/queue` (section 7) |
+| `POST /api/v1/requests/{id}/assignment` | Built |
+| `PATCH /api/v1/requests/{id}/status` | Built as `POST /api/v1/requests/{id}/status` (CR-015); a request is rejected on the staff details page |
+| `POST /api/v1/requests/{id}/notes` | Built, body `{ "text" }` (section 7) |
+| `GET /api/v1/feedback`, `POST /api/v1/feedback/{id}/read` | Not endpoints; updates show on the requester's pages, with no read marker |
+| `GET /health` | Not built |
+| Not in the contract | `GET /api/v1/requests/{id}/attachments/{attachmentId}` downloads an attachment (FR-006) |
+
+Reports and administration are Razor Pages, not API endpoints. Ids are GUIDs. `openapi.yaml` still describes Slice 1, so a client generated from it would fail (TD-03).

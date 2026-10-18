@@ -207,3 +207,19 @@ The schema built in `app/` uses these names. Section 8 should also be read with 
 | Foreign keys | Built: requests to categories and users, history and messages to requests and users, all `ON DELETE RESTRICT` |
 
 **Open question for D-005 (microservices):** the foreign keys from requests to users and categories assume one database. If those tables move to other services, the keys have to go, and the checks that depend on them need another home.
+
+## 10. As built at v1.0.0 (final)
+
+Section 9 described the M3 schema. The final schema comes from six EF Core migrations (`InitialCreate` to `AddSignIn`) and has eight tables. Changes since section 9:
+
+| Table | Final columns and rules | Requirement |
+| :-- | :-- | :-- |
+| `requests` | Adds `Location`, a unique `Reference` from `request_reference_seq`, and `TargetResponseAtUtc` (due time fixed at submission). `ck_requests_status` now allows `Rejected`; `ck_requests_owner_matches_status` lets only `Received` and `Rejected` have no owner. Indexes on status with category and owner, and on status with due time | FR-001, FR-016 (CR-005), CR-009 |
+| `categories` | `IsRetired` and `TargetResponseHours` (1 to 2160, `ck_categories_target_hours`) | FR-021, CR-005 |
+| `users` | `IsActive`, a unique `Email`, and the sign-in columns `PasswordHash` (PBKDF2), `MustChangePassword`, `FailedSignIns`, `LockedUntil` and `SecurityStamp` | FR-019, CR-003 (ADR-008) |
+| `staff_category_scopes` (new) | One row per staff member and category they may work on (`UserId`, `CategoryId`) | FR-008, ADR-005 |
+| `request_attachments` (new) | File bytes stored in PostgreSQL (`Content`), with name, type, size (1 byte to 5 MB, `ck_request_attachments_size`), uploader and time; the code allows 5 per request | FR-006 (CR-016) |
+| `audit_entries` (new) | Actor, action, subject, detail and time for user, role, scope and category changes; insert-only through the trigger `audit_entries_insert_only` | FR-022, NFR-007 |
+| `request_history`, `requester_feedback` | Unchanged since section 9; `requester_feedback` still has no `read_at` | FR-013, FR-007 |
+
+All foreign keys stay `ON DELETE RESTRICT`. Attachments live in the database, so the hosted service keeps no files of its own. The open question above did not arise, because the release is one deployable (CR-014).

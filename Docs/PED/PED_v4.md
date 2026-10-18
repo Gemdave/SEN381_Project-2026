@@ -10,10 +10,11 @@
 | **Team** | Virtual Group I |
 | **Team members** | Gerald Enright (577830), Keletso Marota (601632), Mogau Malope (600192) |
 | **GitHub repository** | https://github.com/Gemdave/SEN381_Project-2026 |
-| **Final release** | Tag `v1.0.0` on `main` (merge of `SignIn-Module`); the release candidate was `v1.0.0-rc1` |
+| **Live application** | https://sen381-project-group-i-2026.onrender.com/ (Render Free web service with a Neon Free PostgreSQL database) |
+| **Final release** | Tag `v1.0.0` on `main`, the final merge of `project-finalisation` (sign-in came in PR #38 and hosting in PR #39); the release candidate was `v1.0.0-rc1` |
 | **PED version** | v4.0 Final (this document) |
 | **Final RTM** | `Docs/Risks/RTM/CivicConnect-RTM-v4.0.xlsx` |
-| **Product access** | Run locally as described in the README. Real sign-in (Production) needs the environment variables in `Docs/Requirements/CR-003_Sign_In_Implementation.md`, section 4; assessor credentials are given in the Moodle submission, not in the repository |
+| **Product access** | Open the live application and sign in with the assessor credentials given in the Moodle submission (never in the repository). The free service sleeps after 15 minutes idle and takes about a minute to wake. To run it locally, follow the README; real sign-in outside Development needs the environment variables in `Docs/Requirements/CR-003_Sign_In_Implementation.md`, section 4 |
 | **Date submitted** | 18/10/2026 |
 
 ---
@@ -191,28 +192,33 @@ The team deliberately defers email/SMS notifications beyond the baselined in-app
 
 ## Non-Functional Requirements & Open Items
 ### Non-Functional Requirements
-* **NFR-001 - Usability:** First-time requester submits without training in $\le 5$ steps / $\le 5$ min.
-  * *Workflow:* Input requester information $\rightarrow$ select request category $\rightarrow$ enter required fields $\rightarrow$ submit request $\rightarrow$ receive submission confirmation.
-* **NFR-002 - Feedback Timelines:** Status/feedback visible within $\le 15$ seconds of a staff change.
-* **NFR-003 - Privacy:** A requester can never see another requester's request (supports AC-004.2).
-* **NFR-004 - Performance:** Staff queue and management oversight views load within $\le 3$ seconds for 1,000 requests.
-* **NFR-005 - Concurrency & Integrity:** Two staff members cannot both own the same request; status transitions are applied atomically without lost updates (supports FR-011, FR-012).
-* **NFR-006 - Security / RBAC:** Every action is authorized against the user's role; unauthorized access is explicitly denied (supports FR-008, FR-014, FR-020).
-* **NFR-007 - Auditability:** Key controlled actions are recorded with actor + timestamp and cannot be silently altered (supports FR-013, FR-022).
-* **NFR-008 - Reporting Accuracy:** Management and sponsor reports reconcile completely with underlying request records without discrepancy.
-* **NFR-009 - Cost Sustainability (Sponsor):** The solution runs within free/low-cost tiers where practical, and operational cost projections are documented.
-* **NFR-010 - Growth Readiness (CR-011):** CivicConnect can later support more users or features without a redesign. No volume target is set, since no growth figures exist. Checks: a second copy of a service changes no behavior; no service touches another service's schema in the shared PostgreSQL instance (ADR-001); a new service needs no schema change elsewhere.
+| ID | Quality | Requirement and measurable target | Final status (v1.0.0) |
+| :--- | :--- | :--- | :--- |
+| **NFR-001** | Usability | A first-time requester submits without training in $\le 5$ steps and $\le 5$ min. Workflow: input requester information $\rightarrow$ select request category $\rightarrow$ enter required fields $\rightarrow$ submit request $\rightarrow$ receive submission confirmation. | Met (timed first-user walkthrough) |
+| **NFR-002** | Feedback timeliness | Status/feedback visible within $\le 15$ seconds of a staff change. | Met (5 s polling) |
+| **NFR-003** | Privacy | A requester can never see another requester's request (supports AC-004.2). | Met |
+| **NFR-004** | Performance | Staff queue and management oversight views load within $\le 3$ seconds for 1,000 requests. | Met (PT-01 p95 0.064 s) |
+| **NFR-005** | Concurrency and integrity | Two staff members cannot both own the same request; status transitions are applied atomically without lost updates (supports FR-011, FR-012). | Met |
+| **NFR-006** | Security / RBAC | Every action is authorized against the user's role; unauthorized access is explicitly denied (supports FR-008, FR-014, FR-020). | Met (policy and real sign-in) |
+| **NFR-007** | Auditability | Key controlled actions are recorded with actor + timestamp and cannot be silently altered (supports FR-013, FR-022). | Met (DEF-002 closed) |
+| **NFR-008** | Reporting accuracy | Management and sponsor reports reconcile completely with underlying request records without discrepancy. | Met |
+| **NFR-009** | Cost sustainability (Sponsor) | The solution runs within free/low-cost tiers where practical, and operational cost projections are documented. | Met ($0 per month on Render Free and Neon Free) |
+| **NFR-010** | Growth readiness (CR-011) | CivicConnect can later support more users or features without a redesign. No volume target is set, since no growth figures exist. Checks: a second copy of a service changes no behavior; no service touches another service's schema in the shared PostgreSQL instance (ADR-001); a new service needs no schema change elsewhere. | Not Met (one deployable, CR-014) |
 
 ### Open Items to Confirm in Later Milestones
-1. Authentication model assumed; final selection deferred to M2. **Status:** Open under CR-003. Authorization is covered by ADR-005, but the sign-in mechanism has not been chosen.
-2. Formal confirmation of the initial controlled category list options. **Status:** Open under CR-008.
-3. Decision on FR-006 (Attachments): file types, size limits, and storage policy. **Status:** Remains deferred at *Could* priority. CR-010 does not bring it back into scope.
-4. Definition of 'overdue' logic: Target response time fields required. SLA automation is deferred; agree on a simple target mechanism in the Engineering Decision Log (affects FR-016). **Status:** Open under CR-005.
-5. Reassignment rules: Establish permissions regarding who can reassign an already-owned request (affects FR-011). **Status:** Open under CR-004.
-6. Reporting export scope: Decide whether reporting is view-only or exportable (affects FR-018). **Status:** Open under CR-006.
-7. Sponsor access model: Confirm whether the sponsor receives a dedicated view or utilizes management views (affects FR-023). **Status:** Open under CR-007.
-8. RBAC role definitions: Finalize specific role permissions in M2 (affects FR-020 and security ACs). **Status:** Open under CR-003, with ADR-005.
-9. *(Added after the M2 review.)* Growth figures: none are available, so NFR-010 has no volume target. If the Sponsor supplies figures, a change request will add one.
+The items as raised at M1 and M2 are kept; the last column gives each one's final status.
+
+| # | Open item (M1/M2) | Tracked by | Final status (v1.0.0) |
+| :--- | :--- | :--- | :--- |
+| 1 | Authentication model assumed; final selection deferred to M2. | CR-003 | Closed: cookie sign-in with PBKDF2 password hashes (ADR-008), built in M4 |
+| 2 | Formal confirmation of the initial controlled category list options. | CR-008 | Closed: Fault, Equipment, Security, IT, Maintenance, Lost Property and Other, created on every fresh database; administrators maintain the list (FR-021) |
+| 3 | Decision on FR-006 (Attachments): file types, size limits and storage policy. | CR-016 | Closed: JPEG, PNG and PDF only (checked from the file content), up to 5 MB each and 5 per request, stored in PostgreSQL |
+| 4 | Definition of 'overdue': target response time fields required; SLA automation deferred (affects FR-016). | CR-005 | Closed: each category has a target in hours (default 72, set by administrators); a request's due time is fixed at submission |
+| 5 | Reassignment rules for an already-owned request (affects FR-011). | CR-004 | Closed: an owned request cannot be taken (HTTP 409); authorised reassignment stays future work |
+| 6 | Reporting export scope: view-only or exportable (affects FR-018). | CR-006 | Closed: CSV export that matches the page, with the same filters |
+| 7 | Sponsor access model: a dedicated view or the management views (affects FR-023). | CR-007 | Closed: a Sponsor role with its own summary page that reuses the management figures |
+| 8 | RBAC role definitions (affects FR-020 and the security ACs). | CR-003, ADR-005 | Closed: five roles (Requester, Service Staff, Management, Administrator, Sponsor) under one policy, with staff limited to their categories |
+| 9 | *(Added after the M2 review.)* Growth figures: none are available, so NFR-010 has no volume target. If the Sponsor supplies figures, a change request will add one. | None | Still open: no growth figures were supplied |
 
 ---
 
@@ -241,10 +247,10 @@ cannot be merged unless the Quality Gate passes.
 | :--- | :--- | :--- |
 | **Workflow** | GitHub Actions: Build and Test, Static Analysis, Dependency Vulnerabilities, Secrets Scan, then an aggregating Quality Gate | `/.github/workflows/ci.yml` |
 | **Gate rule** | A build/test failure, formatting violation, High/Critical dependency advisory or detected secret each blocks merge | `/Docs/CI_Documentation/CI_Quality_Gates.md` |
-| **Branch protection** | `main` protected; Quality Gate required; 2 non-author approvals | [PR link showing required checks] |
-| **Passing run** | Run on the `v1.0.0` merge to `main` | [Actions run URL] |
-| **Gate blocking a change** | A run where the gate failed and was fixed | [failed run URL + fixing PR] |
-| **Test and coverage output** | TRX and coverage artifacts per run | [artifact link in the run above] |
+| **Branch protection** | `main` protected; Quality Gate required; 2 non-author approvals; approvals are dismissed when new commits are pushed | [PR #38](https://github.com/Gemdave/SEN381_Project-2026/pull/38): required checks and 2 approvals |
+| **Passing run** | Latest run on `main` before the final merge (Host setup, PR #39): all five jobs green | [Actions run, 18/10/2026](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/39156948141) |
+| **Gate blocking a change** | The Secrets Scan (Gitleaks) failed, so the Quality Gate blocked the sign-in branch; the fix passed about three minutes later and merged as PR #38 | [Failed run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/39142781118), [fixing run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/39142985755) |
+| **Test and coverage output** | TRX and coverage artifacts per run | [test-results artifact](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/39156948141/artifacts/12147118905) in the passing run |
 
 **What a green run shows / does not show:** see `/Docs/CI_Documentation/CI_Quality_Gates.md`.
 
@@ -256,47 +262,47 @@ cannot be merged unless the Quality Gate passes.
 > * **Priority (MoSCoW):** Must, Should, Could, Won't.
 > * **Status:** Baseline candidate, Baselined, Candidate / may defer.
 
-| ID | Source | Requirement | Acceptance Criteria | Priority | Status |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **FR-001** | ST-1 | Submit a new service request with the information needed to action it. | AC-001.1; AC-001.2 | Must | Baseline candidate |
-| **FR-002** | ST-1, ST-3 | Categorize the request from a controlled category list (not free text). | AC-002.1; AC-002.2 | Must | Baseline candidate |
-| **FR-003** | ST-1 | View the current status of a submitted request. | AC-003.1; AC-003.2 | Must | Baseline candidate |
-| **FR-004** | ST-1 | View a history/list of own previously submitted requests. | AC-004.1; AC-004.2 | Must | Baseline candidate |
-| **FR-005** | ST-1 | Search/filter own request history. | AC-005.1 | Should | Baseline candidate |
-| **FR-006** | ST-1, ST-2 | Attach supporting information to a request (e.g. a photo). | AC-006.1 | Could | Candidate may defer |
-| **FR-007** | ST-1 | Receive feedback when a request is accepted, rejected, updated or completed. | AC-007.1; AC-007.2 | Must | Baseline candidate |
-| **FR-008** | ST-2 | View the service requests relevant to authorized staff (staff queue). | AC-008.1; AC-008.2 | Must | Baseline candidate |
-| **FR-009** | ST-2 | Search, filter or sort requests using useful criteria. | AC-009.1; AC-009.2 | Must | Baseline candidate |
-| **FR-010** | ST-2 | View the full details of a request. | AC-010.1 | Must | Baseline candidate |
-| **FR-011** | ST-2 | Assign or accept responsibility for a request. | AC-011.1; AC-011.2 | Must | Baseline candidate |
-| **FR-012** | ST-2 | Update a request's status through controlled transitions. | AC-012.1; AC-012.2 | Must | Baseline candidate |
-| **FR-013** | ST-2 | Record actions, comments or resolution information on a request. | AC-013.1 | Must | Baseline candidate |
-| **FR-014** | ST-2 | Resolve or close requests where authorized. | AC-014.1; AC-014.2 | Must | Baseline candidate |
-| **FR-015** | ST-3 | View useful service-activity information (oversight overview). | AC-015.1 | Must | Baseline candidate |
-| **FR-016** | ST-3 | Identify open, overdue, resolved and closed requests. | AC-016.1; AC-016.2 | Must | Baseline candidate |
-| **FR-017** | ST-3 | View request information by category/status (or another justified dimension). | AC-017.1 | Must | Baseline candidate |
-| **FR-018** | ST-3 | Access enough information to support accountability and service-performance analysis. | AC-018.1; AC-018.2 | Should | Baseline candidate |
-| **FR-019** | ST-4 | Manage user accounts. | AC-019.1 | Must | Baseline candidate |
-| **FR-020** | ST-4 | Manage roles and permissions (RBAC). | AC-020.1; AC-020.2 | Must | Baseline candidate |
-| **FR-021** | ST-4 | Maintain the controlled category list. | AC-021.1 | Must | Baseline candidate |
-| **FR-022** | ST-4 | Access an audit trail of key controlled actions. | AC-022.1 | Should | Baseline candidate |
-| **FR-023** | ST-5 | Access high-level service-performance and accountability reporting. | AC-023.1 | Should | Baseline candidate |
-| **NFR-001** | ST-1 | Usability: first-time requester submits without training in $\le 5$ steps and $\le 5$ min. | Submission completes in $\le 5$ steps and $\le 5$ min, verified in usability testing. | Should | Baseline candidate |
-| **NFR-002** | ST-1 | Feedback timeliness: status/feedback visible within $\le 15$ sec of a staff change. | Feedback visible to requester $\le 15$ s after a staff status change. | Should | Baseline candidate |
-| **NFR-003** | ST-1 | Privacy: a requester can never view another requester's request. | Requester cannot access another's data (supports AC-004.2). | Must | Baseline candidate |
-| **NFR-004** | ST-2, ST-3 | Performance: staff queue and oversight views load quickly under load. | $\le 3$ s load time for 1,000 requests. | Should | Candidate |
-| **NFR-005** | ST-2 | Concurrency & integrity: no double-ownership or lost updates. | No duplicate ownership; atomic transitions (supports FR-011/012). | Must | Candidate |
-| **NFR-006** | ST-4 | Security / RBAC: every action authorized by role. | Unauthorized access denied (supports FR-008/014/020). | Must | Candidate |
-| **NFR-007** | ST-4 | Auditability: key actions recorded and tamper-evident. | Actor + timestamp, not silently altered (supports FR-013/022). | Must | Candidate |
-| **NFR-008** | ST-3, ST-5 | Reporting accuracy: reports reconcile with underlying records. | Zero discrepancy between reporting and data layer. | Should | Candidate |
-| **NFR-009** | ST-5 | Cost sustainability: run within free/low-cost tiers where practical. | Operates in free/low-cost tiers; cost documented. | Should | Candidate |
-| **NFR-010** | ST-5 | Growth readiness: able to expand in future without a redesign (added through CR-011). | Scale-out, data ownership and extension checks all pass (NFR-010). | Must | Candidate (CR-011) |
+| ID | Source | Requirement | Acceptance Criteria | Priority | Status (M1) | Final (v1.0.0) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **FR-001** | ST-1 | Submit a new service request with the information needed to action it. | AC-001.1; AC-001.2 | Must | Baseline candidate | Met |
+| **FR-002** | ST-1, ST-3 | Categorize the request from a controlled category list (not free text). | AC-002.1; AC-002.2 | Must | Baseline candidate | Met |
+| **FR-003** | ST-1 | View the current status of a submitted request. | AC-003.1; AC-003.2 | Must | Baseline candidate | Met |
+| **FR-004** | ST-1 | View a history/list of own previously submitted requests. | AC-004.1; AC-004.2 | Must | Baseline candidate | Met |
+| **FR-005** | ST-1 | Search/filter own request history. | AC-005.1 | Should | Baseline candidate | Met |
+| **FR-006** | ST-1, ST-2 | Attach supporting information to a request (e.g. a photo). | AC-006.1 | Could | Candidate may defer | Met (CR-016) |
+| **FR-007** | ST-1 | Receive feedback when a request is accepted, rejected, updated or completed. | AC-007.1; AC-007.2 | Must | Baseline candidate | Met (Rejected added, CR-009) |
+| **FR-008** | ST-2 | View the service requests relevant to authorized staff (staff queue). | AC-008.1; AC-008.2 | Must | Baseline candidate | Met |
+| **FR-009** | ST-2 | Search, filter or sort requests using useful criteria. | AC-009.1; AC-009.2 | Must | Baseline candidate | Met |
+| **FR-010** | ST-2 | View the full details of a request. | AC-010.1 | Must | Baseline candidate | Met |
+| **FR-011** | ST-2 | Assign or accept responsibility for a request. | AC-011.1; AC-011.2 | Must | Baseline candidate | Met |
+| **FR-012** | ST-2 | Update a request's status through controlled transitions. | AC-012.1; AC-012.2 | Must | Baseline candidate | Met |
+| **FR-013** | ST-2 | Record actions, comments or resolution information on a request. | AC-013.1 | Must | Baseline candidate | Met |
+| **FR-014** | ST-2 | Resolve or close requests where authorized. | AC-014.1; AC-014.2 | Must | Baseline candidate | Met (AC-014.2 reworded, CR-012) |
+| **FR-015** | ST-3 | View useful service-activity information (oversight overview). | AC-015.1 | Must | Baseline candidate | Met |
+| **FR-016** | ST-3 | Identify open, overdue, resolved and closed requests. | AC-016.1; AC-016.2 | Must | Baseline candidate | Met |
+| **FR-017** | ST-3 | View request information by category/status (or another justified dimension). | AC-017.1 | Must | Baseline candidate | Met |
+| **FR-018** | ST-3 | Access enough information to support accountability and service-performance analysis. | AC-018.1; AC-018.2 | Should | Baseline candidate | Met |
+| **FR-019** | ST-4 | Manage user accounts. | AC-019.1 | Must | Baseline candidate | Met |
+| **FR-020** | ST-4 | Manage roles and permissions (RBAC). | AC-020.1; AC-020.2 | Must | Baseline candidate | Met |
+| **FR-021** | ST-4 | Maintain the controlled category list. | AC-021.1 | Must | Baseline candidate | Met |
+| **FR-022** | ST-4 | Access an audit trail of key controlled actions. | AC-022.1 | Should | Baseline candidate | Met |
+| **FR-023** | ST-5 | Access high-level service-performance and accountability reporting. | AC-023.1 | Should | Baseline candidate | Met |
+| **NFR-001** | ST-1 | Usability: first-time requester submits without training in $\le 5$ steps and $\le 5$ min. | Submission completes in $\le 5$ steps and $\le 5$ min, verified in usability testing. | Should | Baseline candidate | Met (timed walkthrough) |
+| **NFR-002** | ST-1 | Feedback timeliness: status/feedback visible within $\le 15$ sec of a staff change. | Feedback visible to requester $\le 15$ s after a staff status change. | Should | Baseline candidate | Met |
+| **NFR-003** | ST-1 | Privacy: a requester can never view another requester's request. | Requester cannot access another's data (supports AC-004.2). | Must | Baseline candidate | Met |
+| **NFR-004** | ST-2, ST-3 | Performance: staff queue and oversight views load quickly under load. | $\le 3$ s load time for 1,000 requests. | Should | Candidate | Met |
+| **NFR-005** | ST-2 | Concurrency & integrity: no double-ownership or lost updates. | No duplicate ownership; atomic transitions (supports FR-011/012). | Must | Candidate | Met |
+| **NFR-006** | ST-4 | Security / RBAC: every action authorized by role. | Unauthorized access denied (supports FR-008/014/020). | Must | Candidate | Met |
+| **NFR-007** | ST-4 | Auditability: key actions recorded and tamper-evident. | Actor + timestamp, not silently altered (supports FR-013/022). | Must | Candidate | Met |
+| **NFR-008** | ST-3, ST-5 | Reporting accuracy: reports reconcile with underlying records. | Zero discrepancy between reporting and data layer. | Should | Candidate | Met |
+| **NFR-009** | ST-5 | Cost sustainability: run within free/low-cost tiers where practical. | Operates in free/low-cost tiers; cost documented. | Should | Candidate | Met ($0 hosting) |
+| **NFR-010** | ST-5 | Growth readiness: able to expand in future without a redesign (added through CR-011). | Scale-out, data ownership and extension checks all pass (NFR-010). | Must | Candidate (CR-011) | Not Met (CR-014) |
 
 **Demonstration trace.** FR-011 (AC-011.2) -> ASR-01 -> the Requests service, the only service allowed to assign (ADR-001) -> a conditional update in the requests schema that succeeds only while the request is unassigned, with the history row in the same transaction (ADR-002) -> `POST /api/v1/requests/{id}/assignment` through the API entry point (ADR-006) -> `app/` code: `AssignmentService`, `RequestRepository` and `AssignmentEndpoints` -> `AssignmentServiceTests` (run in CI) and `ConcurrentAcceptTests` (skipped in CI until a test database is provided).
 
 **Verification evidence.** CI builds and tests only the `app/` tree. `StatusTransitionTests` and `AssignmentServiceTests` run in the Quality Gate, while `ConcurrentAcceptTests` is skipped until CI provides a test database. RTM rows that cite `Backend/` tests are marked "Not in CI" and do not count as verified.
 
-**Final (v4.0).** The table above keeps the M1 baseline statuses as history. The final RTM is `Docs/Risks/RTM/CivicConnect-RTM-v4.0.xlsx`: every requirement now traces through implementation, tests and evidence to a final acceptance status (column W) and outcome (column X). All 36 FR acceptance criteria are Met; NFR-001, NFR-007 and NFR-009 are Partially Met and NFR-010 is Not Met (see M1 Scope to Final Delivery). CI now provides a PostgreSQL database, so `ConcurrentAcceptTests` and every other integration test run there, and `Backend/` has been removed (RSK-022).
+**Final (v4.0).** The table above keeps the M1 baseline statuses as history. The final RTM is `Docs/Risks/RTM/CivicConnect-RTM-v4.0.xlsx`: every requirement now traces through implementation, tests and evidence to a final acceptance status (column W) and outcome (column X). All 36 FR acceptance criteria and NFR-001 to NFR-009 are Met; only NFR-010 is Not Met (see M1 Scope to Final Delivery). CI now provides a PostgreSQL database, so `ConcurrentAcceptTests` and every other integration test run there, and `Backend/` has been removed (RSK-022).
 
 ---
 
@@ -304,13 +310,13 @@ cannot be merged unless the Quality Gate passes.
 
 Each change is recorded here before the affected section changes, and the original wording is kept. Working copy: `Docs/Risks/RTM/CivicConnect-Change-Register.xlsx`.
 
-| ID | Affects | Change | Status | Owner |
-| :--- | :--- | :--- | :--- | :--- |
-| **CR-001 to CR-008** | NFR-002, NFR-004 and Open Items 1, 2, 4 to 8 | Clarifications carried from the first M2 pass; each is shown against its open item above, with full wording in the workbook. | Open | M. Malope (CR-003: G. Enright) |
-| **CR-009** | FR-007, FR-012 | Add Rejected as a terminal status, reachable only from Received and always with a reason (`Data_Model.md`, section 8). | Proposed | K. Marota proposes, M. Malope records |
-| **CR-010** | ADR-001 (superseded, D-005); RTM architecture and data columns; ADR-002, ADR-004 to ADR-007 | Move from the modular monolith to four services (Requests, Access, ReferenceData, Reporting) behind one API entry point, with a schema per service in one PostgreSQL instance, so the system can grow without a redesign (M2 review). Functional scope unchanged. | Approved through the revised ADR-001 (D-005) | K. Marota, M. Malope |
-| **CR-011** | NFR-010, ASR-05, ASR-07, C-5 | Add NFR-010 Growth Readiness (three checks, no volume target), restate ASR-05, add ASR-07 and C-5. | Open | M. Malope |
-| **EC-001** | FR-021 (AC-021.1) | Editorial: cited AC-002.3, which does not exist; now AC-002.1. No change in meaning. | Applied | M. Malope |
+| ID | Affects | Change | Status (M2) | Owner | Final status (v1.0.0) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **CR-001 to CR-008** | NFR-002, NFR-004 and Open Items 1, 2, 4 to 8 | Clarifications carried from the first M2 pass; each is shown against its open item above, with full wording in the workbook. | Open | M. Malope (CR-003: G. Enright) | Closed: all applied or implemented (see Open Items) |
+| **CR-009** | FR-007, FR-012 | Add Rejected as a terminal status, reachable only from Received and always with a reason (`Data_Model.md`, section 8). | Proposed | K. Marota proposes, M. Malope records | Closed: implemented |
+| **CR-010** | ADR-001 (superseded, D-005); RTM architecture and data columns; ADR-002, ADR-004 to ADR-007 | Move from the modular monolith to four services (Requests, Access, ReferenceData, Reporting) behind one API entry point, with a schema per service in one PostgreSQL instance, so the system can grow without a redesign (M2 review). Functional scope unchanged. | Approved through the revised ADR-001 (D-005) | K. Marota, M. Malope | Closed: not implemented (CR-014) |
+| **CR-011** | NFR-010, ASR-05, ASR-07, C-5 | Add NFR-010 Growth Readiness (three checks, no volume target), restate ASR-05, add ASR-07 and C-5. | Open | M. Malope | Closed: applied |
+| **EC-001** | FR-021 (AC-021.1) | Editorial: cited AC-002.3, which does not exist; now AC-002.1. No change in meaning. | Applied | M. Malope | Closed: applied |
 
 All open CRs need approval before baseline sign-off. One more may follow once ADR-005 is revised: AC-019.1, if a deactivated user's session can stay valid for a time. NFR-008 needs no change, because reporting keeps no copy of the data (ADR-001).
 
@@ -329,20 +335,27 @@ All open CRs need approval before baseline sign-off. One more may follow once AD
 | Performance | PT-01 | Staff queue load with 1,000 requests (NFR-004, target 3 seconds or less) |
 
 **Coverage of the minimum requirements:** 21 distinct cases (7 unit, 5 black-box, 7 integration, 2 E2E), with 13 negative or unauthorized cases, 15 addressing high-priority requirements or risks, and four black-box techniques (state transition, boundary value analysis, equivalence partitioning, decision table of actor and action). Further tests are kept for regression but are not counted toward the minimum.  
-**Scope:** the plan covers the implemented core slice (FR-007 to FR-009, FR-011 to FR-014, ASR-01 to ASR-03, NFR-003 to NFR-005). Request submission and the requester history (FR-001 to FR-004) are not implemented and have no verification evidence.  
-**Execution:** all counted cases except the staging checks run in the CI Build and Test job against a PostgreSQL service, and a failure blocks the Quality Gate. A skipped test fails the job, because a skipped test is not evidence. E2E-03 (a UI walkthrough) and PT-01 run against the simulated staging environment and are recorded separately.  
-**Results:** all 21 counted cases passed (44 of 44 executed cases, 0 failed, 0 skipped) in the CI run of 14/10/2026; E2E-03 and PT-01 are recorded separately once run on staging.  
-**Evidence:** [Test plan and evidence record](Test/Docs/Test_Plan_v2.md) | [CI run for release candidate] | [Test results artifact] | [Staging verification and PT-01 results] | [RTM test columns]  
-**Final (v1.0.0):** the suite has grown to 287 automated tests (89 domain, 92 application, 106 integration), all passing on 18/10/2026. It now covers FR-001 to FR-023 and real sign-in (`SignInTests`, `AppUserSignInTests`, `Pbkdf2PasswordHasherTests`); the counted minimum above is unchanged. The RTM uses the Test Plan v1 case IDs and this section uses Test Plan v2 IDs, so the RTM names tests by class as well.
-**Limitations:** the suite does not prove the absence of defects; access-control results rely on the development identity stand-in, so they say nothing about real authentication (RSK-012); E2E-01 and E2E-02 exercise the API, not the browser UI; the CI timing check is only a regression guard, and staging performance on a local machine does not predict municipal-scale load.
+
+| Item | M3 (Test Plan v2) | Final (v1.0.0) |
+| :--- | :--- | :--- |
+| Scope | Core slice: FR-007 to FR-009, FR-011 to FR-014, ASR-01 to ASR-03, NFR-003 to NFR-005; FR-001 to FR-004 not built yet | FR-001 to FR-023, NFR-001 to NFR-009 and real sign-in (`SignInTests`, `AppUserSignInTests`, `Pbkdf2PasswordHasherTests`) |
+| Execution | Every counted case in the CI Build and Test job against a PostgreSQL service; a skipped test fails the job, because a skipped test is not evidence | Unchanged; every integration test runs in CI |
+| Results | 21 counted cases passed (44 of 44 executed, 0 failed, 0 skipped) in the CI run of 15/10/2026 | 288 of 288 pass (89 domain, 92 application, 107 integration) on 18/10/2026; the counted minimum is unchanged |
+| Outside CI | E2E-03 (UI walkthrough) and PT-01 planned for staging | PT-01 p95 0.064 s locally; 26 of 26 acceptance checks; simulated production 13 of 13; checks on the live site pass; NFR-001 walkthrough Met |
+| Limitations | Access-control results used the development identity, so they said nothing about real authentication (RSK-012) | Sign-in is tested, but there is no penetration test; E2E-01 and E2E-02 exercise the API, not the browser UI; the CI timing check is only a regression guard, and PT-01 does not predict municipal-scale load |
+
+**Evidence:** [Test plan and evidence record](../../Test/Docs/Test_Plan_v2.md) | [CI run of 15/10/2026](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178) | [CI test results (TRX)](../../Test/CI-Artifacts/TestResultReports/) | [Simulated production](../../Test/Evidence/Final_Simulated_Production.md) | [Hosted deployment check](../../Test/Evidence/Hosted_Deployment_Check.md) | [PT-01 results](../../Test/Evidence/PT-01_Results.md) | [RTM v4.0 test columns](../Risks/RTM/CivicConnect-RTM-v4.0.xlsx)
+The RTM uses the Test Plan v1 case IDs and this section uses Test Plan v2 IDs, so the RTM names tests by class as well.
 
 ---
 ## Technical Constraints and Assumptions
 
-* **Achievability:** Technical implementation must fit within team skills and schedule limitations.
-* **Layer Separation:** User interface, backend API, and persistence layers must remain distinct.
-* **Business Logic Centralization:** Backend layer must handle validation, rules, and security enforcement.
-* **Privacy by Design:** System architecture must guarantee requesters cannot view data belonging to other users.
+| Constraint | Consideration |
+| :--- | :--- |
+| **Achievability** | Technical implementation must fit within team skills and schedule limitations. |
+| **Layer separation** | User interface, backend API and persistence layers must remain distinct. |
+| **Business logic centralization** | The backend layer must handle validation, rules and security enforcement. |
+| **Privacy by design** | The architecture must guarantee requesters cannot view data belonging to other users. |
 
 ### Initial Architecture Strategy
 The initial architecture utilizes a backend API layer situated between the frontend UI and data persistence layer. This provides a central point for validation, business rules, and authorization enforcement while decoupling domain logic from UI components. Backend framework, database choice, API standard, authentication scheme, and deployment details are directional for M1 and will be finalized in M2.
@@ -426,7 +439,7 @@ Statuses are final for `v1.0.0`; full records are in `Docs/Decisions/`.
 | **ADR-004** View composition | One web frontend; partials, page models and a capability object | M. Malope | Accepted, implemented in the single deployable | Positive: the Sponsor role (CR-007) was added as one new page folder; every role shows only its own actions. |
 | **ADR-005** Authorisation policy | One policy for role, ownership and category scope | G. Enright | Accepted, implemented | Positive: the role matrix test covers every role and action; deactivation and role changes apply on the next request. |
 | **ADR-006** API contract | REST interface | K. Marota | Accepted, with deviation (CR-015) | The built API uses POST for status changes and GUID ids; the contract document was not updated (TD-03). |
-| **ADR-007** Deployment direction | Managed hosting (Render) and managed PostgreSQL (Neon) | G. Enright | Accepted, partly implemented | Verified as simulated production only; no container or hosting yet (TD-04). |
+| **ADR-007** Deployment direction | Managed hosting (Render) and managed PostgreSQL (Neon) | G. Enright | Accepted, implemented | Positive: the Dockerfile image runs live on Render Free with Neon Free at $0 per month, so NFR-009 is Met and TD-04 repaid. No restore has been rehearsed (RSK-015). |
 | **ADR-008** Authentication (new) | Cookie sign-in over the users table, PBKDF2 hashes | G. Enright | Accepted, implemented (CR-003) | Real sign-in outside Development; no MFA and administrator-only password reset remain (RSK-012). |
 | **D-001, D-002** Layers and central backend | Carried into ADR-001 | Team | Closed | Realised as Domain, Application and Infrastructure layers inside one application. |
 | **D-003, D-004** Deferred stack and security decisions | Deferred from M1 | Team | Superseded by ADR-002, ADR-003, ADR-005, ADR-008 | Closed. |
@@ -483,7 +496,7 @@ The M2 table in Controlled Changes to the Baseline is kept as history. The M3 de
 | DEF-001 | Staff details lacked requester and category (AC-010.1) | Fixed; acceptance check AC-010.1 passes |
 | OBS-01 | Accept showed on requests already owned | Fixed; covered by `StaffScreensTests` |
 | OBS-02 | History showed user IDs instead of names | Fixed; covered by `StaffScreensTests` |
-| DEF-002 | The audit_entries insert-only trigger has no direct test (NFR-007) | Carried, low: the trigger exists and runs; only the direct test is missing, so NFR-007 is Partially Met |
+| DEF-002 | The audit_entries insert-only trigger had no direct test (NFR-007) | Fixed: `HistoryInsertOnlyTests` now proves the trigger refuses edits and deletes; NFR-007 is Met |
 
 ### Technical Debt Register
 | ID | Debt | Final status (v1.0.0) | Consequence if kept |
@@ -491,26 +504,32 @@ The M2 table in Controlled Changes to the Baseline is kept as history. The M3 de
 | TD-01 | One deployable, not separate services (CR-014) | Retained | NFR-010 not met; scaling means scaling the whole application |
 | TD-02 | Development sign-in, no real authentication (CR-003) | Repaid: real sign-in (ADR-008) | None |
 | TD-03 | API contract differs from the build (CR-015) | Retained | An API client written from `openapi.yaml` would use PATCH and integer ids and fail |
-| TD-04 | No deployment, migration step or Dockerfile (ADR-007) | Partly repaid: production startup and migration step built; no container or hosting | Hosted go-live needs a Dockerfile and deployment pipeline |
+| TD-04 | No deployment, migration step or Dockerfile (ADR-007) | Repaid: production startup and migration step, a Dockerfile and the Render deployment (PR #39) | None |
 | TD-05 | Legacy `Backend/` tree still in the repo (RSK-022) | Repaid: removed | None |
 | TD-06 | Mobile layout and accessibility review deferred | Retained | Requesters on phones get a desktop layout; accessibility not formally checked |
 
 
 ## Final Product (M4)
-**Release:** `v1.0.0` on `main`, the merge of `SignIn-Module`. **Product status:** complete for its approved scope and stable: 287 of 287 automated tests pass and the simulated production check passes 13 of 13 (18/10/2026).
+**Release:** `v1.0.0` on `main`, live at https://sen381-project-group-i-2026.onrender.com/. **Product status:** complete for its approved scope and stable: 288 of 288 automated tests pass, the simulated production check passes 13 of 13 and the checks on the live site pass (18/10/2026).
 
 **What changed since the release candidate (`v1.0.0-rc1`):** finalisation, not new scope.
-* Real sign-in outside Development (CR-003, ADR-008), which was deferred to M4; it closes TD-02 and mitigates RSK-012.
-* The legacy `Backend/` tree removed, leaving one implementation (RSK-022, TD-05).
-* A production startup step that prepares a fresh database with the 7 categories and the first administrator, with no development data.
-* Records concluded: RTM v4.0, Change Register v4.0, Risk Register v4.0, final ADR statuses and the new ADR-008.
+
+| Change | Effect | Record |
+| :--- | :--- | :--- |
+| Real sign-in outside Development | Closes TD-02; mitigates RSK-012 | CR-003, ADR-008 |
+| Legacy `Backend/` tree removed | One implementation left | RSK-022, TD-05 |
+| Production startup step | A fresh database gets the 7 categories and the first administrator, with no development data | `Test/Evidence/Final_Simulated_Production.md` |
+| Dockerfile and Render deployment with a Neon database | The release runs live at $0 per month: NFR-009 Met, TD-04 repaid, RSK-006 closed | ADR-007, PR #39, `Test/Evidence/Hosted_Deployment_Check.md` |
+| DEF-002 closed | The audit trail's insert-only trigger has a direct test: NFR-007 Met | `HistoryInsertOnlyTests` |
+| NFR-001 walkthrough run | The five-step, five-minute target was measured with a first-time user: NFR-001 Met | M1 Scope to Final Delivery; RTM v4.0 |
+| Records concluded | RTM v4.0, Change Register v4.0, Risk Register v4.0, final ADR statuses and the new ADR-008 | This document |
 
 **Critical journeys demonstrated on this release:** a requester submits a request and follows it to closure; staff accept, update, note and resolve or reject it; a manager sees overdue work and exports the performance figures; an administrator manages users, roles and categories behind real sign-in.
 
 ## M1 Scope to Final Delivery
 **Final status categories:** IMPLEMENTED, PARTIALLY IMPLEMENTED, NOT IMPLEMENTED, CHANGED/REMOVED THROUGH APPROVED CHANGE. Deferred and out-of-scope items are listed separately and are not counted as failures.
 
-| M1 scope item | M1 priority / status | Final status | Acceptance criteria | Evidence | Conclusion |
+| M1 scope item | M1 priority / status | Final status | Acceptance criteria | Evidence (RTM test IDs) | Conclusion |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | FR-001 Submit a request | Must / In scope | IMPLEMENTED | AC-001.1, AC-001.2 Met | RTM v4.0; `SubmissionServiceTests`, E2E-01 | Delivered as committed |
 | FR-002 Controlled category | Must / In scope | IMPLEMENTED | AC-002.1, AC-002.2 Met | UT-02 | Delivered as committed |
@@ -519,15 +538,16 @@ The M2 table in Controlled Changes to the Baseline is kept as history. The M3 de
 | FR-005 Search own history | Should / In scope | IMPLEMENTED | AC-005.1 Met | `ManagementScreensTests` | Delivered (CR-016) |
 | FR-007 In-app feedback | Must / In scope | IMPLEMENTED | AC-007.1 Met; AC-007.2 Met through CR-009 | E2E-02, `UpdatesPollingTests` | Delivered; Rejected added by approved change |
 | Category list as reference data | In scope | IMPLEMENTED | Covered by FR-002, FR-021 | `CategoryServiceTests` | Delivered |
+| Engineering baseline documentation (stakeholder analysis, constraints, initial architecture, decision log) | In scope | IMPLEMENTED | None (documentation, not counted in the percentage) | This PED: Stakeholder Profiles, Technical Constraints and Assumptions, Engineering Decision Log | Delivered at M1 and kept as history through v4.0 |
 | FR-008 to FR-014 Service staff | Must (baselined at M2) | IMPLEMENTED | All 12 Met (AC-014.2 as reworded by CR-012) | RTM v4.0 | Delivered |
 | FR-015 to FR-018 Management | Must and Should | IMPLEMENTED | All 6 Met | `ReportingTests` | Delivered (CR-016; CR-005, CR-006) |
 | FR-019 to FR-022 Administrator | Must and Should | IMPLEMENTED | All 5 Met | `UserAdminTests`, `SignInTests` | Delivered (CR-016; sign-in CR-003) |
 | FR-023 Sponsor reporting | Should | IMPLEMENTED | AC-023.1 Met | `ReportingTests` | Delivered (CR-007, CR-016) |
-| NFR-002 to NFR-006, NFR-008 | Must and Should | IMPLEMENTED | Met | RTM v4.0; PT-01 | Delivered; NFR-004 measured locally only |
-| NFR-001 Usability | Should | PARTIALLY IMPLEMENTED | Partially Met | Five-step form built | The timed first-user walkthrough was not run |
-| NFR-007 Auditability | Must | PARTIALLY IMPLEMENTED | Partially Met | `HistoryInsertOnlyTests` | Controls exist; the audit trigger has no direct test (DEF-002) |
-| NFR-009 Cost | Should | PARTIALLY IMPLEMENTED | Partially Met | ADR-007 | $0 plan documented and runs with no paid service; not proven on a hosted free tier |
-| NFR-010 Growth readiness | Must (added by CR-011) | NOT IMPLEMENTED | Not Met | CR-014 | Service split not built; accepted as technical debt (TD-01) |
+| NFR-002 to NFR-006, NFR-008 | Must and Should | IMPLEMENTED | Met | RTM v4.0; PT-01 | Delivered; NFR-004 measured locally with 1,000 requests (PT-01) |
+| NFR-001 Usability | Should | IMPLEMENTED | Met | Timed first-user walkthrough (Role 1) | Delivered; the timed first-user walkthrough met the five-step, five-minute target |
+| NFR-007 Auditability | Must | IMPLEMENTED | Met | `HistoryInsertOnlyTests` (request history and audit trail) | Delivered; DEF-002 closed |
+| NFR-009 Cost | Should | IMPLEMENTED | Met | ADR-007; `Test/Evidence/Hosted_Deployment_Check.md` | Delivered: runs live on Render Free and Neon Free at $0 per month |
+| NFR-010 Growth readiness | Must (added by CR-011) | NOT IMPLEMENTED | Not Met | CR-014 | Service split not built: the team kept one deployable to finish the committed functions on time (CR-014, TD-01). Effect: the Sponsor's growth need (C-5) is met only by scaling the whole application, so the three NFR-010 checks cannot pass |
 
 | Deferred or out of scope at M1 | Final status | Conclusion |
 | :--- | :--- | :--- |
@@ -535,76 +555,99 @@ The M2 table in Controlled Changes to the Baseline is kept as history. The M3 de
 | FR-006 Attachments (Could) | IMPLEMENTED through CR-016 (AC-006.1 Met) | Delivered beyond the committed scope |
 | Full administrator RBAC | IMPLEMENTED through FR-019, FR-020 | Delivered |
 | Authentication implementation (D-004) | IMPLEMENTED in M4 through CR-003 (ADR-008) | Delivered |
-| Production deployment | CHANGED: simulated production (ADR-007, TD-04) | See Final Deployment and Go-Live Decision |
+| Production deployment | IMPLEMENTED: hosted on Render Free with Neon Free (ADR-007) | Delivered beyond the M1 scope; see Final Deployment and Go-Live Decision |
 
 **Scope Completion Percentage** (Met = 1, Partially Met = 0.5, Not Met = 0; AC-002.3 excluded, it does not exist, EC-001):
-* **Committed M1 scope** (FR-001 to FR-005, FR-007): 11 of 11 acceptance criteria Met = **100%**.
-* **Full approved baseline** (36 FR acceptance criteria and 10 NFR targets): 42 Met + 3 Partially Met (1.5) + 1 Not Met = 43.5 of 46 = **94.6%**.
 
-**Conclusion:** both figures exceed the 80% target. Every Must functional requirement is implemented. The Must items not fully met are NFR-010, accepted as technical debt through CR-014, and NFR-007, where the controls are in place but one test is missing. The delivered scope is coherent: every stakeholder group (ST-1 to ST-5) has a working journey.
+| Measure | Basis | Met | Partially Met | Not Met | Result |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Committed M1 scope | The 11 acceptance criteria of FR-001 to FR-005 and FR-007 | 11 | 0 | 0 | 11 of 11 = **100%** |
+| Full approved baseline | 36 FR acceptance criteria and 10 NFR targets (46) | 45 | 0 | 1 (NFR-010) | 45 of 46 = **97.8%** |
+
+**Conclusion:** both figures exceed the 80% target. Every Must functional requirement is implemented. The only Must item not met is NFR-010, accepted as technical debt through CR-014. The delivered scope is coherent: every stakeholder group (ST-1 to ST-5) has a working journey.
 
 ## Final Deployment and Go-Live Decision
-**Final deployment state: simulated production.** **Decision: GO for simulated production; NO-GO for a public hosted production release.**
+**Final deployment state: hosted.** Release `v1.0.0` runs at https://sen381-project-group-i-2026.onrender.com/ on a Render Free web service built from the repository's `Dockerfile`, with its database on Neon Free.
+**Decision: GO for a coursework-scale hosted release on Render Free and Neon Free; NO-GO for real public use until a backup restore is rehearsed (RSK-015).**
 
-| Simulated production requirement | Evidence |
+| Production requirement | Evidence |
 | :--- | :--- |
-| Production-like environment separate from development | `Production` environment, launch profile disabled, a new database separate from the development and test databases, HTTPS only |
+| Production environment separate from development | Render web service in the `Production` environment with its own Neon database, separate from the development and test databases; HTTPS with HSTS, plain HTTP redirected |
 | Release identification | `v1.0.0` |
-| Production configuration and controlled secrets | Connection string and first-administrator password passed only as environment variables; nothing in the repository (RSK-005) |
-| Deployment verification | 13 of 13 checks: sign-in required for every page and the API, development stand-in ignored, Secure/HttpOnly cookie, forced password change, fresh database with categories and one administrator only. `Test/Evidence/Final_Simulated_Production.md` |
+| Production configuration and controlled secrets | Connection string and first-administrator password set in Render's environment settings; none in the repository or the image (RSK-005) |
+| Deployment verification | Simulated production 13 of 13 (`Test/Evidence/Final_Simulated_Production.md`); on the live site every private page and the API refuse anonymous access, the development stand-in is ignored and no server files are exposed (`Test/Evidence/Hosted_Deployment_Check.md`) |
+| Cost | $0 per month on Render Free and Neon Free (NFR-009, ADR-007) |
 
-**Why not a public production release yet:** no container image or hosting pipeline exists (TD-04, RSK-006); password-hash cost on a free-tier host is unmeasured (RSK-014); no backup or restore has been rehearsed (RSK-015); sign-in has no MFA or self-service reset (RSK-012). Releasing publicly would put requesters' personal data (NFR-003) on an unverified host with no recovery path. **Before go-live:** add a Dockerfile and deployment pipeline with the migration step, measure sign-in on the host, take and restore a Neon branch backup, and confirm GitHub push protection.
+| Go-live condition | Status | Effect on the decision |
+| :--- | :--- | :--- |
+| Runs in the intended hosting environment | Met: Dockerfile on Render (PR #39) | RSK-006 closed |
+| Real sign-in, development stand-in disabled | Met on the live site (ADR-008) | RSK-012 mitigated |
+| Automated tests and the CI gate pass | Met: 288 of 288; CI green on `main` | RSK-020 mitigated |
+| Backup restore rehearsed | Not done | Blocks real public use (RSK-015) |
+| MFA and self-service password reset | Not built | Residual of RSK-012 |
+| Sign-in and queue timing on the host | Not measured; the hosted pages answer in under 1 s | Residual of RSK-014 |
+
+**Why real public use is NO-GO:** it would hold requesters' personal data (NFR-003) with no proven way to recover it. **Before public use:** take and restore a Neon branch backup, add MFA for administrators, measure sign-in on the host and confirm GitHub push protection.
 
 ## Project Reflection
-* **Problem and value:** the final product replaces informal requests with a tracked lifecycle and gives every stakeholder (requesters, staff, management, administrators, sponsor) a working journey, which addresses the M1 problem statement.
-* **Scope:** 100% of the committed M1 scope and 94.6% of the full baseline were delivered. Changes were controlled: 16 CRs plus one editorial correction, each with a final status.
-* **Quality:** confidence comes from 287 automated tests on a real PostgreSQL database, a concurrency test, a role matrix, 26 of 26 acceptance checks and a production-configuration check. Still uncertain: hosted performance and recovery, and attack resistance (no penetration test).
-* **Risk, defects and debt:** 10 of 25 risks closed, 9 mitigated, 6 accepted; all found defects fixed except one missing test (DEF-002); TD-02 and TD-05 repaid.
-* **Decision consequences:** ADR-002 (conditional update) protected the most important rule, single ownership, from the start. ADR-004 with ADR-005 made new roles cheap: the Sponsor role and real sign-in were added without changing the policy. ADR-001 (microservices) was approved but never built, which left an architecture deviation (CR-014) and NFR-010 unmet.
-* **Execution:** two overlapping code trees (`app/` and `Backend/`) cost rework until the requester screens were ported in M3; deferring sign-in (CR-003) to M4 meant security evidence arrived late. Reviewed PRs, CI with a real database and a controlled change register kept the work traceable. AI use is recorded with human verification in the AI Usage Register.
-* **Future:** hosted deployment and backups, MFA and self-service reset, the service split, an updated API contract, mobile layout and an accessibility review.
+| Area | Reflection |
+| :--- | :--- |
+| **Problem and value** | The final product replaces informal requests with a tracked lifecycle and gives every stakeholder (requesters, staff, management, administrators, sponsor) a working journey, which addresses the M1 problem statement. |
+| **Scope** | 100% of the committed M1 scope and 97.8% of the full baseline were delivered. Changes were controlled: 16 CRs plus one editorial correction, each with a final status. |
+| **Quality** | Confidence comes from 288 automated tests on a real PostgreSQL database, a concurrency test, a role matrix, 26 of 26 acceptance checks, a production-configuration check and checks on the live site. Still uncertain: recovery (no restore rehearsal), timing under real load on the host, and attack resistance (no penetration test). |
+| **Risk, defects and debt** | 11 of 25 risks closed, 10 mitigated, 4 accepted; all found defects fixed, including DEF-002; TD-02, TD-04 and TD-05 repaid. |
+| **Decision consequences** | ADR-002 (conditional update) protected the most important rule, single ownership, from the start. ADR-004 with ADR-005 made new roles cheap: the Sponsor role and real sign-in were added without changing the policy. ADR-007 took the release live at no cost. ADR-001 (microservices) was approved but never built, which left an architecture deviation (CR-014) and NFR-010 unmet. |
+| **Execution** | Two overlapping code trees (`app/` and `Backend/`) cost rework until the requester screens were ported in M3; deferring sign-in (CR-003) to M4 meant security evidence arrived late. Reviewed PRs, CI with a real database and a controlled change register kept the work traceable. AI use is recorded with human verification in the AI Usage Register. |
+| **Future** | Backups and a restore rehearsal, MFA and self-service reset, the service split, an updated API contract, mobile layout and an accessibility review. |
 
 ## Known Limitations and Future Work
 | Limitation | Effect | Future work |
 | :--- | :--- | :--- |
 | One deployable instead of services (CR-014, TD-01) | NFR-010 not met; scaling means scaling the whole application | Split Requests, Access, ReferenceData and Reporting as ADR-001 describes |
-| No hosted deployment (TD-04) | Verified as simulated production only | Dockerfile, deployment pipeline, hosted sign-in measurement |
-| No backup or restore rehearsal (RSK-015) | Data loss on the host could not yet be recovered | Neon branch backups and a restore rehearsal |
+| No backup or restore rehearsal (RSK-015) | Data loss on the hosted database could not yet be recovered; this blocks real public use | Neon branch backups and a restore rehearsal |
+| Free hosting tier (RSK-014) | The site sleeps after 15 minutes idle and takes about a minute to wake; 512 MB and 0.1 vCPU for the app | Render Starter (USD 7 per month) if the project continues |
 | Sign-in without MFA or self-service reset (RSK-012) | Weaker protection for administrator accounts | MFA, emailed reset links, breached-password check |
 | API contract outdated (CR-015, TD-03) | External clients would follow the wrong contract | Update `openapi.yaml` and ADR-006 |
-| Usability walkthrough not run (NFR-001) | The five-step target is built but not measured | Timed first-user walkthrough |
-| Audit trigger without a direct test (DEF-002) | NFR-007 Partially Met | Add the test |
 | Desktop layout only; no accessibility review (TD-06) | Phone users and assistive technology not verified | Responsive layout and a WCAG review |
 
 ---
 
 ## Risk Register
 **Claim:** project risks are identified, rated, owned and tracked, and the verification and CI work is aimed at the highest-rated risks rather than spread evenly.  
-**Final position (v4.0):** the register is concluded for `v1.0.0`: 10 risks closed, 9 mitigated with a stated residual, 6 accepted or carried, each with its reason in `Docs/Risks/Risk_Register_v4.0.md`. Closed include RSK-022 (`Backend/` removed) and RSK-008 (ADR-003 accepted); RSK-012 is mitigated by real sign-in, with no MFA as its residual; RSK-025 is accepted as technical debt (CR-014). The M3 position below is kept as history.
-**M3 position (v3.0):** the register continues the version from PED v2.2. All 22 original risks are carried forward, one risk was added for CI (RSK-023), one for ambiguous acceptance criteria (RSK-024) and one for architecture conformance (RSK-025). No risk has been closed, and no rating has changed without evidence.  
-| Measure | Count |
+**Final position (v4.0, release `v1.0.0`):** the register is concluded; each risk's final status and reason are in `Docs/Risks/Risk_Register_v4.0.md`. Ratings are inherent (before mitigation), so they stay as rated; the statuses change.
+
+| Measure | M3 (v3.0, 16/10/2026) | Final (v4.0, 18/10/2026) |
+| :--- | :--- | :--- |
+| Total risks | 25 | 25 |
+| High (6) / Medium (3 to 4) | 12 / 13 | 12 / 13 |
+| Open | 8 | 0 |
+| Mitigating | 17 | 0 |
+| Closed | 0 | 11 |
+| Mitigated (residual remains) | 0 | 10 |
+| Accepted / Carried | 0 | 4 |
+
+| Final status | Risks |
 | :--- | :--- |
-| Total risks | 25 |
-| High (6) | 12 |
-| Medium (3 to 4) | 13 |
-| Open | 8 |
-| Mitigating | 17 |
-| Mitigated or closed | 0 |
+| Closed | RSK-001, RSK-002, RSK-003, RSK-006, RSK-007, RSK-008, RSK-009, RSK-016, RSK-018, RSK-022, RSK-023 |
+| Mitigated | RSK-005, RSK-010, RSK-011, RSK-012, RSK-013, RSK-014, RSK-017, RSK-019, RSK-020, RSK-021 |
+| Accepted / Carried | RSK-004, RSK-015, RSK-024, RSK-025 |
 
 ### Risks driving quality work
-| Risk | Concern | M3 control and evidence |
-| :--- | :--- | :--- |
-| RSK-010 (High) | Two staff claim the same request | UT-05, IT-01, E2E-02 passed in CI on 14/10/2026 (one owner under eight simultaneous accepts) |
-| RSK-011 (High) | Access control without ownership/scope enforcement | UT-03, UT-06, BB-04, BB-05, IT-05, IT-07 passed; they use the development identity stand-in |
-| RSK-021 (High) | Malformed or out-of-range input | BB-01, BB-02, BB-03 passed (invalid status, note length boundaries, note required) |
-| RSK-020 (High) | CI not reliably running the intended tests | CI runs all test projects against PostgreSQL and fails on skipped tests; all five jobs passed; Quality Gate still to be enforced as a required check |
-| RSK-022 (High) | Two overlapping implementation trees | CI and tests target `app/`; canonical declaration and handling of `Backend/` still to be recorded |
-| RSK-025 (High) | Approved architecture and implementation disagree | Outcome of PR #23 and a controlled change record still to be recorded |
-| RSK-005, RSK-019 | Leaked secrets and vulnerable dependencies | Secrets Scan and Dependency jobs passed in CI; GitHub secret scanning and Dependabot settings to be confirmed |
-| RSK-012 (High) | Development identity is not real authentication | Not verified by the suite; stated as a release limitation |
+| Risk | Concern | Final control and evidence | Final status |
+| :--- | :--- | :--- | :--- |
+| RSK-010 (High) | Two staff claim the same request | Conditional update; UT-05, IT-01, E2E-02 (one owner under eight simultaneous accepts) | Mitigated: shown under test load only |
+| RSK-011 (High) | Access control without ownership or scope | One policy for role, ownership and category scope; role matrix and sign-in tests; the live site refuses every private page and API call without sign-in | Mitigated: no penetration test |
+| RSK-012 (High) | No real authentication | Cookie sign-in with PBKDF2 hashes (CR-003, ADR-008); `SignInTests`; the development stand-in is ignored on the live site | Mitigated: no MFA, administrator-only reset |
+| RSK-021 (High) | Malformed or out-of-range input | BB-01 to BB-03; per-field checks; attachment type checked from the file | Mitigated: no penetration test |
+| RSK-020 (High) | CI not running the intended tests | Every test project against PostgreSQL; a skipped test fails the job; the Quality Gate is required with 2 approvals ([PR #38](https://github.com/Gemdave/SEN381_Project-2026/pull/38)) | Mitigated |
+| RSK-006 (High) | The app fails outside a developer's machine | The Dockerfile image runs on Render with Neon (PR #39); the hosted checks pass | Closed |
+| RSK-022 (High) | Two overlapping implementation trees | `Backend/` removed; `app/` is the only implementation | Closed |
+| RSK-025 (High) | Approved architecture and build disagree | One deployable accepted as technical debt (CR-014, TD-01) | Accepted: NFR-010 not met |
+| RSK-005, RSK-019 | Leaked secrets, vulnerable packages | Secrets scan and dependency check on every CI run; 0 vulnerable packages; hosted settings held in Render | Mitigated: push protection and Dependabot settings not evidenced |
+| RSK-014, RSK-015 | Free-tier limits, no backup | Live at $0 per month; no restore rehearsed | RSK-014 Mitigated; RSK-015 Accepted |
 
-**Interpretation:** the High-rated risks are the ones with controls or tests in place, but several controls are evidenced only on one CI run and use the development identity. Ratings will be re-assessed on the final release candidate run, and the remaining Open risks feed the residual risk statement in the Release Evidence Summary.
-**Evidence:** [Risk Register v4.0](../Risks/Risk_Register_v4.0.md) | [Risk Register v3.0](../Risks/_Archive/Risk_Register_v3.0.md) | [Test plan](../../Test/Docs/Test_Plan_v2.md) | [CI quality gates](../CI_Documentation/CI_Quality_Gates.md) | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178)
+**Interpretation:** every High risk ends Closed, Mitigated with a stated residual, or Accepted with its consequence. The residuals that matter most for real public use are RSK-015 (no restore rehearsal) and RSK-012 (no MFA), which is why go-live stops at coursework scale.
+**Evidence:** [Risk Register v4.0](../Risks/Risk_Register_v4.0.md) | [Risk Register v3.0](../Risks/_Archive/Risk_Register_v3.0.md) | [Test plan](../../Test/Docs/Test_Plan_v2.md) | [CI quality gates](../CI_Documentation/CI_Quality_Gates.md) | [Hosted deployment check](../../Test/Evidence/Hosted_Deployment_Check.md)
 
 ---
 ## Baseline Sign-Off
@@ -629,8 +672,8 @@ The M2 table in Controlled Changes to the Baseline is kept as history. The M3 de
 | **Baseline Type** | Final project (M4) |
 | **Version** | v4.0 Final; release `v1.0.0` |
 | **Date** | 18/10/2026 |
-| **Scope completion** | 100% of committed M1 scope; 94.6% of the full baseline |
-| **Deployment decision** | Simulated production (GO); public hosted production (NO-GO) |
+| **Scope completion** | 100% of committed M1 scope; 97.8% of the full baseline |
+| **Deployment decision** | Hosted on Render Free and Neon Free: GO at coursework scale; NO-GO for real public use until a restore is rehearsed |
 | **Records concluded** | RTM v4.0, Change Register v4.0, Risk Register v4.0, ADR-001 to ADR-008, Defect and Technical Debt registers, AI Usage Register |
 | **Outcome** | **Concluded** |
 

@@ -1,9 +1,9 @@
 # Final Simulated Production Check (release v1.0.0)
 
 **Purpose:** evidence for the final go-live decision (PED v4.0, Final Deployment & Go-Live Decision). It shows the release running in a production-like environment, separate from development, before any hosted deployment exists.  
-**Date:** 18/10/2026, 18:57 SAST  
-**Build:** `SignIn-Module`, the content tagged as `v1.0.0` after merge  
-**Result:** 13 of 13 checks passed
+**Date:** 18/10/2026, 18:57 SAST; re-run 18/10/2026, 20:38 SAST  
+**Build:** first run on `SignIn-Module`; re-run on `project-finalisation`, the content tagged as `v1.0.0`  
+**Result:** 13 of 13 checks passed on both runs
 
 ## Environment
 | Setting | Value |
@@ -31,8 +31,8 @@
 | 12 | The stored password hash does not contain the password | Pass |
 | 13 | The application log records the startup step | Pass |
 
-The full automated suite passed on the same build: 287 of 287 (89 domain, 92 application, 106 integration).
+The full automated suite passed on each build: 287 of 287 on the first run, and 288 of 288 on the re-run (89 domain, 92 application, 107 integration), after the DEF-002 test was added.
 
 ## What this does and does not show
 **Shows:** the release starts and runs with production settings, secrets stay outside the repository, real sign-in protects every page and the API, and a fresh database is prepared without development data.  
-**Does not show:** behaviour on a hosted server (no container or hosting yet, TD-04), free-tier limits or hash cost on that server (RSK-014), backup and restore (RSK-015), or load beyond PT-01.
+**Does not show:** behaviour on the hosted server (see `Hosted_Deployment_Check.md` for the live site), sign-in time on that server (RSK-014), backup and restore (RSK-015), or load beyond PT-01.

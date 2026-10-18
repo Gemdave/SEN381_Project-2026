@@ -114,11 +114,11 @@ Not included on purpose (listed as limitations in section 5): self-service passw
 
 ## 7. Records to update
 
-**CR-003 (change register):** *Approved and implemented.* Cookie sign-in with PBKDF2 password hashes replaces the development stand-in outside Development; roles unchanged (ADR-005). Evidence: section 6 tests, CI run on the final commit `<sha>`.
+**CR-003 (change register):** *Approved and implemented.* Cookie sign-in with PBKDF2 password hashes replaces the development stand-in outside Development; roles unchanged (ADR-005). Evidence: section 6 tests; the CI run on the merge of PR #38 ([run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/39151325701)).
 
 **RSK-012 (risk register):** mitigation implemented; residual risk now = no MFA, no self-service reset, lockout abuse, free-tier hash cost. Re-rate after the first green CI run — do not mark closed before that.
 
-**TD-02:** repaid. **TD-04:** unchanged until the Dockerfile and deployment exist.
+**TD-02:** repaid. **TD-04:** repaid at v1.0.0: the `Dockerfile` and the Render deployment (PR #39).
 
 **RTM:** add the section 6 tests against FR-019 (AC-019.1) and FR-020 (AC-020.1), and record CR-003 as the change reference.
 

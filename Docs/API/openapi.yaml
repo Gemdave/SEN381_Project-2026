@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: CivicConnect API
   version: "1.0"
-  description: Build Slice 1 contract. Errors are application/problem+json.
+  description: Build Slice 1 contract, not updated to the final build (CR-015, TD-03). See API_Contract_v1.md section 8 for the endpoints release v1.0.0 exposes. Errors are application/problem+json in this contract.
 servers:
   - url: /api/v1
 paths:

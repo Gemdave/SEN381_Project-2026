@@ -6,13 +6,15 @@
 
 > **Status.** This test plan selects, from the tests that exist, the cases that have a traceable engineering basis and maps each to a requirement, acceptance criterion, ASR or risk. Expected results are taken from the PED and ADRs, not from observed output. The Actual, Status, Evidence and Interpretation fields in section 9 are blank until real runs are recorded. Items marked **[confirm]** need checking against the code or PED.
 
+> **Final (v1.0.0, 18/10/2026).** This is the M3 record, kept as written with its evidence links filled in. Since M3 the suite grew to 288 automated tests, all passing; FR-001 to FR-023 are built and tested; real sign-in replaced the development identity outside Development (CR-003); E2E-03 and PT-01 have results in section 9; and section 13 answers each open item.
+
 ---
 ## 1. Purpose and scope
 This plan defines the focused verification suite for the M3 release candidate. It protects the behavior that is actually built and that matters most: controlled status transitions, single ownership under concurrency, role-based access, insert-only history and transactional integrity.  
 
 **In scope (implemented core slice):** FR-007, FR-008, FR-009, FR-011, FR-012, FR-013, FR-014; ASR-01, ASR-02, ASR-03; NFR-003 (view of own request only), NFR-004, NFR-005.  
 
-**Not verified in M3 (not implemented in `app/`):** FR-001 to FR-004 (request submission, categories, requester history), FR-006 attachments, management and administrator functions, reporting, and real authentication (CR-003). These have no verification evidence and must not be described as verified.
+**Not verified in M3 (not implemented in `app/`):** FR-001 to FR-004 (request submission, categories, requester history), FR-006 attachments, management and administrator functions, reporting, and real authentication (CR-003). These have no verification evidence and must not be described as verified. *Final: all are now built and tested (section 13).*
 
 ---
 ## 2. Risk-based strategy
@@ -24,7 +26,7 @@ This plan defines the focused verification suite for the M3 release candidate. I
 | ASR-03 | History edited or deleted after the fact | IT-02 |
 | NFR-005 | Request owner inconsistent with status | IT-03, IT-01 |
 | RSK-021 (High) | Malformed or out-of-range input reaches persistence | BB-01, BB-02 |
-| RSK-012 (High) | Development identity treated as real authentication | Not tested; residual risk |
+| RSK-012 (High) | Development identity treated as real authentication | Not tested at M3; final: `SignInTests` and `AppUserSignInTests` (CR-003) |
 | RSK-022 (High) | Two implementation trees diverge | Tests and CI target `app/` only, declared canonical |
 
 ---
@@ -50,8 +52,8 @@ Legitimate overlap is used: for example UT-05 is a unit, negative and high-prior
 | API/integration/E2E | Run in CI against a PostgreSQL 17 service container (`CIVICCONNECT_TEST_DB`); locally against the `app/db` docker-compose database (see `app/db/TEST_DATABASE.md`) |
 | Database lifecycle | The fixture deletes and recreates the test database from the real migrations at the start of each run; it must only ever point at a local database whose name ends in `_test` |
 | Test data | Created per test by `TestData` (requester, staff, other staff, administrator, request, category) so tests do not depend on shared mutable data |
-| Identity | Development stand-in selected with the `user` query value (CR-003); RBAC results do not cover real authentication |
-| Staging-only checks | E2E-03 (UI walkthrough) and PT-01 run against the staging deployment, outside the CI gate |
+| Identity | Development stand-in selected with the `user` query value (CR-003); RBAC results do not cover real authentication. Final: real sign-in has its own tests (`SignInTests`) |
+| Staging-only checks | E2E-03 (UI walkthrough) and PT-01 run against the staging deployment, outside the CI gate. Final: there was no separate staging; PT-01 ran locally and the live site was checked after go-live (`Test/Evidence/Hosted_Deployment_Check.md`) |
 | Traceability | Each counted test carries its case ID, for example `[Trait("TestCase", "UT-05")]`, so CI results map back to this plan |
 
 ---
@@ -128,32 +130,32 @@ NoteServiceTests (three cases), AssignmentServiceTests (success, not found), Sta
 
 ---
 ## 9. Execution evidence log
-**Run summary (CI, GitHub-hosted runner, 14/10/2026):** 44 of 44 executed cases passed, 0 failed, 0 skipped (Domain 8, Application 12, Integration 24). The integration cases ran against a PostgreSQL service container, so none were skipped. No coverage report was produced because `coverlet.collector` has not been added to the test projects yet.  
+**Run summary ([CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178), GitHub-hosted runner, 15/10/2026):** 44 of 44 executed cases passed, 0 failed, 0 skipped (Domain 8, Application 12, Integration 24). The integration cases ran against a PostgreSQL service container, so none were skipped. No coverage report was produced because `coverlet.collector` has not been added to the test projects yet.  
 | ID | Run date | Commit / RC tag | Actual result | Status (Pass / Fail / Blocked) | Evidence link | Interpretation and limitation |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| UT-01 | 14/10/2026 | [fill in: commit sha] | 8 of 8 rows passed (4 allowed, 4 refused pairs) | Pass | [CI run link]; test-results artifact (TRX) | The domain rule matches the baselined lifecycle for the pairs tested; it does not enumerate every possible pair. |
-| UT-02 | 14/10/2026 | [fill in: commit sha] | Passed; outcome NotAllowed, no history or message written | Pass | [CI run link]; test-results artifact (TRX) | A refused move leaves no trace at service level; the database layer is covered by IT cases. |
-| UT-03 | 14/10/2026 | [fill in: commit sha] | Passed; outcome Forbidden, no history written | Pass | [CI run link]; test-results artifact (TRX) | Permission is checked before any write, using a fake policy; real policy is covered by BB-05 and IT-07. |
-| UT-04 | 14/10/2026 | [fill in: commit sha] | Passed; outcome NoteRequired for a whitespace-only note | Pass | [CI run link]; test-results artifact (TRX) | Covers blank versus present note only; other invalid note content is covered by BB-02. |
-| UT-05 | 14/10/2026 | [fill in: commit sha] | Passed; outcome AlreadyOwned with the existing owner, no history written | Pass | [CI run link]; test-results artifact (TRX) | Proves the service reports a lost race correctly; the real race is IT-01 and E2E-02. |
-| UT-06 | 14/10/2026 | [fill in: commit sha] | Passed; outcome Forbidden, nothing written | Pass | [CI run link]; test-results artifact (TRX) | Authorization precedes persistence in AssignmentService; does not test other services. |
-| UT-07 | 14/10/2026 | [fill in: commit sha] | Passed; StatusChanged then NoteAdded recorded, one requester message containing the note | Pass | [CI run link]; test-results artifact (TRX) | Uses in-memory fakes; the persisted result is checked in IT-06. |
-| BB-01 | 14/10/2026 | [fill in: commit sha] | 4 of 4 rows passed (Received, Assigned, Closed refused with Conflict; "Banana" refused with BadRequest) | Pass | [CI run link]; test-results artifact (TRX) | Only the Assigned starting state was exercised; other starting states are covered at unit level (UT-01). |
-| BB-02 | 14/10/2026 | [fill in: commit sha] | 4 of 4 rows passed (lengths 0 and 2001 refused; 1 and 2000 accepted) | Pass | [CI run link]; test-results artifact (TRX) | Boundaries confirmed for notes only; other input fields are not tested. Source of the 2000 limit still to be cited. |
-| BB-03 | 14/10/2026 | [fill in: commit sha] | Passed; BadRequest with code note_required, then OK with a note | Pass | [CI run link]; test-results artifact (TRX) | Confirms the rule end to end through the API for the Resolved transition only. |
-| BB-04 | 14/10/2026 | [fill in: commit sha] | Passed; own and open requests visible, others hidden, filters worked, requester received Forbidden | Pass | [CI run link]; test-results artifact (TRX) | Tests one scope and filter combination with generated data; not every filter or sort order. |
-| BB-05 | 14/10/2026 | [fill in: commit sha] | Passed; other staff and requesters received Forbidden on status change and requester on accept | Pass | [CI run link]; test-results artifact (TRX) | Actor is chosen with the development identity stand-in, so this does not show real authentication works (RSK-012). |
-| IT-01 | 14/10/2026 | [fill in: commit sha] | Passed; one Assigned, seven AlreadyOwned, one owner and one history row stored | Pass | [CI run link]; test-results artifact (TRX) | Real PostgreSQL race with eight contexts; one run does not prove the race can never be lost, but the conditional update design supports it. |
-| IT-02 | 14/10/2026 | [fill in: commit sha] | Passed; UPDATE and DELETE on history refused, note unchanged | Pass | [CI run link]; test-results artifact (TRX) | Shows the database protects history for the connection used; a database superuser could still alter it (RSK-013). |
-| IT-03 | 14/10/2026 | [fill in: commit sha] | Passed; database rejected an Assigned request with no owner | Pass | [CI run link]; test-results artifact (TRX) | Confirms the database constraint exists in the migrated schema. |
-| IT-04 | 14/10/2026 | [fill in: commit sha] | Passed; after a forced failure the request stayed Received and unowned, no history rows | Pass | [CI run link]; test-results artifact (TRX) | Covers the assign-and-history path; other multi-step paths are not tested. |
-| IT-05 | 14/10/2026 | [fill in: commit sha] | Passed; owner may view, stranger may not | Pass | [CI run link]; test-results artifact (TRX) | Tested at policy level, not through a requester-facing page, which is not implemented. |
-| IT-06 | 14/10/2026 | [fill in: commit sha] | Passed; status Closed, five history rows, four requester messages | Pass | [CI run link]; test-results artifact (TRX) | Single happy-path lifecycle with generated data. |
-| IT-07 | 14/10/2026 | [fill in: commit sha] | Passed; other staff Forbidden, administrator Changed | Pass | [CI run link]; test-results artifact (TRX) | Matches the implemented rule (owner or administrator); AC-014.2 wording still to be reconciled (open item 1). |
-| E2E-01 | 14/10/2026 | [fill in: commit sha] | Passed; correct status codes throughout, request Closed, five history rows, four messages | Pass | [CI run link]; test-results artifact (TRX) | Runs through the real application host and database over HTTP; does not drive the browser UI. |
-| E2E-02 | 14/10/2026 | [fill in: commit sha] | Passed; one OK and seven Conflict, one Assigned history row | Pass | [CI run link]; test-results artifact (TRX) | The one-owner rule holds over HTTP in this run; the CI runner is a single machine with one database. |
-| E2E-03 | | | Not yet run | | | Planned on staging |
-| PT-01 | | | Not yet run | | | Staging exercise pending; the CI timing guard passed but is not the PT-01 result |
+| UT-01 | 15/10/2026 | `main`, merged M3 build | 8 of 8 rows passed (4 allowed, 4 refused pairs) | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | The domain rule matches the baselined lifecycle for the pairs tested; it does not enumerate every possible pair. |
+| UT-02 | 15/10/2026 | `main`, merged M3 build | Passed; outcome NotAllowed, no history or message written | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | A refused move leaves no trace at service level; the database layer is covered by IT cases. |
+| UT-03 | 15/10/2026 | `main`, merged M3 build | Passed; outcome Forbidden, no history written | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | Permission is checked before any write, using a fake policy; real policy is covered by BB-05 and IT-07. |
+| UT-04 | 15/10/2026 | `main`, merged M3 build | Passed; outcome NoteRequired for a whitespace-only note | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | Covers blank versus present note only; other invalid note content is covered by BB-02. |
+| UT-05 | 15/10/2026 | `main`, merged M3 build | Passed; outcome AlreadyOwned with the existing owner, no history written | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | Proves the service reports a lost race correctly; the real race is IT-01 and E2E-02. |
+| UT-06 | 15/10/2026 | `main`, merged M3 build | Passed; outcome Forbidden, nothing written | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | Authorization precedes persistence in AssignmentService; does not test other services. |
+| UT-07 | 15/10/2026 | `main`, merged M3 build | Passed; StatusChanged then NoteAdded recorded, one requester message containing the note | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | Uses in-memory fakes; the persisted result is checked in IT-06. |
+| BB-01 | 15/10/2026 | `main`, merged M3 build | 4 of 4 rows passed (Received, Assigned, Closed refused with Conflict; "Banana" refused with BadRequest) | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | Only the Assigned starting state was exercised; other starting states are covered at unit level (UT-01). |
+| BB-02 | 15/10/2026 | `main`, merged M3 build | 4 of 4 rows passed (lengths 0 and 2001 refused; 1 and 2000 accepted) | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | Boundaries confirmed for notes only; other input fields are not tested. Source of the 2000 limit still to be cited. |
+| BB-03 | 15/10/2026 | `main`, merged M3 build | Passed; BadRequest with code note_required, then OK with a note | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | Confirms the rule end to end through the API for the Resolved transition only. |
+| BB-04 | 15/10/2026 | `main`, merged M3 build | Passed; own and open requests visible, others hidden, filters worked, requester received Forbidden | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | Tests one scope and filter combination with generated data; not every filter or sort order. |
+| BB-05 | 15/10/2026 | `main`, merged M3 build | Passed; other staff and requesters received Forbidden on status change and requester on accept | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | Actor is chosen with the development identity stand-in, so this does not show real authentication works (RSK-012). |
+| IT-01 | 15/10/2026 | `main`, merged M3 build | Passed; one Assigned, seven AlreadyOwned, one owner and one history row stored | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | Real PostgreSQL race with eight contexts; one run does not prove the race can never be lost, but the conditional update design supports it. |
+| IT-02 | 15/10/2026 | `main`, merged M3 build | Passed; UPDATE and DELETE on history refused, note unchanged | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | Shows the database protects history for the connection used; a database superuser could still alter it (RSK-013). |
+| IT-03 | 15/10/2026 | `main`, merged M3 build | Passed; database rejected an Assigned request with no owner | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | Confirms the database constraint exists in the migrated schema. |
+| IT-04 | 15/10/2026 | `main`, merged M3 build | Passed; after a forced failure the request stayed Received and unowned, no history rows | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | Covers the assign-and-history path; other multi-step paths are not tested. |
+| IT-05 | 15/10/2026 | `main`, merged M3 build | Passed; owner may view, stranger may not | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | Tested at policy level, not through a requester-facing page, which is not implemented. |
+| IT-06 | 15/10/2026 | `main`, merged M3 build | Passed; status Closed, five history rows, four requester messages | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | Single happy-path lifecycle with generated data. |
+| IT-07 | 15/10/2026 | `main`, merged M3 build | Passed; other staff Forbidden, administrator Changed | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | Matches the implemented rule (owner or administrator); AC-014.2 wording still to be reconciled (open item 1). |
+| E2E-01 | 15/10/2026 | `main`, merged M3 build | Passed; correct status codes throughout, request Closed, five history rows, four messages | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | Runs through the real application host and database over HTTP; does not drive the browser UI. |
+| E2E-02 | 15/10/2026 | `main`, merged M3 build | Passed; one OK and seven Conflict, one Assigned history row | Pass | [CI run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/38705719178); test-results artifact (TRX) | The one-owner rule holds over HTTP in this run; the CI runner is a single machine with one database. |
+| E2E-03 | 13/10/2026 | Release candidate | The UI journey (queue, details, accept, status change, note) passed within the 26 acceptance checks | Pass | `Test/Evidence/M3_Acceptance_Checks.md` | Local build with pages driven over HTTP; not on staging and not in a browser |
+| PT-01 | 13/10/2026 | Release candidate | p95 0.064 s with 5 users, 0 errors, 1,000 requests | Pass | `Test/Evidence/PT-01_Results.md` | Local Release build, not staging; free-tier cold starts not measured |
  
 Supporting tests (not counted) also passed: NoteServiceTests (3), AssignmentServiceTests success and not found, Losing_the_race, A_requester_cannot_use_staff_actions, skipping_a_step, Staff_see_unassigned_and_their_own_requests, and the CI timing guard for 1,000 requests.   
 Every failure must be entered in the Defect Register with severity, status, fix and regression evidence. A corrected defect keeps its test in the suite as a regression test.
@@ -180,10 +182,10 @@ Add these columns to the existing RTM rows; do not rebuild the RTM.
 ## 11. What this plan does not prove
 - It does not show the absence of defects; it shows the selected behaviors work under the chosen data.
 - Coverage percentage, if reported, shows which lines ran, not that the assertions are right.
-- Development identity is used for access control (the `user` query value); passing RBAC tests says nothing about real authentication (RSK-012).
+- Development identity is used for access control (the `user` query value); passing RBAC tests says nothing about real authentication (RSK-012). Final: real sign-in is now tested (`SignInTests`).
 - E2E-01 and E2E-02 exercise the API, not the browser UI.
 - CI performance numbers come from a shared runner and are only a regression guard; the staging exercise is the performance evidence and does not predict municipal-scale load.
-- Requester-facing requirements (FR-001 to FR-004) are not implemented, so they have no verification evidence.
+- Requester-facing requirements (FR-001 to FR-004) are not implemented, so they have no verification evidence. Final: built and tested at v1.0.0.
 
 ---
 ## 12. Open items to confirm before execution
@@ -193,3 +195,19 @@ Add these columns to the existing RTM rows; do not rebuild the RTM.
 4. Which load tool will be used for PT-01, and the staging URL.
 5. Whether the team will add a scripted UI test or record E2E-03 as a documented manual run.
 6. That every counted test carries its `[Trait("TestCase", "...")]` ID.
+
+---
+## 13. Final status (v1.0.0)
+| Item | Final position |
+| :--- | :--- |
+| Suite | 288 automated tests (89 domain, 92 application, 107 integration), all passing on 18/10/2026; the 21 counted cases above are unchanged |
+| Scope verified | FR-001 to FR-023, NFR-001 to NFR-009 and real sign-in (`SignInTests`, `AppUserSignInTests`, `Pbkdf2PasswordHasherTests`); traced in RTM v4.0 |
+| CI | Every test project runs against PostgreSQL; the Quality Gate is a required check on `main` with 2 approvals ([PR #38](https://github.com/Gemdave/SEN381_Project-2026/pull/38)); a gate failure was fixed before merge ([failed run](https://github.com/Gemdave/SEN381_Project-2026/actions/runs/39142781118)) |
+| Production checks | Simulated production 13 of 13 (`Test/Evidence/Final_Simulated_Production.md`); live site checks (`Test/Evidence/Hosted_Deployment_Check.md`) |
+| NFR-001 | Timed first-user walkthrough met the target (recorded in PED v4.0, M1 Scope to Final Delivery) |
+| Open item 1 (AC-014.2) | Settled by CR-012: the owner in scope or an administrator closes, as IT-07 tests |
+| Open item 2 (backward and same-state moves) | Settled by the implemented behaviour: refused, as UT-01 tests (RSK-024) |
+| Open item 3 (note limit) | Specified in `Docs/API/API_Contract_v1.md` (1 to 2000 characters) and enforced by `NoteService.MaxLength` |
+| Open item 4 (load tool, staging URL) | A curl script, `Test/Performance/PT-01_queue.sh`, run locally; the live site is https://sen381-project-group-i-2026.onrender.com/ |
+| Open item 5 (E2E-03) | Recorded as manual checks within the acceptance checks; no scripted browser test |
+| Open item 6 (test case traits) | Partly done: 10 of the 21 counted cases carry a `TestCase` trait; the rest are named by class and method in section 5 |

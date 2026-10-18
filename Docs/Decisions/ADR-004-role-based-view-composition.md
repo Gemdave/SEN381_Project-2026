@@ -73,8 +73,8 @@ C and D both have three Strong ratings, but D is Weak on cost, one of the three 
 
 ## Components
 
-**Exist:** both code trees (RSK-022) have `_RequestSummary`, `_HistoryList`, `_EmptyState`, `StatusBadgeTagHelper`, the staff Queue and Details pages, `RequestCapabilities` and `CapabilityFactory`. The capability fields differ: `Backend/` uses `CanAccept`, `CanTransition`, `CanSeeInternals` and `NextStatuses`; `app/` uses `CanAccept`, `CanTransition`, `CanAddNote` and `CanClose`. Only `Backend/` has the requester pages and `_RequestFields`, and only `app/` has `status-poll.js`.  
-**Planned:** the frontend service, `_RequestDetail`, `_FilterBar`, `StaffQueueViewComponent`, `OversightTotalsViewComponent`, and the management and admin pages.
+**Exist (v1.0.0):** `app/` is the only code tree (`Backend/` was removed, RSK-022). Shared parts: `_RequestFields`, `_HistoryList`, `_StatusBars`, `_Attachments`, `_EmptyState`, `_Message`, `StatusBadgeTagHelper`, `CapabilityFactory` with `RequestCapabilities` (`CanAccept`, `CanTransition`, `CanAddNote`, `CanClose`, `CanReject`, `CanAttach`) and `status-poll.js`. Page folders: `Requests`, `Staff`, `Oversight`, `Reports`, `Admin` and `Account`, covering every role.  
+**Not built:** a separate frontend service (the release is one deployable, CR-014) and the planned `_RequestDetail`, `_FilterBar`, `StaffQueueViewComponent` and `OversightTotalsViewComponent`; page models and the partials above cover the same needs.
 
 ## Verification
 

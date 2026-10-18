@@ -35,4 +35,4 @@ The full automated suite passed on each build: 287 of 287 on the first run, and 
 
 ## What this does and does not show
 **Shows:** the release starts and runs with production settings, secrets stay outside the repository, real sign-in protects every page and the API, and a fresh database is prepared without development data.  
-**Does not show:** behaviour on a hosted server (no container or hosting yet, TD-04), free-tier limits or hash cost on that server (RSK-014), backup and restore (RSK-015), or load beyond PT-01.
+**Does not show:** behaviour on the hosted server (see `Hosted_Deployment_Check.md` for the live site), sign-in time on that server (RSK-014), backup and restore (RSK-015), or load beyond PT-01.

@@ -24,52 +24,21 @@ The project is being developed progressively according to the SEN381 requirement
 ---
 ## 2. Current Project Status
 ### Overall status
-**Milestone 2 / Build phase — in development**  
-The repository contains meaningful working construction, automated tests and CI infrastructure. However, CivicConnect is **not yet a production-ready application**.  
-The current implementation primarily demonstrates the staff-side request workflow and the engineering controls around assignment, authorization, status transitions and request history.
+**Final release `v1.0.0` (M4), live at https://sen381-project-group-i-2026.onrender.com/**
+CivicConnect is complete for its approved scope: FR-001 to FR-023 and NFR-001 to NFR-009 are met, real sign-in protects every page and the API, and the release runs on a Render Free web service with a Neon Free PostgreSQL database at $0 per month. All 288 automated tests pass. The only requirement not met is NFR-010, because the four-service split was not built (CR-014). Scope completion is 100% of the committed M1 scope and 97.8% of the full baseline (PED v4.0).
 
-### Currently implemented in the active `app/` solution  
-- Layered .NET 10 application architecture.
-- Domain model for service requests.
-- Controlled request categories.
-- Requester, service staff, management and administrator roles in the domain model.
-- Staff request queue.
-- Staff request detail page.
-- Request acceptance/assignment.
-- Server-side authorization checks.
-- Capability-based UI composition.
-- Controlled request status transitions.
-- Append-only request history.
-- Transactional assignment and status updates.
-- Database-level conditional updates for concurrency protection.
-- Development-only seeded users.
-- PostgreSQL persistence through Entity Framework Core/Npgsql.
-- Unit tests for application behavior.
-- Domain tests for status-transition rules.
-- PostgreSQL integration testing for concurrent request acceptance.
-- GitHub Actions CI.
-- Static analysis and formatting checks.
-- Dependency vulnerability scanning.
-- Repository secret scanning.
-- A combined CI quality gate.
+| Area | Status at `v1.0.0` |
+|---|---|
+| Requester | Submit with attachments, follow the status, history, search and in-app feedback (FR-001 to FR-007) |
+| Service staff | Category-scoped queue, details, accept, controlled status changes, notes, resolve, reject and close (FR-008 to FR-014) |
+| Management and sponsor | Oversight figures, overdue flags, performance reporting with CSV export and a sponsor summary (FR-015 to FR-018, FR-023) |
+| Administrator | Users, roles, staff category scopes, categories and the audit trail (FR-019 to FR-022) |
+| Security | Cookie sign-in with PBKDF2 hashes, lockout, a forced password change and one authorisation policy (ADR-005, ADR-008) |
+| Data integrity | Conditional updates for single ownership, insert-only history and audit trail, transactions (ADR-002) |
+| Quality | CI with build, tests on PostgreSQL, format, dependency and secret checks behind one Quality Gate |
+| Deployment | `Dockerfile`, Render Free web service, Neon Free database (ADR-007) |
 
-### Not yet complete
-The following areas remain incomplete or are represented primarily by requirements/design documentation:  
-- Production authentication.
-- Complete requester-facing UI.
-- Request submission UI/API in the active `app/` solution.
-- Complete requester request history and feedback workflow.
-- Full staff workflow including all planned notes/status operations.
-- Management/oversight functionality.
-- Administrator functionality.
-- Sponsor/reporting functionality.
-- Attachments.
-- Full production RBAC.
-- Production deployment.
-- Final database migration/bootstrap setup for the active `app/` solution.
-- Complete alignment between the API documentation and the currently implemented `app/` endpoints.
-
-The project documentation deliberately records several of these as future, deferred or change-controlled work rather than silently treating them as complete.
+What remains open is listed in section 27, Known Limitations.
 
 ---
 # 3. Core Product Goals
@@ -629,14 +598,17 @@ and includes planned endpoints for:
 - Health checks
 
 ### Important API documentation note
-The API contract describes the intended Build Slice 1 interface and is more extensive than the currently implemented endpoint surface in the active `app/` project.  
-For example, the active `app/` implementation currently exposes the assignment endpoint:  
+The contract in `Docs/API/API_Contract_v1.md` and `openapi.yaml` describes the Build Slice 1 design, not the final build (CR-015, TD-03). The release exposes six endpoints, and every one needs sign-in (an anonymous call gets 401):
 ```
+GET  /api/v1/queue
+POST /api/v1/requests
 POST /api/v1/requests/{id}/assignment
+POST /api/v1/requests/{id}/status
+POST /api/v1/requests/{id}/notes
+GET  /api/v1/requests/{id}/attachments/{attachmentId}
 ```
 
-while several endpoints documented in `Docs/API/API_Contract_v1.md` have not yet been implemented in `app/`.  
-The API documentation should therefore be treated as the **engineering contract/baseline**, not as proof that every documented endpoint is currently available.
+The contract's `GET /api/v1/categories`, `GET /api/v1/requests`, `GET /api/v1/requests/{id}` and `GET /api/v1/feedback` were not built as API endpoints; the Razor Pages serve the same features. Status changes use POST, not PATCH, and ids are GUIDs.
 
 ---
 # 21. Configuration and Secrets
@@ -680,8 +652,8 @@ The documented deployment direction is:
                   └──────────────────┘
 ```
 
-The project currently intends to use:  
-- **Render Free** for application hosting.
+The release uses:  
+- **Render Free** for application hosting, built from the repository's `Dockerfile` (PR #39).
 - **Neon Free** for PostgreSQL.
 - **GitHub Actions** for CI.
 The target cost is therefore approximately:  
@@ -690,8 +662,8 @@ $0/month
 ```
 
 at coursework scale.  
-However, the deployment plan is currently a **direction rather than completed production deployment evidence**.  
-The project documentation identifies the absence of a deployment Dockerfile and deployment verification as remaining work.
+**Live:** https://sen381-project-group-i-2026.onrender.com/ (release `v1.0.0`). The connection string and the first administrator's password are set in Render, never in the repository. The free web service sleeps after 15 minutes idle and takes about a minute to wake.  
+Evidence: `Test/Evidence/Hosted_Deployment_Check.md`. Go-live decision: PED v4.0, Final Deployment and Go-Live Decision.
 
 ---
 # 23. Performance
@@ -828,13 +800,12 @@ Requirements, risks, decisions, implementation and tests should remain connected
 # 27. Known Limitations
 Final status for release `v1.0.0`; the full list is in PED v4.0, Known Limitations and Future Work.  
 1. **One deployable instead of separate services.** ADR-001's four-service split was not built (CR-014); NFR-010 is not met.
-2. **No hosted deployment.** The release is verified as simulated production only; a Dockerfile and hosting pipeline are future work (TD-04).
-3. **No backup or restore rehearsal** for a hosted database (RSK-015).
+2. **Free hosting tier.** The live site sleeps after 15 minutes idle and takes about a minute to wake (RSK-014).
+3. **No backup or restore rehearsal** for the hosted database (RSK-015); this is why go-live is limited to coursework scale.
 4. **Sign-in has no multi-factor authentication or self-service password reset** (ADR-008, RSK-012).
 5. **The API contract document is outdated:** the built API uses POST for status changes and GUID ids (CR-015).
 6. **Desktop layout only; no accessibility review** (TD-06).
-7. **Evidence gap:** the NFR-001 usability walkthrough was not run.
-8. **Some documents describe the intended architecture** (ADR-001) rather than the single deployable that was built; the PED and ADR statuses record the difference.
+7. **Some documents describe the intended architecture** (ADR-001) rather than the single deployable that was built; the PED and ADR statuses record the difference.
 
 ---
 # 28. Project Team
@@ -893,37 +864,24 @@ Human review remains responsible for:
 
 ---
 # 32. Project Direction
-The intended direction for the project is to continue building on the newer `app/` architecture and progressively close the gap between the engineering baseline and the implemented product.  
-The logical progression is:  
+Release `v1.0.0` completes the planned build. Further work would follow the PED's Known Limitations and Future Work:
 ```
-Current
+Delivered (v1.0.0)
   │
-  ├── Staff queue
-  ├── Request detail
-  ├── Assignment
-  ├── Authorization
-  ├── Controlled lifecycle
-  ├── History
-  └── Automated verification
+  ├── Requester, staff, management, administrator and sponsor journeys
+  ├── Real sign-in and one authorisation policy
+  ├── Controlled lifecycle, insert-only history and audit trail
+  ├── Automated verification and the CI quality gate
+  └── Hosted on Render Free and Neon Free
         │
         v
-Next
+Future work
   │
-  ├── Complete status/note workflows
-  ├── Requester experience
-  ├── Authentication
-  ├── API completion
-  ├── Database migrations
-  └── Expanded RBAC
-        │
-        v
-Later
-  │
-  ├── Management reporting
-  ├── Administration
-  ├── Attachments
-  ├── Production deployment
-  └── Operational hardening
+  ├── Backups and a restore rehearsal
+  ├── MFA and self-service password reset
+  ├── Service split (ADR-001, NFR-010)
+  ├── Updated API contract (CR-015)
+  └── Mobile layout and an accessibility review
 ```
 
 The repository's requirements, RTM, ADRs and risk register remain the authoritative sources for deciding what is required, deferred or formally changed.

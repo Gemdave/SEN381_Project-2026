@@ -10,7 +10,7 @@ One file for each significant decision. Every record states the problem before i
 * **ADR-004** [Role based view composition](ADR-004-role-based-view-composition.md). **Design pattern 1.** Mogau Malope. Accepted.
 * **ADR-005** [Central authorisation policy](ADR-005-rbac-authorisation-policy.md). **Design pattern 2.** Gerald Enright. Accepted.
 * **ADR-006** [REST interface contract](ADR-006-api-interface-contract.md). Interface and integration. Keletso Marota. Accepted, with deviation (CR-015).
-* **ADR-007** [Deployment direction](ADR-007-deployment-direction.md). Deployment. Gerald Enright. Accepted, partly implemented.
+* **ADR-007** [Deployment direction](ADR-007-deployment-direction.md). Deployment. Gerald Enright. Accepted, implemented (Render Free and Neon Free).
 * **ADR-008** [Authentication](ADR-008-authentication.md). Security. Gerald Enright. Accepted (CR-003).
 
 Statuses are final for release v1.0.0.

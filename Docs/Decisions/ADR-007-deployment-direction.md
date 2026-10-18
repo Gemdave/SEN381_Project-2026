@@ -1,5 +1,5 @@
 # ADR-007
->**Status:** Accepted, partly implemented: verified as simulated production at v1.0.0; no hosted deployment yet (TD-04)  
+>**Status:** Accepted, implemented at v1.0.0: the repository's `Dockerfile` runs as a Render Free web service with the database on Neon Free, live at https://sen381-project-group-i-2026.onrender.com/ (PR #39). No restore has been rehearsed (RSK-015).  
 **Owner:** DevOps, Security and Quality Lead  
 **Quality drivers:** ASR-05 first, then ASR-01, ASR-04  
 **Risks touched:** RSK-005, RSK-006, RSK-014, RSK-015, RSK-020  
@@ -57,6 +57,16 @@ What constrains it is the sponsor's cost ceiling (NFR-009), a team of three with
 * No secret appears in the repository history: confirmed by GitHub secret scanning being enabled with zero alerts, checked before baseline sign-off (closes the open action under RSK-005/RSK-020).
 * A restart of the Render service (triggered manually, or by the free tier's own spin-down) is observed to lose no data and require no manual recovery step, confirming the "State" position above.
 * The environment variable list actually required to run the app is documented in the README and matches what Render's dashboard has configured — no undocumented configuration key.
+
+**Final (v1.0.0):**
+
+| Check | Result |
+| :--- | :--- |
+| Deployed instance on Render reaching Neon | Met: live at https://sen381-project-group-i-2026.onrender.com/, deployed by G. Enright (PR #39); both plans are Free |
+| No secret in the repository history | Partly met: the Gitleaks scan passes on every CI run and the `Dockerfile` holds no settings; the GitHub secret scanning setting itself is not evidenced (RSK-005) |
+| A restart loses no data | Met by design: all durable state, attachments included, is in PostgreSQL on Neon |
+| Required settings documented | Met: `Docs/Requirements/CR-003_Sign_In_Implementation.md`, section 4, and README section 18 list them |
+| Who builds the image | Changed from the plan above: Render builds the image from the `Dockerfile`; CI builds and tests the code but does not build the image |
 
 ## Evidence
 **RTM:** NFR-004, NFR-009, and every implementation row depends on this.  
